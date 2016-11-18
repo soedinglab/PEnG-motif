@@ -19,6 +19,7 @@ char*	Global::alphabetType = NULL;			          // alphabet type is defaulted to 
 
 char* Global::inputSequenceFilename = NULL;		    // filename with input FASTA sequences
 SequenceSet* Global::inputSequenceSet = NULL;     // input sequence Set
+SequenceSet* Global::backgroundSequenceSet = NULL;     // background sequence Set
 bool Global::revcomp = false;                     // also search on reverse complement of sequences
 
 int Global::patternLength = 8;                    // length of patterns to be trained/searched
@@ -38,6 +39,7 @@ void Global::init(int nargs, char* args[]){
 	Alphabet::init(alphabetType);
 
 	inputSequenceSet = new SequenceSet(inputSequenceFilename);
+	backgroundSequenceSet = new SequenceSet(inputSequenceFilename, true);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -84,5 +86,13 @@ void Global::printHelp(){
 
 void Global::destruct(){
 	Alphabet::destruct();
-	if( alphabetType ) delete[] alphabetType;
+	if( alphabetType )
+	  delete[] alphabetType;
+	if(inputSequenceSet)
+	  delete inputSequenceSet;
+	if(backgroundSequenceSet)
+	  delete backgroundSequenceSet;
+	if(inputSequenceFilename)
+	  delete[] inputSequenceFilename;
+
 }

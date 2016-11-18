@@ -16,6 +16,7 @@ public:
 	static char* alphabetType;						       // provide alphabet type
 	static char* inputSequenceFilename;				   // filename of positive sequence FASTA file
 	static SequenceSet*	inputSequenceSet;				 // positive Sequence Set
+	static SequenceSet* backgroundSequenceSet;   // background Sequence Set
 	static bool revcomp;                         // also search on reverse complement of sequences
 
 	static int patternLength;                    // length of pattern to be searched/trained
@@ -27,8 +28,6 @@ public:
 
 
 	static int verbosity;							           // verbose printouts, defaults to false
-
-	static int* powA;
 
 	static void init( int nargs, char* args[] );
 	static void destruct();

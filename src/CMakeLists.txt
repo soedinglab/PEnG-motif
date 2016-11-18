@@ -10,6 +10,8 @@ set(PENG_SOURCE
 	${CMAKE_CURRENT_SOURCE_DIR}/PatternCensus.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/PatternCensus.h
 	${CMAKE_CURRENT_SOURCE_DIR}/log.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.h
 )
 
 add_library(PENG_OBJECTS OBJECT ${PENG_SOURCE})

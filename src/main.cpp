@@ -12,10 +12,12 @@
 int main(int nargs, char **args) {
   Global::init(nargs, args);
 
-  BackgroundModel* bgModel = new BackgroundModel(*Global::inputSequenceSet,
+  BackgroundModel* bgModel = new BackgroundModel(*Global::backgroundSequenceSet,
                           Global::bgModelOrder,
                           Global::bgModelAlpha,
                           Global::interpolateBG );
 
   PatternCensus(Global::patternLength, Global::bgModelOrder, Global::inputSequenceSet, bgModel);
+
+  delete bgModel;
 }
