@@ -3,13 +3,15 @@
 #include <cassert>
 #include <algorithm>
 #include <set>
+#include <iostream>
+#include <fstream>
 
 #include "PatternCensus.h"
 #include "shared/Sequence.h"
 #include "iupac_alphabet.h"
 
 
-PatternCensus::PatternCensus(const int pattern_length, const int k, SequenceSet* sequence_set, BackgroundModel* bg) {
+PatternCensus::PatternCensus(const int pattern_length, const int k, SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename) {
   this->pattern_length = pattern_length;
   this->alphabet_size = Alphabet::getSize();
 
@@ -80,7 +82,16 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, SequenceSet*
 
   filter_iupac_patterns(best_iupac_patterns, pattern_length, iupac_factor);
 
-  get_pwm_for_iupac_patterns(best_iupac_patterns, pattern_length, pattern_counter);
+  std::ofstream myfile (outputFilename);
+  if (myfile.is_open()) {
+    for(auto pattern : best_iupac_patterns) {
+      myfile << getIUPACPatternFromNumber(pattern) << std::endl;
+    }
+    myfile.close();
+  }
+  else std::cerr << "Unable to open output file (" << outputFilename << ")!";
+
+  //get_pwm_for_iupac_patterns(best_iupac_patterns, pattern_length, pattern_counter);
 }
 
 PatternCensus::~PatternCensus() {

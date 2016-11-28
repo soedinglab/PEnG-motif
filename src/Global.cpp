@@ -15,22 +15,24 @@
 #include <string>
 
 
-char*	Global::alphabetType = NULL;			          // alphabet type is defaulted to standard which is ACGT
+char*	Global::alphabetType = NULL;			              // alphabet type is defaulted to standard which is ACGT
 
-char* Global::inputSequenceFilename = NULL;		    // filename with input FASTA sequences
-SequenceSet* Global::inputSequenceSet = NULL;     // input sequence Set
-SequenceSet* Global::backgroundSequenceSet = NULL;     // background sequence Set
-bool Global::revcomp = false;                     // also search on reverse complement of sequences
+char* Global::outputFilename = NULL;                  // filename for IUPAC pattern output
 
-int Global::patternLength = 8;                    // length of patterns to be trained/searched
+char* Global::inputSequenceFilename = NULL;		        // filename with input FASTA sequences
+SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
+SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
+bool Global::revcomp = false;                         // also search on reverse complement of sequences
+
+int Global::patternLength = 8;                        // length of patterns to be trained/searched
 
 // background model options
-bool Global::interpolateBG = true;           // calculate prior probabilities from lower-order probabilities
-                                                            // instead of background frequencies of mononucleotides
-int Global::bgModelOrder = 2;                            // background model order, defaults to 2
+bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities
+                                                      // instead of background frequencies of mononucleotides
+int Global::bgModelOrder = 2;                         // background model order, defaults to 2
 std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // background model alpha
 
-int Global::verbosity = 2;            	          // verbosity
+int Global::verbosity = 2;            	              // verbosity
 
 
 void Global::init(int nargs, char* args[]){
@@ -68,6 +70,15 @@ void Global::readArguments(int nargs, char* args[]){
       }
       verbosity = std::stoi(args[++i]);
     }
+    else if (!strcmp(args[i], "-o")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -o" << std::endl;
+        exit(4);
+      }
+      outputFilename = new char[strlen(args[i]) + 1];
+      strcpy(outputFilename, args[i]);
+    }
     else {
       LOG(WARNING) << "Ignoring unknown option " << args[i] << std::endl;
     }
@@ -80,7 +91,9 @@ void Global::readArguments(int nargs, char* args[]){
 void Global::printHelp(){
 	printf("\n=================================================================\n");
 	printf("\n Usage: peng_motif SEQFILE [options] \n\n");
-	printf("\t SEQFILE: file with sequences from positive set in FASTA format. \n");
+	printf("\t SEQFILE: file with sequences in FASTA format. \n");
+  printf("\n      -o, <OUTPUT_FILE>\n"
+      "           best UIPAC motives will be written in OUTPUT_FILE.\n");
 	printf("\n=================================================================\n");
 }
 
@@ -88,11 +101,12 @@ void Global::destruct(){
 	Alphabet::destruct();
 	if( alphabetType )
 	  delete[] alphabetType;
+	if(outputFilename)
+	  delete[] outputFilename;
 	if(inputSequenceSet)
 	  delete inputSequenceSet;
 	if(backgroundSequenceSet)
 	  delete backgroundSequenceSet;
 	if(inputSequenceFilename)
 	  delete[] inputSequenceFilename;
-
 }

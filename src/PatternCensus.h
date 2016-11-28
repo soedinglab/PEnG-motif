@@ -8,7 +8,7 @@
 
 class PatternCensus{
  public:
-  PatternCensus(const int pattern_length, const int k, SequenceSet* sequence_set, BackgroundModel* bg);
+  PatternCensus(const int pattern_length, const int k, SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename);
   ~PatternCensus();
 
  private:

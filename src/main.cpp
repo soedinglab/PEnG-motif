@@ -17,7 +17,7 @@ int main(int nargs, char **args) {
                           Global::bgModelAlpha,
                           Global::interpolateBG );
 
-  PatternCensus(Global::patternLength, Global::bgModelOrder, Global::inputSequenceSet, bgModel);
+  PatternCensus(Global::patternLength, Global::bgModelOrder, Global::inputSequenceSet, bgModel, Global::outputFilename);
 
   delete bgModel;
 }
