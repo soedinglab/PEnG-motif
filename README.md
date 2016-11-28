@@ -11,15 +11,6 @@ To compile from source, you will need:
  * [CMake](http://cmake.org/) 2.8.12 or later
 
 ## Installation
-We recommend compiling HHsuite on the machine that should run the computations so that it can be optimized for the appropriate CPU architecture.
-
-### Packages
-Some distributions incorporate HHsuite on their own:
-* Ubuntu/Debian/etc. [DPKGs](http://packages.debian.org/source/sid/hhsuite) are provided by Laszlo Kajan.
-* For Archlinux you can find a [PKGBUILD on aur](https://aur.archlinux.org/packages/hhsuite/)
-
-### Release tarballs
-The [release tarballs](http://wwwuser.gwdg.de/~compbiol/data/hhsuite/releases/) should contain all required source files. Simply download and extract
 
 ### Cloning from GIT
 If you want to compile the most recent version, simply clone the git repository. Then, from the repository root, initialize the ffindex submodule:
