@@ -387,6 +387,7 @@ void PatternCensus::optimize_iupac_patterns(const int pattern_length,
     while(found_better_mutant) {
       found_better_mutant = false;
       size_t mutant_mother = best_mutant;
+      std::set<size_t> current_seen;
 
       for(int p = 0; p < pattern_length; p++) {
         //mask nucleotide at position i
@@ -398,24 +399,26 @@ void PatternCensus::optimize_iupac_patterns(const int pattern_length,
         for(auto r : IUPACAlphabet::get_similar_iupac_nucleotides(c)) {
           size_t mutated_pattern = masked_mother + r * iupac_factor[p];
 
-          //if mutated pattern not in seen
-          if(seen.count(mutated_pattern) == 0) {
-            //calculate zscore of mutated pattern
-            float log_pvalue = calculate_logpvalue_of_iupac_pattern(mutated_pattern, ltot,
-                                                             this->pattern_bg_probabilities,
-                                                             this->pattern_counter);
+          //calculate zscore of mutated pattern
+          float log_pvalue = calculate_logpvalue_of_iupac_pattern(mutated_pattern, ltot,
+                                                           this->pattern_bg_probabilities,
+                                                           this->pattern_counter);
 
-            if(log_pvalue < best_log_pvalue) {
-              found_better_mutant = true;
-              best_log_pvalue = log_pvalue;
-              best_mutant = mutated_pattern;
-            }
-
-            //add pattern to seen
-            seen.insert(mutated_pattern);
+          if(log_pvalue < best_log_pvalue) {
+            found_better_mutant = true;
+            best_log_pvalue = log_pvalue;
+            best_mutant = mutated_pattern;
           }
+
+          //add pattern to currently seen
+          current_seen.insert(mutated_pattern);
         }
       }
+
+      if(seen.count(best_mutant) == 1) {
+        found_better_mutant = false;
+      }
+      seen.insert(current_seen.begin(), current_seen.end());
     }
 
     best_iupac_patterns.insert(best_mutant);
