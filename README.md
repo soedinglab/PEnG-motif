@@ -16,7 +16,7 @@ To compile from source, you will need:
 If you want to compile the most recent version, simply clone the git repository. Then, from the repository root, initialize the ffindex submodule:
 
 	git clone git@github.com:soedinglab/PEnG-motif.git
-        cd PenG-motif
+	cd PenG-motif
 	git submodule init
 	git submodule update
 
