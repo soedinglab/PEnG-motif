@@ -56,10 +56,10 @@ void Global::readArguments(int nargs, char* args[]){
 	inputSequenceFilename = args[1];
 
 	for (int i = 2; i < nargs; i++) {
-    if (!strcmp(args[i], "-W")) {
+    if (!strcmp(args[i], "-w")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following -W" << std::endl;
+        LOG(ERROR) << "No expression following -w" << std::endl;
         exit(4);
       }
       patternLength = std::stoi(args[i]);
@@ -102,8 +102,14 @@ void Global::printHelp(){
 	printf("\n=================================================================\n");
 	printf("\n Usage: peng_motif SEQFILE [options] \n\n");
 	printf("\t SEQFILE: file with sequences in FASTA format. \n");
-  printf("\n      -o, <OUTPUT_FILE>\n"
-      "           best UIPAC motives will be written in OUTPUT_FILE.\n");
+  printf("\n      -o, <MEME_OUTPUT_FILE>\n"
+      "           best UIPAC motives will be written in OUTPUT_FILE\n"
+      "           in minimal MEME output format.\n");
+
+  printf("\n      -t, <ZSCORE_THRESHOLD>\n"
+      "           lower zscore threshold for basic patterns. \n");
+  printf("\n      -w, <PATTERN_LENGTH>\n"
+      "           length of patterns to be searched. \n");
 	printf("\n=================================================================\n");
 }
 
