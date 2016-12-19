@@ -543,6 +543,7 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
                                             std::set<size_t>& selected_base_patterns,
                                             std::set<IUPACPattern*>& best_iupac_patterns) {
   std::set<size_t> seen;
+  std::set<size_t> best;
 
   for(auto pattern : selected_base_patterns) {
     if(this->pattern_zscore[pattern] < zscore_threshold) {
@@ -574,14 +575,18 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
                                                                  this->pattern_bg_probabilities,
                                                                  this->pattern_counter);
 
+          //add pattern to currently seen
+          current_seen.insert(mutated_pattern->get_pattern());
+
           if(mutated_pattern->get_log_pvalue() < best_log_pvalue) {
+            delete best_mutant;
             found_better_mutant = true;
             best_log_pvalue = mutated_pattern->get_log_pvalue();
             best_mutant = mutated_pattern;
           }
-
-          //add pattern to currently seen
-          current_seen.insert(mutated_pattern->get_pattern());
+          else {
+            delete mutated_pattern;
+          }
         }
       }
 
@@ -591,7 +596,14 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
       seen.insert(current_seen.begin(), current_seen.end());
     }
 
-    best_iupac_patterns.insert(best_mutant);
+    if(best.count(best_mutant->get_pattern()) == 0) {
+      best_iupac_patterns.insert(best_mutant);
+      best.insert(best_mutant->get_pattern());
+    }
+    else{
+      delete best_mutant;
+      best_mutant = NULL;
+    }
   }
 }
 
