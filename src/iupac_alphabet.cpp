@@ -183,4 +183,7 @@ char IUPACAlphabet::getBase(uint8_t c) {
   return base_2_char[c];
 }
 
+size_t IUPACAlphabet::getAlphabetSize() {
+  return representative_iupac_nucleotides.size();
+}
 

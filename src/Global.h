@@ -21,6 +21,7 @@ public:
 	static bool revcomp;                         // also search on reverse complement of sequences
 
 	static int patternLength;                    // length of pattern to be searched/trained
+	static float zscoreThreshold;
 
 	static int bgModelOrder;						         // background model order, defaults to 2
 	static bool interpolateBG;                   // calculate prior probabilities from lower-order probabilities

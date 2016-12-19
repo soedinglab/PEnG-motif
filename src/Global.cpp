@@ -26,6 +26,8 @@ bool Global::revcomp = false;                         // also search on reverse 
 
 int Global::patternLength = 8;                        // length of patterns to be trained/searched
 
+float Global::zscoreThreshold = 1000;
+
 // background model options
 bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities
                                                       // instead of background frequencies of mononucleotides
@@ -60,7 +62,7 @@ void Global::readArguments(int nargs, char* args[]){
         LOG(ERROR) << "No expression following -W" << std::endl;
         exit(4);
       }
-      patternLength = std::stoi(args[++i]);
+      patternLength = std::stoi(args[i]);
     }
     else if (!strcmp(args[i], "-v")) {
       if (++i>=nargs) {
@@ -68,7 +70,7 @@ void Global::readArguments(int nargs, char* args[]){
         LOG(ERROR) << "No expression following -v" << std::endl;
         exit(4);
       }
-      verbosity = std::stoi(args[++i]);
+      verbosity = std::stoi(args[i]);
     }
     else if (!strcmp(args[i], "-o")) {
       if (++i>=nargs) {
@@ -78,6 +80,14 @@ void Global::readArguments(int nargs, char* args[]){
       }
       outputFilename = new char[strlen(args[i]) + 1];
       strcpy(outputFilename, args[i]);
+    }
+    else if (!strcmp(args[i], "-t")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -t" << std::endl;
+        exit(4);
+      }
+      zscoreThreshold = std::stof(args[i]);
     }
     else {
       LOG(WARNING) << "Ignoring unknown option " << args[i] << std::endl;

@@ -27,6 +27,7 @@ class IUPACAlphabet {
   static std::vector<uint8_t> get_similar_iupac_nucleotides(uint8_t c);
   static std::vector<uint8_t> get_representative_iupac_nucleotides(uint8_t c);
   static char getBase(uint8_t c);
+  static size_t getAlphabetSize();
 };
 
 
