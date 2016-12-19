@@ -60,7 +60,7 @@ class IUPACPattern {
 class PatternCensus{
  public:
   PatternCensus(const int pattern_length, const int k, const float zscore_threshold,
-                SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename);
+                SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename, const char* jsonFilename);
   ~PatternCensus();
 
  private:
@@ -89,6 +89,12 @@ class PatternCensus{
                       const std::string output_filename,
                       const std::string version_number,
                       BackgroundModel* bg_model);
+
+  void printJson(std::set<IUPACPattern*>& best_iupac_patterns,
+                 const std::string output_filename,
+                 const std::string version_number,
+                 BackgroundModel* bg_model);
+
 
   size_t* pattern_counter;
   float* pattern_bg_probabilities;

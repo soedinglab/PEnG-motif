@@ -14,7 +14,8 @@ class Global{
 
 public:
 	static char* alphabetType;						       // provide alphabet type
-	static char* outputFilename;                 // filename for IUPAC pattern output
+	static char* outputFilename;                 // filename for IUPAC pattern output in short meme format
+	static char* jsonFilename;                   // filename for IUPAC pattern output in json format
 	static char* inputSequenceFilename;				   // filename of positive sequence FASTA file
 	static SequenceSet*	inputSequenceSet;				 // positive Sequence Set
 	static SequenceSet* backgroundSequenceSet;   // background Sequence Set

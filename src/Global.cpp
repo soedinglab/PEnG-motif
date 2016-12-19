@@ -17,7 +17,8 @@
 
 char*	Global::alphabetType = NULL;			              // alphabet type is defaulted to standard which is ACGT
 
-char* Global::outputFilename = NULL;                  // filename for IUPAC pattern output
+char* Global::outputFilename = NULL;                  // filename for IUPAC pattern output in short meme format
+char* Global::jsonFilename = NULL;                    // filename for IUPAC pattern output in json format
 
 char* Global::inputSequenceFilename = NULL;		        // filename with input FASTA sequences
 SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
@@ -81,6 +82,15 @@ void Global::readArguments(int nargs, char* args[]){
       outputFilename = new char[strlen(args[i]) + 1];
       strcpy(outputFilename, args[i]);
     }
+    else if (!strcmp(args[i], "-j")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -j" << std::endl;
+        exit(4);
+      }
+      jsonFilename = new char[strlen(args[i]) + 1];
+      strcpy(jsonFilename, args[i]);
+    }
     else if (!strcmp(args[i], "-t")) {
       if (++i>=nargs) {
         printHelp();
@@ -102,10 +112,12 @@ void Global::printHelp(){
 	printf("\n=================================================================\n");
 	printf("\n Usage: peng_motif SEQFILE [options] \n\n");
 	printf("\t SEQFILE: file with sequences in FASTA format. \n");
-  printf("\n      -o, <MEME_OUTPUT_FILE>\n"
+  printf("\n      -o, <OUTPUT_FILE>\n"
       "           best UIPAC motives will be written in OUTPUT_FILE\n"
-      "           in minimal MEME output format.\n");
-
+      "           in minimal MEME format.\n");
+  printf("\n      -j, <OUTPUT_FILE>\n"
+      "           best UIPAC motives will be written in OUTPUT_FILE\n"
+      "           in JSON format.\n");
   printf("\n      -t, <ZSCORE_THRESHOLD>\n"
       "           lower zscore threshold for basic patterns. \n");
   printf("\n      -w, <PATTERN_LENGTH>\n"

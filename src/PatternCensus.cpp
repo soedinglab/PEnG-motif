@@ -254,7 +254,9 @@ bool IUPACPattern::operator <(const IUPACPattern &rhs) const {
 }
 
 PatternCensus::PatternCensus(const int pattern_length, const int k, const float zscore_threshold,
-                             SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename) {
+                             SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename,
+                             const char* jsonFilename) {
+
   BasePattern::init(pattern_length);
   IUPACPattern::init(pattern_length);
   IUPACAlphabet::init(Alphabet::getAlphabet());
@@ -301,11 +303,19 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
     pattern->calculate_pwm(pattern_counter);
   }
 
+  std::string version_number("1.0.0");
   if(outputFilename != NULL) {
-    std::string version_number("1.0.0");
     std::string outfile(outputFilename);
     printShortMeme(best_iupac_patterns,
                    outfile,
+                   version_number,
+                   bg);
+  }
+
+  if(jsonFilename != NULL) {
+    std::string json_outfile(jsonFilename);
+    printJson(best_iupac_patterns,
+                   json_outfile,
                    version_number,
                    bg);
   }
@@ -667,6 +677,73 @@ void PatternCensus::printShortMeme(std::set<IUPACPattern*>& best_iupac_patterns,
       }
       myfile << std::endl;
     }
+    myfile.close();
+  }
+  else std::cerr << "Unable to open output file (" << output_filename << ")!";
+}
+
+void PatternCensus::printJson(std::set<IUPACPattern*>& best_iupac_patterns,
+                                   const std::string output_filename,
+                                   const std::string version_number,
+                                   BackgroundModel* bg_model) {
+
+  std::vector<IUPACPattern*> sorted_iupac_patterns;
+  sorted_iupac_patterns.insert(sorted_iupac_patterns.end(), best_iupac_patterns.begin(), best_iupac_patterns.end());
+  std::sort(sorted_iupac_patterns.begin(), sorted_iupac_patterns.end(), sort_IUPAC_patterns);
+
+  std::ofstream myfile (output_filename);
+  if (myfile.is_open()) {
+    myfile << "{" << std::endl;
+    char* alphabet = Alphabet::getAlphabet();
+    myfile << "\t\"alphabet\" : \"" << alphabet << "\"," << std::endl;
+    myfile << "\t\"bg\" : [";
+    float* freq_nuc = bg_model->getV()[0];
+
+    for(size_t i = 0; i < strlen(alphabet); i++) {
+      myfile << freq_nuc[i];
+      if(i != strlen(alphabet) - 1) {
+        myfile << ", ";
+      }
+    }
+    myfile << "]," << std::endl;
+
+    myfile << "\t\"alphabet_length\" : " << 4 << "," << std::endl;
+    myfile << "\t\"pattern_length\" : " << pattern_length << "," << std::endl;
+
+    myfile << "\t\"patterns\" : [" << std::endl;
+    for(auto pattern : sorted_iupac_patterns) {
+      myfile << "\t\t{" << std::endl;
+      myfile << "\t\t\t\"iupac_motif\" : \"" << IUPACPattern::getIUPACPatternFromNumber(pattern->get_pattern()) << "\"," << std::endl;
+      myfile << "\t\t\t\"sites\" : " << pattern->get_sites() << "," << std::endl;
+      myfile << "\t\t\t\"log(Pval)\" : " << pattern->get_log_pvalue() << "," << std::endl;
+      myfile << "\t\t\t\"pwm\" : [" << std::endl;
+      float** pwm = pattern->get_pwm();
+      for(size_t w = 0; w < pattern_length; w++) {
+        myfile << "\t\t\t\t\t[";
+        for(size_t a = 0; a < 4; a++) {
+          myfile << pwm[w][a];
+          if(a != 3) {
+            myfile << ", ";
+          }
+          else{
+            myfile << "]";
+          }
+        }
+        if(w != pattern_length - 1) {
+          myfile << ", ";
+        }
+        myfile << std::endl;
+      }
+      myfile << "\t\t\t\t]" << std::endl;
+      myfile << "\t\t}";
+      if(pattern != sorted_iupac_patterns[sorted_iupac_patterns.size() - 1]) {
+        myfile << ",";
+      }
+      myfile << std::endl;
+    }
+    myfile << "\t]" << std::endl;
+    myfile << "}" << std::endl;
+
     myfile.close();
   }
   else std::cerr << "Unable to open output file (" << output_filename << ")!";

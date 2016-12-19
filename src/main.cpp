@@ -17,7 +17,9 @@ int main(int nargs, char **args) {
                           Global::bgModelAlpha,
                           Global::interpolateBG );
 
-  PatternCensus(Global::patternLength, Global::bgModelOrder, Global::zscoreThreshold, Global::inputSequenceSet, bgModel, Global::outputFilename);
+  PatternCensus(Global::patternLength, Global::bgModelOrder,
+                Global::zscoreThreshold, Global::inputSequenceSet,
+                bgModel, Global::outputFilename, Global::jsonFilename);
 
   delete bgModel;
 }
