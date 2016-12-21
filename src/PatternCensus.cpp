@@ -358,7 +358,7 @@ void PatternCensus::calculate_bg_probabilities(BackgroundModel* model, const int
   size_t nr_initial_mers = pow(alphabet_size, k+1);
 
   for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
-    float cur_prob = background_model[get_bg_id(pattern, k+1, k)];
+    float cur_prob = background_model[get_bg_id(pattern, 0+1, 0)] * background_model[get_bg_id(pattern, 1+1, 1)] * background_model[get_bg_id(pattern, k+1, k)];
     calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, cur_prob, this->pattern_bg_probabilities);
   }
 }
