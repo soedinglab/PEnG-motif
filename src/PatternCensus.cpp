@@ -332,7 +332,7 @@ size_t PatternCensus::get_bg_id(const size_t pattern, const int curr_pattern_len
   size_t k_mer_pattern = 0;
   for(int i = curr_pattern_length - k - 1; i < curr_pattern_length; i++) {
     int c = BasePattern::getNucleotideAtPos(pattern, i);
-    k_mer_pattern = (c) * BasePattern::factor[curr_pattern_length - i - 1];
+    k_mer_pattern += c * BasePattern::factor[curr_pattern_length - i - 1];
   }
   return k_mer_pattern;
 }
