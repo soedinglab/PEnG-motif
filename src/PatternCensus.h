@@ -28,12 +28,14 @@ class IUPACPattern {
   static std::string getIUPACPatternFromNumber(size_t pattern_id);
   static int getNucleotideAtPos(const size_t pattern, const size_t pos);
   static size_t getIUPACPattern(size_t base_pattern);
+  static size_t getIUPACPattern(std::string base_pattern);
 
   IUPACPattern(size_t iupac_pattern);
   ~IUPACPattern();
 
   size_t get_pattern();
   float get_log_pvalue();
+  float get_bg_p();
   float** get_pwm();
   size_t get_sites();
 
@@ -52,6 +54,7 @@ class IUPACPattern {
 
   size_t pattern;
   float log_pvalue;
+  float bg_p;
   size_t n_sites;
   float** pwm;
   std::set<size_t> base_patterns;

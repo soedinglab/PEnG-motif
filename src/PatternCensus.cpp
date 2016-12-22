@@ -72,6 +72,7 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern){
   pwm = NULL;
   n_sites = 0;
   log_pvalue = 0;
+  bg_p = 0;
 }
 
 IUPACPattern::~IUPACPattern(){
@@ -130,6 +131,17 @@ size_t IUPACPattern::getIUPACPattern(size_t base_pattern) {
   return iupac_pattern;
 }
 
+size_t IUPACPattern::getIUPACPattern(std::string base_pattern) {
+  size_t iupac_pattern = 0;
+  for(int p = 0; p < pattern_length; p++) {
+    char nuc = base_pattern[p];
+    int c = IUPACAlphabet::getCode(nuc);
+    iupac_pattern += c * IUPACPattern::iupac_factor[p];
+  }
+  return iupac_pattern;
+}
+
+
 int IUPACPattern::getNucleotideAtPos(const unsigned long int pattern, const unsigned long int pos) {
   int residue = (pattern % IUPACPattern::iupac_factor[pos+1]);
   int c = int(residue / IUPACPattern::iupac_factor[pos]);
@@ -147,6 +159,8 @@ void IUPACPattern::calculate_logpvalue_of_iupac_pattern(const int ltot,
     sum_backgroud_prob += base_background_prob[p];
     sum_counts += base_counts[p];
   }
+
+  this->bg_p = sum_backgroud_prob;
 
   float mu = ltot * sum_backgroud_prob;
   float frac = 1 - mu / (sum_counts + 1);
@@ -201,6 +215,11 @@ void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
 float IUPACPattern::get_log_pvalue() {
   return log_pvalue;
 }
+
+float IUPACPattern::get_bg_p() {
+  return bg_p;
+}
+
 
 size_t IUPACPattern::get_pattern() {
   return pattern;
@@ -549,6 +568,7 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
     if(this->pattern_zscore[pattern] < zscore_threshold) {
       continue;
     }
+//    std::cerr << "base_pattern: " << BasePattern::getPatternFromNumber(pattern) << std::endl;
 
     size_t iupac_pattern = IUPACPattern::getIUPACPattern(pattern);
 
@@ -557,6 +577,7 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
     IUPACPattern* best_mutant = new IUPACPattern(iupac_pattern);
 
     while(found_better_mutant) {
+//      std::cerr << "\tbest_mutant: " << IUPACPattern::getIUPACPatternFromNumber(best_mutant->get_pattern()) << "\t" << best_log_pvalue << std::endl;
       found_better_mutant = false;
       size_t mutant_mother = best_mutant->get_pattern();
       std::set<size_t> current_seen;
@@ -569,6 +590,7 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
         //replace position p with similar IUPAC nucleotides
         for(auto r : IUPACAlphabet::get_similar_iupac_nucleotides(c)) {
           IUPACPattern* mutated_pattern = new IUPACPattern(masked_mother + r * IUPACPattern::iupac_factor[p]);
+//          std::cerr << "\t\tmutated_pattern " << IUPACPattern::getIUPACPatternFromNumber(masked_mother + r * IUPACPattern::iupac_factor[p]) << std::endl;
 
           //calculate log_pvalue of mutated pattern
           mutated_pattern->calculate_logpvalue_of_iupac_pattern(ltot,
@@ -591,12 +613,15 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
       }
 
       if(seen.count(best_mutant->get_pattern()) == 1) {
+//        std::cerr << "\t" << IUPACPattern::getIUPACPatternFromNumber(best_mutant->get_pattern()) << " already seen!" << std::endl;
         found_better_mutant = false;
       }
+      current_seen.erase(best_mutant->get_pattern());
       seen.insert(current_seen.begin(), current_seen.end());
     }
 
-    if(best.count(best_mutant->get_pattern()) == 0) {
+    if(best.count(best_mutant->get_pattern()) == 0 && seen.count(best_mutant->get_pattern()) == 0) {
+//      std::cerr << "\tadded " << IUPACPattern::getIUPACPatternFromNumber(best_mutant->get_pattern()) << std::endl;
       best_iupac_patterns.insert(best_mutant);
       best.insert(best_mutant->get_pattern());
     }
@@ -636,32 +661,32 @@ void PatternCensus::filter_iupac_patterns(std::set<IUPACPattern*>& iupac_pattern
     }
   }
 
-  for(size_t i = 0; i < sorted_iupac_patterns.size(); i++) {
-    if(deselected_patterns.find(sorted_iupac_patterns[i]) != deselected_patterns.end()) {
-      continue;
-    }
-    size_t pattern1 = sorted_iupac_patterns[i]->get_pattern();
-
-    for(size_t j = i; j < sorted_iupac_patterns.size(); j++) {
-      if(deselected_patterns.find(sorted_iupac_patterns[j]) != deselected_patterns.end()) {
-        continue;
-      }
-      size_t pattern2 = sorted_iupac_patterns[j]->get_pattern();
-
-      size_t diff = 0;
-      for(int p = 0; p < pattern_length; p++) {
-        int c1 = IUPACPattern::getNucleotideAtPos(pattern1, p);
-        int c2 = IUPACPattern::getNucleotideAtPos(pattern2, p);
-        if(c1 != c2) {
-          diff++;
-        }
-      }
-
-      if(diff == 1) {
-        deselected_patterns.insert(sorted_iupac_patterns[j]);
-      }
-    }
-  }
+//  for(size_t i = 0; i < sorted_iupac_patterns.size(); i++) {
+//    if(deselected_patterns.find(sorted_iupac_patterns[i]) != deselected_patterns.end()) {
+//      continue;
+//    }
+//    size_t pattern1 = sorted_iupac_patterns[i]->get_pattern();
+//
+//    for(size_t j = i; j < sorted_iupac_patterns.size(); j++) {
+//      if(deselected_patterns.find(sorted_iupac_patterns[j]) != deselected_patterns.end()) {
+//        continue;
+//      }
+//      size_t pattern2 = sorted_iupac_patterns[j]->get_pattern();
+//
+//      size_t diff = 0;
+//      for(int p = 0; p < pattern_length; p++) {
+//        int c1 = IUPACPattern::getNucleotideAtPos(pattern1, p);
+//        int c2 = IUPACPattern::getNucleotideAtPos(pattern2, p);
+//        if(c1 != c2) {
+//          diff++;
+//        }
+//      }
+//
+//      if(diff == 1) {
+//        deselected_patterns.insert(sorted_iupac_patterns[j]);
+//      }
+//    }
+//  }
 
   for(auto pat : deselected_patterns) {
     auto pat_it = iupac_patterns.find(pat);
@@ -707,7 +732,8 @@ void PatternCensus::printShortMeme(std::set<IUPACPattern*>& best_iupac_patterns,
           " alength= " << 4 <<
           " w= " << pattern_length <<
           " nsites= " << pattern->get_sites() <<
-          " log(Pval)= " << pattern->get_log_pvalue() << std::endl;
+          " bg_prob= " << pattern->get_bg_p() <<
+          " log(Pval)= " << pattern->get_log_pvalue()<< std::endl;
 
       float** pwm = pattern->get_pwm();
       for(size_t w = 0; w < pattern_length; w++) {
@@ -760,6 +786,7 @@ void PatternCensus::printJson(std::set<IUPACPattern*>& best_iupac_patterns,
       myfile << "\t\t\t\"iupac_motif\" : \"" << IUPACPattern::getIUPACPatternFromNumber(pattern->get_pattern()) << "\"," << std::endl;
       myfile << "\t\t\t\"sites\" : " << pattern->get_sites() << "," << std::endl;
       myfile << "\t\t\t\"log(Pval)\" : " << pattern->get_log_pvalue() << "," << std::endl;
+      myfile << "\t\t\t\"bg_prob\" : " << pattern->get_bg_p() << "," << std::endl;
       myfile << "\t\t\t\"pwm\" : [" << std::endl;
       float** pwm = pattern->get_pwm();
       for(size_t w = 0; w < pattern_length; w++) {

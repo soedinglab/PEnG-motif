@@ -10,6 +10,7 @@
 std::map<uint8_t, std::vector<uint8_t>> IUPACAlphabet::similar_iupac_nucleotides;
 std::map<uint8_t, std::vector<uint8_t>> IUPACAlphabet::representative_iupac_nucleotides;
 char* IUPACAlphabet::base_2_char = NULL;
+uint8_t* IUPACAlphabet::char_2_base = NULL;
 
 void IUPACAlphabet::init(char* alphabet) {
   similar_iupac_nucleotides[A] = std::vector<uint8_t>();
@@ -169,6 +170,19 @@ void IUPACAlphabet::init(char* alphabet) {
   base_2_char[M] = 'M';
   base_2_char[K] = 'K';
   base_2_char[N] = 'N';
+
+  char_2_base = ( uint8_t* )calloc( 128, sizeof( uint8_t ) );
+  char_2_base['A'] = A;
+  char_2_base['C'] = C;
+  char_2_base['G'] = G;
+  char_2_base['T'] = T;
+  char_2_base['S'] = S;
+  char_2_base['W'] = W;
+  char_2_base['R'] = R;
+  char_2_base['Y'] = Y;
+  char_2_base['M'] = M;
+  char_2_base['K'] = K;
+  char_2_base['N'] = N;
 }
 
 std::vector<uint8_t> IUPACAlphabet::get_similar_iupac_nucleotides(uint8_t c) {
@@ -182,6 +196,11 @@ std::vector<uint8_t> IUPACAlphabet::get_representative_iupac_nucleotides(uint8_t
 char IUPACAlphabet::getBase(uint8_t c) {
   return base_2_char[c];
 }
+
+uint8_t IUPACAlphabet::getCode(char c) {
+  return char_2_base[c];
+}
+
 
 size_t IUPACAlphabet::getAlphabetSize() {
   return representative_iupac_nucleotides.size();
