@@ -608,7 +608,12 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
 }
 
 void PatternCensus::filter_iupac_patterns(std::set<IUPACPattern*>& iupac_patterns) {
+  std::vector<IUPACPattern*> sorted_iupac_patterns;
+  sorted_iupac_patterns.insert(sorted_iupac_patterns.end(), iupac_patterns.begin(), iupac_patterns.end());
+  std::sort(sorted_iupac_patterns.begin(), sorted_iupac_patterns.end(), sort_IUPAC_patterns);
+
   std::set<IUPACPattern*> deselected_patterns;
+
   for(auto pat : iupac_patterns) {
     size_t pattern = pat->get_pattern();
     int residue = (pattern % IUPACPattern::iupac_factor[0+1]);
@@ -628,6 +633,33 @@ void PatternCensus::filter_iupac_patterns(std::set<IUPACPattern*>& iupac_pattern
 
     if(pattern_length - non_informative_positions <= 3) {
       deselected_patterns.insert(pat);
+    }
+  }
+
+  for(size_t i = 0; i < sorted_iupac_patterns.size(); i++) {
+    if(deselected_patterns.find(sorted_iupac_patterns[i]) != deselected_patterns.end()) {
+      continue;
+    }
+    size_t pattern1 = sorted_iupac_patterns[i]->get_pattern();
+
+    for(size_t j = i; j < sorted_iupac_patterns.size(); j++) {
+      if(deselected_patterns.find(sorted_iupac_patterns[j]) != deselected_patterns.end()) {
+        continue;
+      }
+      size_t pattern2 = sorted_iupac_patterns[j]->get_pattern();
+
+      size_t diff = 0;
+      for(int p = 0; p < pattern_length; p++) {
+        int c1 = IUPACPattern::getNucleotideAtPos(pattern1, p);
+        int c2 = IUPACPattern::getNucleotideAtPos(pattern2, p);
+        if(c1 != c2) {
+          diff++;
+        }
+      }
+
+      if(diff == 1) {
+        deselected_patterns.insert(sorted_iupac_patterns[j]);
+      }
     }
   }
 
