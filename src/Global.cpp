@@ -27,7 +27,7 @@ bool Global::revcomp = false;                         // also search on reverse 
 
 int Global::patternLength = 8;                        // length of patterns to be trained/searched
 
-float Global::zscoreThreshold = 1000;
+float Global::zscoreThreshold = 100;
 
 // background model options
 bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities

@@ -43,7 +43,7 @@ class IUPACPattern {
   void find_base_patterns();
   void count_sites(size_t* pattern_counter);
   void calculate_pwm(size_t* pattern_counter);
-  void calculate_logpvalue_of_iupac_pattern(const int ltot,
+  void calculate_log_pvalue(const int ltot,
                                             float* base_background_prob,
                                             size_t* base_counts);
 
