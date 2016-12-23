@@ -38,6 +38,7 @@ class IUPACPattern {
   float get_bg_p();
   float** get_pwm();
   size_t get_sites();
+  std::set<size_t>& get_base_patterns();
 
   void find_base_patterns();
   void count_sites(size_t* pattern_counter);

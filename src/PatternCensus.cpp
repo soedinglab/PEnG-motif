@@ -233,6 +233,10 @@ float** IUPACPattern::get_pwm() {
   return pwm;
 }
 
+std::set<size_t>& IUPACPattern::get_base_patterns() {
+  return base_patterns;
+}
+
 void IUPACPattern::find_base_patterns() {
   if(base_patterns.size() > 0) {
     return;
@@ -338,6 +342,25 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
                    version_number,
                    bg);
   }
+
+//  std::vector<std::string> test;
+//  test.push_back(std::string("YGASTCAK"));
+//  test.push_back(std::string("CGASTCAK"));
+//  test.push_back(std::string("TGASTCAK"));
+//
+//  for(auto pattern : test) {
+//    IUPACPattern* p = new IUPACPattern(IUPACPattern::getIUPACPattern(pattern));
+//    p->calculate_logpvalue_of_iupac_pattern(ltot, pattern_bg_probabilities, pattern_counter);
+//    p->find_base_patterns();
+//    p->count_sites(pattern_counter);
+//    p->calculate_pwm(pattern_counter);
+//
+//    std::cout << pattern << "\t" << p->get_sites() << "\t" << p->get_bg_p() << "\t" << p->get_log_pvalue() << std::endl;
+//    std::set<size_t>& base_patterns = p->get_base_patterns();
+//    for(auto base : base_patterns) {
+//      std::cout << "\t" << BasePattern::getPatternFromNumber(base) << "\t" << pattern_counter[base] << "\t" << pattern_bg_probabilities[base] << std::endl;
+//    }
+//  }
 }
 
 PatternCensus::~PatternCensus() {
@@ -624,8 +647,10 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
 //      std::cerr << "\tadded " << IUPACPattern::getIUPACPatternFromNumber(best_mutant->get_pattern()) << std::endl;
       best_iupac_patterns.insert(best_mutant);
       best.insert(best_mutant->get_pattern());
+      seen.insert(best_mutant->get_pattern());
     }
     else{
+//      std::cerr << "\tno new optimal pattern!" << std::endl;
       delete best_mutant;
       best_mutant = NULL;
     }
