@@ -1,4 +1,4 @@
 [submodule "lib/bamm-motif"]
 	path = lib/bamm-motif
-	url = https://meiermark@bitbucket.org/WanwanGe/bammmotif_development.git
+	url = git@bitbucket.org:WanwanGe/bammmotif_development.git
 	branch = develop
