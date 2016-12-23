@@ -96,17 +96,17 @@ void IUPACPattern::init(size_t pattern_length) {
 
   float bf = log(2.0);
   log_bonferroni = new float[IUPAC_ALPHABET_SIZE];
-  log_bonferroni[A] = 0.0;
-  log_bonferroni[C] = 0.0;
-  log_bonferroni[G] = 0.0;
-  log_bonferroni[T] = 0.0;
-  log_bonferroni[S] = bf;
-  log_bonferroni[W] = bf;
-  log_bonferroni[R] = bf;
-  log_bonferroni[Y] = bf;
-  log_bonferroni[M] = bf;
-  log_bonferroni[K] = bf;
-  log_bonferroni[N] = 0.0;
+  log_bonferroni[A] = log(8);
+  log_bonferroni[C] = log(8);
+  log_bonferroni[G] = log(8);
+  log_bonferroni[T] = log(8);
+  log_bonferroni[S] = log(16);
+  log_bonferroni[W] = log(16);
+  log_bonferroni[R] = log(16);
+  log_bonferroni[Y] = log(16);
+  log_bonferroni[M] = log(24);
+  log_bonferroni[K] = log(24);
+  log_bonferroni[N] = log(6);
 }
 
 std::string IUPACPattern::getIUPACPatternFromNumber(size_t pattern_id) {
