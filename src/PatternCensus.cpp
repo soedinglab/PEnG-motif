@@ -6,17 +6,18 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <climits>
 
 #include "PatternCensus.h"
 #include "shared/Sequence.h"
 #include "iupac_alphabet.h"
 
 
-int* BasePattern::factor = NULL;
-int* BasePattern::rev_factor = NULL;
+size_t* BasePattern::factor = NULL;
+size_t* BasePattern::rev_factor = NULL;
 size_t BasePattern::pattern_length = 0;
 
-int* IUPACPattern::iupac_factor = NULL;
+size_t* IUPACPattern::iupac_factor = NULL;
 float* IUPACPattern::log_bonferroni = NULL;
 size_t IUPACPattern::pattern_length = 0;
 
@@ -24,14 +25,14 @@ void BasePattern::init(size_t pattern_length) {
   BasePattern::pattern_length = pattern_length;
 
   //init factors to get patterns from their numerical identifiers
-  factor = new int[pattern_length + 1];
+  factor = new size_t[pattern_length + 1];
   for(size_t i = 0; i < pattern_length + 1; i++) {
     factor[i] = pow(Alphabet::getSize(), i);
   }
 
   //init rev factors to get unique numerical identifiers for reverse patterns on minus strand
   //depends on alphabet_size and pattern_size
-  rev_factor = new int[pattern_length];
+  rev_factor = new size_t[pattern_length];
   for(size_t i = 0; i < pattern_length; i++) {
     rev_factor[pattern_length - i - 1] = pow(Alphabet::getSize(), i);
   }
@@ -40,7 +41,7 @@ void BasePattern::init(size_t pattern_length) {
 std::string BasePattern::getPatternFromNumber(size_t pattern_id) {
   std::string out = "";
   for(size_t p = 0; p < pattern_length; p++) {
-    int residue = (pattern_id % factor[p+1]);
+    size_t residue = (pattern_id % factor[p+1]);
     out += Alphabet::getBase((residue / factor[p]) + 1);
     pattern_id -= residue;
   }
@@ -49,7 +50,7 @@ std::string BasePattern::getPatternFromNumber(size_t pattern_id) {
 }
 
 size_t BasePattern::get_rev_pattern_id(const size_t pattern_id) {
-  int tmp_id = pattern_id;
+  size_t tmp_id = pattern_id;
   size_t rev_pattern_id = 0;
   //get pattern to pattern_id
   for(int p = pattern_length - 1; p >= 0; p--) {
@@ -62,7 +63,7 @@ size_t BasePattern::get_rev_pattern_id(const size_t pattern_id) {
 }
 
 int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos) {
-  int residue = (pattern % factor[pos + 1]);
+  size_t residue = (pattern % factor[pos + 1]);
   int c = int(residue / factor[pos]);
 
   return c;
@@ -89,7 +90,7 @@ void IUPACPattern::init(size_t pattern_length) {
   IUPACPattern::pattern_length = pattern_length;
 
   //init factors to get patterns from their numerical identifiers
-  iupac_factor = new int[pattern_length + 1];
+  iupac_factor = new size_t[pattern_length + 1];
   for(size_t i = 0; i < pattern_length + 1; i++) {
     iupac_factor[i] = pow(IUPAC_ALPHABET_SIZE, i);
   }
@@ -112,7 +113,7 @@ void IUPACPattern::init(size_t pattern_length) {
 std::string IUPACPattern::getIUPACPatternFromNumber(size_t pattern_id) {
   std::string out = "";
   for(size_t p = 0; p < pattern_length; p++) {
-    int residue = (pattern_id % iupac_factor[p+1]);
+    size_t residue = (pattern_id % iupac_factor[p+1]);
     out += IUPACAlphabet::getBase(residue / iupac_factor[p]);
     pattern_id -= residue;
   }
@@ -143,8 +144,8 @@ size_t IUPACPattern::getIUPACPattern(std::string base_pattern) {
 }
 
 
-int IUPACPattern::getNucleotideAtPos(const unsigned long int pattern, const unsigned long int pos) {
-  int residue = (pattern % IUPACPattern::iupac_factor[pos+1]);
+int IUPACPattern::getNucleotideAtPos(const size_t pattern, const unsigned long int pos) {
+  size_t residue = (pattern % IUPACPattern::iupac_factor[pos+1]);
   int c = int(residue / IUPACPattern::iupac_factor[pos]);
   return c;
 }
@@ -285,6 +286,16 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
                              SequenceSet* sequence_set, BackgroundModel* bg, const char* outputFilename,
                              const char* jsonFilename) {
 
+  int max_base_pattern_length = std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1;
+  int max_iupac_pattern_length = std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1;
+
+  if(pattern_length > std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1 ||
+      pattern_length > std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1) {
+    std::cerr << "Warning: pattern length too long!" << std::endl;
+    std::cerr << "max pattern length: " << std::max(std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1, std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1) << std::endl;
+    exit(1);
+  }
+
   BasePattern::init(pattern_length);
   IUPACPattern::init(pattern_length);
   IUPACAlphabet::init(Alphabet::getAlphabet());
@@ -351,22 +362,6 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
                    bg);
   }
 
-//  std::vector<std::string> test;
-//  test.push_back(std::string("NNNNNNNN"));
-//
-//  for(auto pattern : test) {
-//    IUPACPattern* p = new IUPACPattern(IUPACPattern::getIUPACPattern(pattern));
-//    p->calculate_log_pvalue(ltot, pattern_bg_probabilities, pattern_counter);
-//    p->find_base_patterns();
-//    p->count_sites(pattern_counter);
-//    p->calculate_pwm(pattern_counter);
-//
-//    std::cout << pattern << "\t" << p->get_sites() << "\t" << p->get_bg_p() << "\t" << p->get_log_pvalue() << std::endl;
-//    std::set<size_t>& base_patterns = p->get_base_patterns();
-//    for(auto base : base_patterns) {
-//      std::cout << "\t" << BasePattern::getPatternFromNumber(base) << "\t" << pattern_counter[base] << "\t" << pattern_bg_probabilities[base] << std::endl;
-//    }
-//  }
 }
 
 PatternCensus::~PatternCensus() {
@@ -688,8 +683,7 @@ void PatternCensus::filter_iupac_patterns(std::set<IUPACPattern*>& iupac_pattern
 
   for(auto pat : iupac_patterns) {
     size_t pattern = pat->get_pattern();
-    int residue = (pattern % IUPACPattern::iupac_factor[0+1]);
-    int c = int(residue / IUPACPattern::iupac_factor[0]);
+    int c = IUPACPattern::getNucleotideAtPos(pattern, 0);
     if(c == N) {
       deselected_patterns.insert(pat);
       continue;

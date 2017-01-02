@@ -10,8 +10,8 @@
 class BasePattern{
  public:
   static void init(size_t pattern_length);
-  static int* factor;
-  static int* rev_factor;
+  static size_t* factor;
+  static size_t* rev_factor;
   static size_t pattern_length;
 
   static std::string getPatternFromNumber(size_t pattern_id);
@@ -22,7 +22,7 @@ class BasePattern{
 
 class IUPACPattern {
  public:
-  static int* iupac_factor;
+  static size_t* iupac_factor;
 
   static void init(size_t pattern_length);
   static std::string getIUPACPatternFromNumber(size_t pattern_id);
@@ -108,7 +108,7 @@ class PatternCensus{
   size_t number_patterns;
   int pattern_length;
   int alphabet_size;
-  int ltot;
+  size_t ltot;
 };
 
 bool sort_IUPAC_patterns(IUPACPattern* a, IUPACPattern* b);
