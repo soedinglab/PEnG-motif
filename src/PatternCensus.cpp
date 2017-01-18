@@ -447,8 +447,11 @@ void PatternCensus::calculate_bg_probability(float* background_model, const int 
 void PatternCensus::count_patterns(const int pattern_length, const int alphabet_size, SequenceSet* sequence_set) {
   std::vector<Sequence*> sequences = sequence_set->getSequences();
 
-  int* pattern_plus_positions = new int[number_patterns];
-  int* pattern_minus_positions = new int[number_patterns];
+//  int* pattern_plus_positions = new int[number_patterns];
+//  int* pattern_minus_positions = new int[number_patterns];
+
+  std::map<size_t, int> pattern_plus_positions;
+  std::map<size_t, int> pattern_minus_positions;
 
   for(size_t s = 0; s < sequences.size(); s++) {
     uint8_t* seq = sequences[s]->getSequence();
@@ -460,11 +463,8 @@ void PatternCensus::count_patterns(const int pattern_length, const int alphabet_
       continue;
     }
 
-    //init last pattern positions with -pattern_length
-    for(int i = 0; i < number_patterns; i++) {
-      pattern_plus_positions[i] = -pattern_length;
-      pattern_minus_positions[i] = -pattern_length;
-    }
+    pattern_plus_positions.clear();
+    pattern_minus_positions.clear();
 
     //index in sequence; start point for current pattern
     int i = 0;
@@ -508,10 +508,10 @@ void PatternCensus::count_patterns(const int pattern_length, const int alphabet_
 
       size_t rev_id = BasePattern::get_rev_pattern_id(id);
 
-      if(i - pattern_plus_positions[id] >= pattern_length
-          && i - pattern_minus_positions[id] >= pattern_length
-          && i - pattern_plus_positions[rev_id] >= pattern_length
-          && i - pattern_minus_positions[rev_id] >= pattern_length) {
+      if((pattern_plus_positions.find(id) == pattern_plus_positions.end() || i - pattern_plus_positions[id] >= pattern_length)
+          && (pattern_minus_positions.find(id) == pattern_minus_positions.end() || i - pattern_minus_positions[id] >= pattern_length)
+          && (pattern_plus_positions.find(rev_id) == pattern_plus_positions.end() || i - pattern_plus_positions[rev_id] >= pattern_length)
+          && (pattern_minus_positions.find(rev_id) == pattern_minus_positions.end() || i - pattern_minus_positions[rev_id] >= pattern_length)) {
         //raise counter for pattern
         pattern_counter[id] += 1;
 
@@ -527,9 +527,6 @@ void PatternCensus::count_patterns(const int pattern_length, const int alphabet_
       i++;
     }
   }
-
-  delete[] pattern_plus_positions;
-  delete[] pattern_minus_positions;
 }
 
 //add patterns from -strand; derived from the patterns in the +strand
