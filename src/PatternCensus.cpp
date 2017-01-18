@@ -12,6 +12,9 @@
 #include "shared/Sequence.h"
 #include "iupac_alphabet.h"
 
+#ifdef OPENMP
+  #include <omp.h>
+#endif
 
 size_t* BasePattern::factor = NULL;
 size_t* BasePattern::rev_factor = NULL;
@@ -162,7 +165,6 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     sum_counts += base_counts[p];
   }
 
-
   this->bg_p = sum_backgroud_prob;
 
   if(sum_counts == 0) {
@@ -239,7 +241,7 @@ float** IUPACPattern::get_pwm() {
   return pwm;
 }
 
-std::set<size_t>& IUPACPattern::get_base_patterns() {
+std::vector<size_t>& IUPACPattern::get_base_patterns() {
   return base_patterns;
 }
 
@@ -248,10 +250,10 @@ void IUPACPattern::find_base_patterns() {
     return;
   }
 
-  std::set<size_t> ids;
-  ids.insert(0);
+  std::vector<size_t> ids;
+  ids.push_back(0);
 
-  std::set<size_t> tmp_ids;
+  std::vector<size_t> tmp_ids;
 
   for(int p = 0; p < pattern_length; p++) {
     int c = IUPACPattern::getNucleotideAtPos(pattern, p);
@@ -261,20 +263,20 @@ void IUPACPattern::find_base_patterns() {
     for(auto r : representatives) {
       for(auto pat : ids) {
         size_t base_pattern = pat + r * BasePattern::factor[p];
-        tmp_ids.insert(base_pattern);
+        tmp_ids.push_back(base_pattern);
       }
     }
 
     ids.clear();
     for(auto pattern : tmp_ids) {
-      ids.insert(pattern);
+      ids.push_back(pattern);
     }
 
     tmp_ids.clear();
   }
 
   for(auto pattern : ids) {
-    base_patterns.insert(pattern);
+    base_patterns.push_back(pattern);
   }
 }
 
@@ -323,7 +325,6 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
   this->pattern_logp = new float[number_patterns];
   this->pattern_zscore = new float[number_patterns];
 
-
   count_patterns(pattern_length, Alphabet::getSize(), sequence_set);
   count_patterns_minus_strand(pattern_length, Alphabet::getSize(), pattern_counter);
 
@@ -334,12 +335,14 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
   std::set<size_t> filtered_patterns;
   filter_nearest_neighbours(alphabet_size, filtered_patterns);
 
-  std::set<IUPACPattern*> best_iupac_patterns;
+  std::vector<IUPACPattern*> best_iupac_patterns;
   optimize_iupac_patterns(zscore_threshold, filtered_patterns, best_iupac_patterns);
 
   filter_iupac_patterns(best_iupac_patterns);
 
-  for(auto pattern : best_iupac_patterns) {
+  #pragma omp parallel for
+  for(int i = 0; i < best_iupac_patterns.size(); i++) {
+    IUPACPattern* pattern = best_iupac_patterns[i];
     pattern->find_base_patterns();
     pattern->count_sites(pattern_counter);
     pattern->calculate_pwm(pattern_counter);
@@ -381,6 +384,7 @@ size_t PatternCensus::get_bg_id(const size_t pattern, const int curr_pattern_len
 }
 
 void PatternCensus::calculate_log_pvalues(int ltot) {
+  #pragma omp parallel for schedule(static)
   for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
     if(this->pattern_counter[pattern] == 0) {
       this->pattern_logp[pattern] = std::numeric_limits<float>::infinity();
@@ -396,6 +400,7 @@ void PatternCensus::calculate_log_pvalues(int ltot) {
 }
 
 void PatternCensus::calculate_zscores(int ltot) {
+  #pragma omp parallel for schedule(static)
   for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
     this->pattern_zscore[pattern] = this->pattern_counter[pattern] - ltot * pattern_bg_probabilities[pattern];
     this->pattern_zscore[pattern] *= this->pattern_zscore[pattern] / (ltot * pattern_bg_probabilities[pattern]);
@@ -406,6 +411,7 @@ void PatternCensus::calculate_bg_probabilities(BackgroundModel* model, const int
   float* background_model = model->getV()[k];
   size_t nr_initial_mers = pow(alphabet_size, k+1);
 
+  #pragma omp parallel for schedule(dynamic, 1)
   for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
     float cur_prob = 1.0;
     for(int k_prime = 0; k_prime <= k; k_prime++) {
@@ -593,7 +599,7 @@ void PatternCensus::filter_nearest_neighbours(const int alphabet_size,
 
 void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
                                             std::set<size_t>& selected_base_patterns,
-                                            std::set<IUPACPattern*>& best_iupac_patterns) {
+                                            std::vector<IUPACPattern*>& best_iupac_patterns) {
   std::set<size_t> seen;
   std::set<size_t> best;
 
@@ -662,7 +668,7 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
 
     if(best.count(best_mutant->get_pattern()) == 0 && seen.count(best_mutant->get_pattern()) == 0) {
 //      std::cerr << "\tadded " << IUPACPattern::getIUPACPatternFromNumber(best_mutant->get_pattern()) << std::endl;
-      best_iupac_patterns.insert(best_mutant);
+      best_iupac_patterns.push_back(best_mutant);
       best.insert(best_mutant->get_pattern());
       seen.insert(best_mutant->get_pattern());
     }
@@ -674,15 +680,18 @@ void PatternCensus::optimize_iupac_patterns(const float zscore_threshold,
   }
 }
 
-void PatternCensus::filter_iupac_patterns(std::set<IUPACPattern*>& iupac_patterns) {
+void PatternCensus::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
   std::vector<IUPACPattern*> sorted_iupac_patterns;
   sorted_iupac_patterns.insert(sorted_iupac_patterns.end(), iupac_patterns.begin(), iupac_patterns.end());
   std::sort(sorted_iupac_patterns.begin(), sorted_iupac_patterns.end(), sort_IUPAC_patterns);
 
   std::set<IUPACPattern*> deselected_patterns;
 
-  for(auto pat : iupac_patterns) {
+  #pragma omp parallel for
+  for(int i = 0; i < iupac_patterns.size(); i++) {
+    IUPACPattern* pat = iupac_patterns[i];
     size_t pattern = pat->get_pattern();
+
     int c = IUPACPattern::getNucleotideAtPos(pattern, 0);
     if(c == N) {
       deselected_patterns.insert(pat);
@@ -703,14 +712,14 @@ void PatternCensus::filter_iupac_patterns(std::set<IUPACPattern*>& iupac_pattern
   }
 
   for(auto pat : deselected_patterns) {
-    auto pat_it = iupac_patterns.find(pat);
+    auto pat_it = std::find(iupac_patterns.begin(), iupac_patterns.end(), pat);
     iupac_patterns.erase(pat_it);
     delete pat;
   }
 }
 
 
-void PatternCensus::printShortMeme(std::set<IUPACPattern*>& best_iupac_patterns,
+void PatternCensus::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                                    const std::string output_filename,
                                    const std::string version_number,
                                    BackgroundModel* bg_model) {
@@ -766,7 +775,7 @@ void PatternCensus::printShortMeme(std::set<IUPACPattern*>& best_iupac_patterns,
   else std::cerr << "Unable to open output file (" << output_filename << ")!";
 }
 
-void PatternCensus::printJson(std::set<IUPACPattern*>& best_iupac_patterns,
+void PatternCensus::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
                                    const std::string output_filename,
                                    const std::string version_number,
                                    BackgroundModel* bg_model) {

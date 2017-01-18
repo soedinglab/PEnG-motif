@@ -9,6 +9,11 @@
 #include "Global.h"
 #include "PatternCensus.h"
 
+#ifdef OPENMP
+  #include <omp.h>
+#endif
+
+
 int main(int nargs, char **args) {
   Global::init(nargs, args);
 
@@ -16,6 +21,10 @@ int main(int nargs, char **args) {
                           Global::bgModelOrder,
                           Global::bgModelAlpha,
                           Global::interpolateBG );
+
+  #ifdef OPENMP
+    omp_set_num_threads(Global::nr_threads);
+  #endif
 
   PatternCensus(Global::patternLength, Global::bgModelOrder,
                 Global::zscoreThreshold, Global::inputSequenceSet,

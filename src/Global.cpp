@@ -36,7 +36,7 @@ int Global::bgModelOrder = 2;                         // background model order,
 std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // background model alpha
 
 int Global::verbosity = 2;            	              // verbosity
-
+int Global::nr_threads = 1;
 
 void Global::init(int nargs, char* args[]){
 	readArguments(nargs, args);
@@ -99,6 +99,14 @@ void Global::readArguments(int nargs, char* args[]){
       }
       zscoreThreshold = std::stof(args[i]);
     }
+    else if (!strcmp(args[i], "-threads")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -t" << std::endl;
+        exit(4);
+      }
+      nr_threads = std::stoi(args[i]);
+    }
     else {
       LOG(WARNING) << "Ignoring unknown option " << args[i] << std::endl;
     }
@@ -122,6 +130,8 @@ void Global::printHelp(){
       "           lower zscore threshold for basic patterns. \n");
   printf("\n      -w, <PATTERN_LENGTH>\n"
       "           length of patterns to be searched. \n");
+  printf("\n      -threads, <NUMBER_THREADS>\n"
+      "           number of threads to be used for parallelization. \n");
 	printf("\n=================================================================\n");
 }
 

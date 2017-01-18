@@ -38,7 +38,7 @@ class IUPACPattern {
   float get_bg_p();
   float** get_pwm();
   size_t get_sites();
-  std::set<size_t>& get_base_patterns();
+  std::vector<size_t>& get_base_patterns();
 
   void find_base_patterns();
   void count_sites(size_t* pattern_counter);
@@ -58,7 +58,7 @@ class IUPACPattern {
   float bg_p;
   size_t n_sites;
   float** pwm;
-  std::set<size_t> base_patterns;
+  std::vector<size_t> base_patterns;
 };
 
 class PatternCensus{
@@ -85,16 +85,16 @@ class PatternCensus{
 
   void optimize_iupac_patterns(const float zscore_threshold,
                                std::set<size_t>& selected_base_patterns,
-                               std::set<IUPACPattern*>& best_iupac_patterns);
+                               std::vector<IUPACPattern*>& best_iupac_patterns);
 
-  void filter_iupac_patterns(std::set<IUPACPattern*>& iupac_patterns);
+  void filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns);
 
-  void printShortMeme(std::set<IUPACPattern*>& best_iupac_patterns,
+  void printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                       const std::string output_filename,
                       const std::string version_number,
                       BackgroundModel* bg_model);
 
-  void printJson(std::set<IUPACPattern*>& best_iupac_patterns,
+  void printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
                  const std::string output_filename,
                  const std::string version_number,
                  BackgroundModel* bg_model);

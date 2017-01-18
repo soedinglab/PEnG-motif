@@ -29,6 +29,7 @@ public:
 	                                             // instead of background frequencies of mononucleotides
 	static std::vector<float> bgModelAlpha;      // background model alpha
 
+	static int nr_threads;
 
 	static int verbosity;							           // verbose printouts, defaults to false
 
