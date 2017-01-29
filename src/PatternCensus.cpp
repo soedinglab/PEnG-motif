@@ -72,30 +72,31 @@ int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos) {
 }
 
 //merge constructor
-IUPACPattern::IUPACPattern(IUPACPattern& longer_pattern, IUPACPattern& shorter_pattern, float* background, const int shift) {
+IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, float* background, const int shift) {
   int offset_shorter = -1.0 * std::min(shift, 0);
   int offset_larger = std::max(shift, 0);
-  int overlap = std::min(longer_pattern.get_pattern_length() - offset_larger, shorter_pattern.get_pattern_length() - offset_shorter);
+  int overlap = std::min(longer_pattern->get_pattern_length() - offset_larger, shorter_pattern->get_pattern_length() - offset_shorter);
+  std::cerr << "overlap: " << overlap << std::endl;
 
   //TODO not a real IUPAC pattern
-  if(longer_pattern.get_log_pvalue() < shorter_pattern.get_log_pvalue()) {
-    this->pattern = longer_pattern.pattern;
+  if(longer_pattern->get_log_pvalue() < shorter_pattern->get_log_pvalue()) {
+    this->pattern = longer_pattern->pattern;
   }
   else {
-    this->pattern = shorter_pattern.pattern;
+    this->pattern = shorter_pattern->pattern;
   }
-  this->pattern_length = longer_pattern.get_pattern_length() + shorter_pattern.get_pattern_length() - overlap;
+  this->pattern_length = longer_pattern->get_pattern_length() + shorter_pattern->get_pattern_length() - overlap;
 
   //caluclate local n sites
   this->local_n_sites = new size_t[pattern_length];
   for(int p = 0; p < pattern_length; p++) {
     this->local_n_sites[p] = 0;
   }
-  for(int p = 0; p < shorter_pattern.get_pattern_length(); p++) {
-    this->local_n_sites[std::max(shift, 0) + p] += shorter_pattern.local_n_sites[p];
+  for(int p = 0; p < shorter_pattern->get_pattern_length(); p++) {
+    this->local_n_sites[std::max(shift, 0) + p] += shorter_pattern->local_n_sites[p];
   }
-  for(int p = 0; p < longer_pattern.get_pattern_length(); p++) {
-    this->local_n_sites[-std::min(shift, 0) + p] += longer_pattern.local_n_sites[p];
+  for(int p = 0; p < longer_pattern->get_pattern_length(); p++) {
+    this->local_n_sites[-std::min(shift, 0) + p] += longer_pattern->local_n_sites[p];
   }
 
   //calculate n sites
@@ -106,7 +107,7 @@ IUPACPattern::IUPACPattern(IUPACPattern& longer_pattern, IUPACPattern& shorter_p
   this->n_sites = int(sum_sites / pattern_length);
 
   //init pwm
-  this->pwm = new float*[pattern_length];
+  this->pwm = new float*[this->pattern_length];
   for(int p = 0; p < pattern_length; p++) {
     this->pwm[p] = new float[4];
     for(int a = 0; a < 4; a++) {
@@ -121,35 +122,35 @@ IUPACPattern::IUPACPattern(IUPACPattern& longer_pattern, IUPACPattern& shorter_p
     //only longer
     if(pos_in_shorter < 0) {
       for(int a = 0; a < 4; a++) {
-        pwm[p][a] = longer_pattern.pwm[pos_in_longer][a];
+        pwm[p][a] = longer_pattern->pwm[pos_in_longer][a];
       }
     }
     //only longer
-    else if(pos_in_shorter >= shorter_pattern.get_pattern_length()) {
+    else if(pos_in_shorter >= shorter_pattern->get_pattern_length()) {
       for(int a = 0; a < 4; a++) {
-        pwm[p][a] = longer_pattern.pwm[pos_in_longer][a];
+        pwm[p][a] = longer_pattern->pwm[pos_in_longer][a];
       }
     }
 
     //only shorter
     if(pos_in_longer < 0) {
       for(int a = 0; a < 4; a++) {
-        pwm[p][a] = shorter_pattern.pwm[pos_in_shorter][a];
+        pwm[p][a] = shorter_pattern->pwm[pos_in_shorter][a];
       }
     }
     //only shorter
-    else if(pos_in_longer >= longer_pattern.get_pattern_length()) {
+    else if(pos_in_longer >= longer_pattern->get_pattern_length()) {
       for(int a = 0; a < 4; a++) {
-        pwm[p][a] = shorter_pattern.pwm[pos_in_shorter][a];
+        pwm[p][a] = shorter_pattern->pwm[pos_in_shorter][a];
       }
     }
 
     //only shorter
-    if(pos_in_shorter >= 0 && pos_in_shorter < shorter_pattern.get_pattern_length() &&
-        pos_in_longer >= 0 && pos_in_longer < longer_pattern.get_pattern_length()) {
+    if(pos_in_shorter >= 0 && pos_in_shorter < shorter_pattern->get_pattern_length() &&
+        pos_in_longer >= 0 && pos_in_longer < longer_pattern->get_pattern_length()) {
       for(int a = 0; a < 4; a++) {
-        pwm[p][a] = (shorter_pattern.local_n_sites[pos_in_shorter] * shorter_pattern.pwm[pos_in_shorter][a] + longer_pattern.local_n_sites[pos_in_longer] * longer_pattern.pwm[pos_in_longer][a])
-            / (shorter_pattern.local_n_sites[pos_in_shorter] + longer_pattern.local_n_sites[pos_in_longer]);
+        pwm[p][a] = (shorter_pattern->local_n_sites[pos_in_shorter] * shorter_pattern->pwm[pos_in_shorter][a] + longer_pattern->local_n_sites[pos_in_longer] * longer_pattern->pwm[pos_in_longer][a])
+            / (shorter_pattern->local_n_sites[pos_in_shorter] + longer_pattern->local_n_sites[pos_in_longer]);
       }
     }
   }
@@ -205,43 +206,43 @@ void IUPACPattern::init(size_t max_pattern_length) {
   log_bonferroni[N] = log(6);
 }
 
-float IUPACPattern::calculate_merged_pvalue(IUPACPattern& longer_pattern, IUPACPattern& shorter_pattern,
+float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern,
                                             float* background, const int shift) {
   int offset_shorter = -1.0 * std::min(shift, 0);
   int offset_longer = std::max(shift, 0);
-  int overlap = std::min(longer_pattern.get_pattern_length() - offset_longer, shorter_pattern.get_pattern_length() - offset_shorter);
+  int overlap = std::min(longer_pattern->get_pattern_length() - offset_longer, shorter_pattern->get_pattern_length() - offset_shorter);
 
-  if(longer_pattern.log_pvalue < shorter_pattern.log_pvalue) {
+  if(longer_pattern->log_pvalue < shorter_pattern->log_pvalue) {
     float d = 0;
     //starts with non-overlapping part
     if(offset_shorter != 0) {
-      d = calculate_d_bg(shorter_pattern, background, offset_shorter, 0);
+      d = calculate_d_bg(*shorter_pattern, background, offset_shorter, 0);
     }
     //ends with non-overlapping part
     else {
       int non_overlap_offset_start = offset_shorter + overlap;
-      int non_overlap_length = shorter_pattern.get_pattern_length() - non_overlap_offset_start;
-      d = calculate_d_bg(shorter_pattern, background, non_overlap_length, non_overlap_offset_start);
+      int non_overlap_length = shorter_pattern->get_pattern_length() - non_overlap_offset_start;
+      d = calculate_d_bg(*shorter_pattern, background, non_overlap_length, non_overlap_offset_start);
     }
-    float d_divisor = calculate_d_bg(shorter_pattern, background, shorter_pattern.get_pattern_length());
+    float d_divisor = calculate_d_bg(*shorter_pattern, background, shorter_pattern->get_pattern_length());
 
-    return longer_pattern.get_log_pvalue() + d / d_divisor * shorter_pattern.get_log_pvalue();
+    return longer_pattern->get_log_pvalue() + d / d_divisor * shorter_pattern->get_log_pvalue();
   }
   else {
     float d = 0;
     //starts with non-overlapping part
     if(offset_longer != 0) {
-      d = calculate_d_bg(longer_pattern, background, offset_longer, 0);
+      d = calculate_d_bg(*longer_pattern, background, offset_longer, 0);
     }
     //ends with non-overlapping part
     else {
       int non_overlap_offset_start = offset_longer + overlap;
-      int non_overlap_length = longer_pattern.get_pattern_length() - non_overlap_offset_start;
-      d = calculate_d_bg(longer_pattern, background, non_overlap_length, non_overlap_offset_start);
+      int non_overlap_length = longer_pattern->get_pattern_length() - non_overlap_offset_start;
+      d = calculate_d_bg(*longer_pattern, background, non_overlap_length, non_overlap_offset_start);
     }
-    float d_divisor = calculate_d_bg(longer_pattern, background, longer_pattern.get_pattern_length());
+    float d_divisor = calculate_d_bg(*longer_pattern, background, longer_pattern->get_pattern_length());
 
-    return shorter_pattern.get_log_pvalue() + d / d_divisor * longer_pattern.get_log_pvalue();
+    return shorter_pattern->get_log_pvalue() + d / d_divisor * longer_pattern->get_log_pvalue();
   }
 }
 
@@ -429,29 +430,29 @@ float IUPACPattern::calculate_s(IUPACPattern& p1, IUPACPattern& p2, float* backg
   return s;
 }
 
-std::tuple<float, int> IUPACPattern::calculate_S(IUPACPattern& p1, IUPACPattern& p2, float* background) {
-  IUPACPattern& p_larger = p1;
-  IUPACPattern& p_shorter = p2;
+std::tuple<float, int> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPattern* p2, float* background) {
+  IUPACPattern* p_larger = p1;
+  IUPACPattern* p_shorter = p2;
 
-  if(p1.get_pattern_length() < p2.get_pattern_length()) {
-    IUPACPattern& p_larger = p2;
-    IUPACPattern& p_shorter = p1;
+  if(p1->get_pattern_length() < p2->get_pattern_length()) {
+    p_larger = p2;
+    p_shorter = p1;
   }
 
   float max_s = -std::numeric_limits<float>::infinity();
   int max_shift = -255;
 
-  for(int shift = -2; shift < p_larger.get_pattern_length() - p_shorter.get_pattern_length() + 2; shift++) {
+  for(int shift = -2; shift < p_larger->get_pattern_length() - p_shorter->get_pattern_length() + 2; shift++) {
     int offset_p_shorter = -1.0 * std::min(shift, 0);
     int offset_p_larger = std::max(shift, 0);
-    int overlap = std::min(p_larger.get_pattern_length() - offset_p_larger, p_shorter.get_pattern_length() - offset_p_shorter);
+    int overlap = std::min(p_larger->get_pattern_length() - offset_p_larger, p_shorter->get_pattern_length() - offset_p_shorter);
 
     //make sure that it is not an inclusion
-    if(overlap >= p_shorter.get_pattern_length()) {
+    if(overlap >= p_shorter->get_pattern_length()) {
       continue;
     }
 
-    float s = IUPACPattern::calculate_s(p_larger, p_shorter, background, offset_p_larger, offset_p_shorter, overlap);
+    float s = IUPACPattern::calculate_s(*p_larger, *p_shorter, background, offset_p_larger, offset_p_shorter, overlap);
 
     if(s > max_s) {
       max_s = s;
@@ -485,6 +486,10 @@ float** IUPACPattern::get_pwm() {
 
 int IUPACPattern::get_pattern_length() {
   return pattern_length;
+}
+
+size_t* IUPACPattern::get_local_sites() {
+  return local_n_sites;
 }
 
 std::vector<size_t>& IUPACPattern::get_base_patterns() {
@@ -585,7 +590,6 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
   #pragma omp parallel for
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
     IUPACPattern* pattern = best_iupac_patterns[i];
-//    pattern->find_base_patterns(pattern->get_pattern(), pattern->pattern_length, pattern->get_base_patterns());
     pattern->count_sites(pattern_counter);
     pattern->calculate_adv_pwm(pattern_counter);
   }
@@ -602,7 +606,7 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
       for(int j = i+1; j < best_iupac_patterns.size(); j++) {
         IUPACPattern* p1 = best_iupac_patterns[i];
         IUPACPattern* p2 = best_iupac_patterns[j];
-        auto res = IUPACPattern::calculate_S(*p1, *p2, bg->getV()[0]);
+        auto res = IUPACPattern::calculate_S(p1, p2, bg->getV()[0]);
 
         if(std::get<0>(res) > best_score) {
           best_i = i;
@@ -613,15 +617,71 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
       }
     }
 
-    if(best_score > pattern_length * 0.1) {
+    if(best_score > pattern_length * 0.75) {
       IUPACPattern* merged_pattern = NULL;
       if(best_iupac_patterns[best_i]->get_pattern_length() < best_iupac_patterns[best_j]->get_pattern_length()) {
-        merged_pattern = new IUPACPattern(*best_iupac_patterns[best_j], *best_iupac_patterns[best_i],
+        merged_pattern = new IUPACPattern(best_iupac_patterns[best_j], best_iupac_patterns[best_i],
                                                         bg->getV()[0], best_shift);
       }
       else {
-        merged_pattern = new IUPACPattern(*best_iupac_patterns[best_i], *best_iupac_patterns[best_j],
+        merged_pattern = new IUPACPattern(best_iupac_patterns[best_i], best_iupac_patterns[best_j],
                                                         bg->getV()[0], best_shift);
+      }
+
+      std::cerr << "Merging patterns: " << std::endl;
+      std::cerr << "i: " << best_i << "\tj: " << best_j << std::endl;
+      std::cerr << "shift: " << best_shift << std::endl;
+      std::cerr << "\tMerging score S: " << best_score << std::endl;
+
+      int curr_pattern_length = best_iupac_patterns[best_i]->get_pattern_length();
+      float** curr_pwm = best_iupac_patterns[best_i]->get_pwm();
+      size_t* curr_counts = best_iupac_patterns[best_i]->get_local_sites();
+      float curr_pval = best_iupac_patterns[best_i]->get_log_pvalue();
+
+      std::cerr << "\tpattern 1 length: " << curr_pattern_length << std::endl;
+      std::cerr << "\tpattern 1 log(pval): " << curr_pval << std::endl;
+
+      std::cerr << "\tpattern 1 local counts + pwm:" << std::endl;
+      for(int p = 0; p < curr_pattern_length; p++) {
+        std::cerr << "\t\t" << curr_counts[p] << "\t";
+        for(int a = 0; a < 4; a++) {
+          std::cerr << curr_pwm[p][a] << "\t";
+        }
+        std::cerr << std::endl;
+      }
+
+      curr_pattern_length = best_iupac_patterns[best_j]->get_pattern_length();
+      curr_pwm = best_iupac_patterns[best_j]->get_pwm();
+      curr_counts = best_iupac_patterns[best_j]->get_local_sites();
+      curr_pval = best_iupac_patterns[best_j]->get_log_pvalue();
+
+      std::cerr << "\tpattern 2 length: " << curr_pattern_length << std::endl;
+      std::cerr << "\tpattern 2 log(pval): " << curr_pval << std::endl;
+
+      std::cerr << "\tpattern 2 local counts + pwm:" << std::endl;
+      for(int p = 0; p < curr_pattern_length; p++) {
+        std::cerr << "\t\t" << curr_counts[p] << "\t";
+        for(int a = 0; a < 4; a++) {
+          std::cerr << curr_pwm[p][a] << "\t";
+        }
+        std::cerr << std::endl;
+      }
+
+      curr_pattern_length = merged_pattern->get_pattern_length();
+      curr_pwm = merged_pattern->get_pwm();
+      curr_counts = merged_pattern->get_local_sites();
+      curr_pval = merged_pattern->get_log_pvalue();
+
+      std::cerr << "\tmerged pattern length: " << curr_pattern_length << std::endl;
+      std::cerr << "\tmerged pattern log(pval): " << curr_pval << std::endl;
+
+      std::cerr << "\tmerged pattern local counts + pwm:" << std::endl;
+      for(int p = 0; p < curr_pattern_length; p++) {
+        std::cerr << "\t\t" << curr_counts[p] << "\t";
+        for(int a = 0; a < 4; a++) {
+          std::cerr << curr_pwm[p][a] << "\t";
+        }
+        std::cerr << std::endl;
       }
 
       delete best_iupac_patterns[best_j];
@@ -652,7 +712,6 @@ PatternCensus::PatternCensus(const int pattern_length, const int k, const float 
                    version_number,
                    bg);
   }
-
 }
 
 PatternCensus::~PatternCensus() {
