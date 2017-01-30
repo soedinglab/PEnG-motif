@@ -15,11 +15,15 @@ set(PENG_SOURCE
 	${PENG_SOURCE}
 	${CMAKE_CURRENT_SOURCE_DIR}/Global.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Global.h
-	${CMAKE_CURRENT_SOURCE_DIR}/PatternCensus.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/PatternCensus.h
+	${CMAKE_CURRENT_SOURCE_DIR}/peng.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/peng.h
 	${CMAKE_CURRENT_SOURCE_DIR}/log.h
   ${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.h
 )
 
 add_library(PENG_OBJECTS OBJECT ${PENG_SOURCE})
