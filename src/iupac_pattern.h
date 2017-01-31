@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+static const int MIN_MERGE_OVERLAP = 6;
+
 /**
     IUPACPattern captures degenerated (IUPAC) patterns
     The nucleotides are encoded in iupac_alphabet
@@ -49,7 +51,7 @@ class IUPACPattern {
 
   void count_sites(size_t* pattern_counter);
   void calculate_pwm(size_t* pattern_counter);
-  void calculate_adv_pwm(size_t* pattern_counter);
+  void calculate_adv_pwm(size_t* pattern_counter, float* background_model);
   void calculate_log_pvalue(const int ltot,
                             float* base_background_prob,
                             size_t* base_counts);

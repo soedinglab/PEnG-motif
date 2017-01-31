@@ -75,14 +75,14 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
       for(int a = 0; a < 4; a++) {
         pwm[p][a] = longer_pattern->pwm[pos_in_longer][a];
       }
-      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(longer_pattern->get_pattern(), pos_in_longer);
+//      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(longer_pattern->get_pattern(), pos_in_longer);
     }
     //only longer
     else if(pos_in_shorter >= shorter_pattern->get_pattern_length()) {
       for(int a = 0; a < 4; a++) {
         pwm[p][a] = longer_pattern->pwm[pos_in_longer][a];
       }
-      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(longer_pattern->get_pattern(), pos_in_longer);
+//      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(longer_pattern->get_pattern(), pos_in_longer);
     }
 
     //only shorter
@@ -90,14 +90,14 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
       for(int a = 0; a < 4; a++) {
         pwm[p][a] = shorter_pattern->pwm[pos_in_shorter][a];
       }
-      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(shorter_pattern->get_pattern(), pos_in_shorter);
+//      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(shorter_pattern->get_pattern(), pos_in_shorter);
     }
     //only shorter
     else if(pos_in_longer >= longer_pattern->get_pattern_length()) {
       for(int a = 0; a < 4; a++) {
         pwm[p][a] = shorter_pattern->pwm[pos_in_shorter][a];
       }
-      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(shorter_pattern->get_pattern(), pos_in_shorter);
+//      pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(shorter_pattern->get_pattern(), pos_in_shorter);
     }
 
     //overlapping part
@@ -108,12 +108,12 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
             / (shorter_pattern->local_n_sites[pos_in_shorter] + longer_pattern->local_n_sites[pos_in_longer]);
       }
 
-      if(longer_pattern->get_local_sites()[pos_in_longer] > shorter_pattern->get_local_sites()[pos_in_shorter]) {
-        pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(longer_pattern->get_pattern(), pos_in_longer);
-      }
-      else{
-        pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(shorter_pattern->get_pattern(), pos_in_shorter);
-      }
+//      if(longer_pattern->get_local_sites()[pos_in_longer] > shorter_pattern->get_local_sites()[pos_in_shorter]) {
+//        pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(longer_pattern->get_pattern(), pos_in_longer);
+//      }
+//      else{
+//        pattern += IUPACPattern::iupac_factor[p] * IUPACPattern::getNucleotideAtPos(shorter_pattern->get_pattern(), pos_in_shorter);
+//      }
     }
   }
 
@@ -314,7 +314,7 @@ void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
   }
 }
 
-void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter) {
+void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
   if(pwm == NULL && merged == false) {
     pwm = new float*[pattern_length];
@@ -325,30 +325,28 @@ void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter) {
       }
     }
 
+    const int pseudo_counts = 10;
+
     for(size_t p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
-      size_t npattern = pattern - c * IUPACPattern::iupac_factor[p] + N * IUPACPattern::iupac_factor[p];
-      std::vector<size_t> n_base_patterns;
-      find_base_patterns(npattern, pattern_length, n_base_patterns);
-
-      size_t total = 0;
-      for(auto base : n_base_patterns) {
-        size_t count = pattern_counter[base];
-        total += count;
-      }
+      size_t n_total = 0;
+      size_t i_total[4];
 
       for(int i = 0; i < 4; i++) {
         size_t ipattern = pattern - c * IUPACPattern::iupac_factor[p] + i * IUPACPattern::iupac_factor[p];
         std::vector<size_t> i_base_patterns;
         find_base_patterns(ipattern, pattern_length, i_base_patterns);
 
-        size_t itotal = 0;
+        i_total[i] = 10 * background_model[i];
         for(auto base : i_base_patterns) {
-          itotal += pattern_counter[base];
+          i_total[i] += pattern_counter[base];
         }
 
-        //TODO: check pseudo value
-        pwm[p][i] = 1.0 * itotal / total + 0.0000000001;
+        n_total += i_total[i];
+      }
+
+      for(int i = 0; i < 4; i++) {
+        pwm[p][i] = 1.0 * i_total[i] / n_total;
       }
     }
   }
@@ -399,15 +397,10 @@ std::tuple<float, int> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPattern*
   float max_s = -std::numeric_limits<float>::infinity();
   int max_shift = -255;
 
-  for(int shift = -2; shift < p_larger->get_pattern_length() - p_shorter->get_pattern_length() + 2; shift++) {
+  for(int shift = MIN_MERGE_OVERLAP - p_shorter->get_pattern_length(); shift <= p_larger->get_pattern_length() - MIN_MERGE_OVERLAP; shift++) {
     int offset_p_shorter = -1.0 * std::min(shift, 0);
     int offset_p_larger = std::max(shift, 0);
     int overlap = std::min(p_larger->get_pattern_length() - offset_p_larger, p_shorter->get_pattern_length() - offset_p_shorter);
-
-    //make sure that it is not an inclusion
-    if(overlap >= p_shorter->get_pattern_length()) {
-      continue;
-    }
 
     float s = IUPACPattern::calculate_s(*p_larger, *p_shorter, background, offset_p_larger, offset_p_shorter, overlap);
 

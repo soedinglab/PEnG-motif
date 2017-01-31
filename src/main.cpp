@@ -34,7 +34,10 @@ int main(int nargs, char **args) {
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;
-  peng.process(result, Global::zscoreThreshold);
+  peng.process(Global::zscoreThreshold, Global::useEm,
+               Global::emSaturationFactor, Global::emMinThreshold,
+               Global::emMaxIterations, Global::mergeBitfactorThreshold,
+               result);
 
   //print output
   std::string version_number("1.0.0");

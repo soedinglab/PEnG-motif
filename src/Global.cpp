@@ -27,7 +27,13 @@ bool Global::revcomp = false;                         // also search on reverse 
 
 int Global::patternLength = 8;                        // length of patterns to be trained/searched
 
+bool Global::useEm = true;
+float Global::emSaturationFactor = 1000;
+float Global::emMinThreshold = 0.08;
+int Global::emMaxIterations = 100;
+
 float Global::zscoreThreshold = 100;
+float Global::mergeBitfactorThreshold = 0.75;
 
 // background model options
 bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities
@@ -53,6 +59,11 @@ void Global::readArguments(int nargs, char* args[]){
 		printHelp();
 		exit( -1 );
 	}
+
+  if (!strcmp(args[1], "-h")) {
+    Global::printHelp();
+    exit(0);
+  }
 
 	inputSequenceFilename = args[1];
 
@@ -99,6 +110,14 @@ void Global::readArguments(int nargs, char* args[]){
       }
       zscoreThreshold = std::stof(args[i]);
     }
+    else if (!strcmp(args[i], "-b")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -b" << std::endl;
+        exit(4);
+      }
+      mergeBitfactorThreshold = std::stof(args[i]);
+    }
     else if (!strcmp(args[i], "-threads")) {
       if (++i>=nargs) {
         printHelp();
@@ -106,6 +125,37 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       nr_threads = std::stoi(args[i]);
+    }
+    else if (!strcmp(args[i], "-no-em")) {
+      useEm = false;
+    }
+    else if (!strcmp(args[i], "-a")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -a" << std::endl;
+        exit(4);
+      }
+      emSaturationFactor = std::stof(args[i]);
+    }
+    else if (!strcmp(args[i], "-em-threshold")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -em-threshold" << std::endl;
+        exit(4);
+      }
+      emMinThreshold = std::stof(args[i]);
+    }
+    else if (!strcmp(args[i], "-em-max-iterations")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -em-max-iterations" << std::endl;
+        exit(4);
+      }
+      emMaxIterations = std::stoi(args[i]);
+    }
+    else if (!strcmp(args[i], "-h")) {
+      Global::printHelp();
+      exit(0);
     }
     else {
       LOG(WARNING) << "Ignoring unknown option " << args[i] << std::endl;
@@ -122,16 +172,28 @@ void Global::printHelp(){
 	printf("\t SEQFILE: file with sequences in FASTA format. \n");
   printf("\n      -o, <OUTPUT_FILE>\n"
       "           best UIPAC motives will be written in OUTPUT_FILE\n"
-      "           in minimal MEME format.\n");
+      "           in minimal MEME format\n");
   printf("\n      -j, <OUTPUT_FILE>\n"
       "           best UIPAC motives will be written in OUTPUT_FILE\n"
-      "           in JSON format.\n");
+      "           in JSON format\n");
   printf("\n      -t, <ZSCORE_THRESHOLD>\n"
-      "           lower zscore threshold for basic patterns. \n");
+      "           lower zscore threshold for basic patterns\n");
   printf("\n      -w, <PATTERN_LENGTH>\n"
-      "           length of patterns to be searched. \n");
+      "           length of patterns to be searched\n");
+  printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
+      "           bit factor threshold for merging IUPAC patterns\n");
+  printf("\n      -no-em\n"
+      "           shuts off the em optimization \n");
+  printf("\n      -a, <EM_SATURATION_THRESHOLD>\n"
+      "           saturation factor for em optimization \n");
+  printf("\n      -em-threshold, <EM_THRESHOLD>\n"
+      "           threshold for finishing the em optimization \n");
+  printf("\n      -em-max-iterations, <EM_MAX_ITERATIONS>\n"
+      "           max number of em optimization iterations\n");
   printf("\n      -threads, <NUMBER_THREADS>\n"
-      "           number of threads to be used for parallelization. \n");
+      "           number of threads to be used for parallelization\n");
+  printf("\n      -h\n"
+      "           print this help \n");
 	printf("\n=================================================================\n");
 }
 

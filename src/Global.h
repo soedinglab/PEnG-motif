@@ -24,6 +24,13 @@ public:
 	static int patternLength;                    // length of pattern to be searched/trained
 	static float zscoreThreshold;
 
+	static bool useEm;
+	static float emSaturationFactor;
+	static float emMinThreshold;
+	static int emMaxIterations;
+
+	static float mergeBitfactorThreshold;
+
 	static int bgModelOrder;						         // background model order, defaults to 2
 	static bool interpolateBG;                   // calculate prior probabilities from lower-order probabilities
 	                                             // instead of background frequencies of mononucleotides

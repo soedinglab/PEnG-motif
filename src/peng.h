@@ -14,7 +14,10 @@ class Peng{
   Peng(const int pattern_length, const int k,
                 SequenceSet* sequence_set, BackgroundModel* bg);
   ~Peng();
-  void process(std::vector<IUPACPattern*>& best_iupac_patterns, const float zscore_threshold);
+  void process(const float zscore_threshold,
+                     const bool use_em, const float em_saturation_factor, const float min_em_threshold,
+                     const int em_max_iterations, const float bit_factor_merge_threshold,
+                     std::vector<IUPACPattern*>& best_iupac_patterns);
 
   void printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                       const std::string output_filename,
@@ -27,8 +30,29 @@ class Peng{
                  BackgroundModel* bg_model);
 
  private:
-  void count_patterns(const int pattern_length, const int alphabet_size, SequenceSet* sequence_set);
-  void count_patterns_minus_strand(const int pattern_length, const int alphabet_size, size_t* pattern_counter);
+  BackgroundModel* bg_model;
+  size_t* pattern_counter;
+  float* pattern_bg_probabilities;
+  float* pattern_logp;
+  float* pattern_zscore;
+
+  size_t number_patterns;
+  int pattern_length;
+  int alphabet_size;
+  size_t ltot;
+
+  void count_patterns(const int pattern_length, const int alphabet_size, const size_t number_patterns, SequenceSet* sequence_set, size_t* pattern_counter);
+
+  /**
+      Helper function for the background model
+      Extracts a k_mer id from a pattern to
+
+      @param pattern is a base pattern id
+      @param curr_pattern_length is the current position in the pattern
+      @param k is the length of the kmer
+      @return the id of the k_mer ending at curr_pattern_pos
+  */
+  void count_patterns_minus_strand(const int pattern_length, const int alphabet_size, const size_t number_patterns, size_t* pattern_counter);
 
   /**
       Helper function for the background model
@@ -90,7 +114,10 @@ class Peng{
       @param zscore_threshold consider only base patterns with zscore above this threshold
       @param selected_patterns set with id's of selected base patterns
   */
-  void filter_nearest_neighbours(const int alphabet_size, const float zscore_threshold, std::set<size_t>& selected_patterns);
+  void filter_base_patterns(const int pattern_length, const int alphabet_size,
+                                  const size_t number_patterns, const float zscore_threshold,
+                                  float* pattern_zscore, std::set<size_t>& selected_patterns);
+
 
   /**
       optimize/degenerate base patterns to IUPAC patterns
@@ -115,18 +142,33 @@ class Peng{
 
       @param iupac_patterns with pointers; merged IUPACs replace their descendants
   */
-  void merge_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns);
+  void merge_iupac_patterns(const size_t pattern_length, const float bit_factor_merge_threshold,
+                            BackgroundModel* bg, std::vector<IUPACPattern*>& iupac_patterns);
 
-  BackgroundModel* bg_model;
-  size_t* pattern_counter;
-  float* pattern_bg_probabilities;
-  float* pattern_logp;
-  float* pattern_zscore;
+  /**
+      optimize pwms in iupac patterns with respect to the number of pattern occurrences
 
-  size_t number_patterns;
-  int pattern_length;
-  int alphabet_size;
-  size_t ltot;
+      @param iupac_patterns with pointers; merged IUPACs replace their descendants
+      @param saturation_factor a scaling factor for the em
+      @param min_em_threshold the em stops if the summed up difference between the previous and current pwm are below this threshold
+      @param max_iterations maximal number of iterations with the em per pattern
+  */
+  void em_optimize_pwms(std::vector<IUPACPattern*>& iupac_patterns,
+                                  const float saturation_factor,
+                                  const float min_em_threshold, const int max_iterations);
+
+  /**
+      calculates in an recursive fashion odds of probabilities needed for the em
+
+      @param curr_pattern recursively built pattern till the pattern is complete
+      @param curr_prob current probability of the pattern
+      @param curr_length current length of the pattern
+      @param pwm the pwm of a pattern that is optimized by the em
+      @param prob_odds float array contains in the end for each base pattern the log probs
+  */
+  void init_prob_odds(const size_t pattern_length,
+                      size_t curr_pattern, float curr_prob, int curr_length,
+                      float** pwm, float* pattern_bg_probabilities, float* prob_odds);
 };
 
 class sort_indices {
