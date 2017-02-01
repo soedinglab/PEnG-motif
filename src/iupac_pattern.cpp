@@ -9,6 +9,7 @@
 #include <iostream>
 #include <math.h>
 #include <limits>
+#include "shared/Alphabet.h"
 #include "iupac_pattern.h"
 #include "iupac_alphabet.h"
 #include "base_pattern.h"
@@ -472,7 +473,7 @@ void IUPACPattern::calculate_comp_pwm() {
 
   for(int p = 0; p < pattern_length; p++) {
     for(int i = 0; i < 4; i++) {
-      comp_pwm[p][i] = 1.0 - pwm[pattern_length - p - 1][i];
+      comp_pwm[p][i] = pwm[pattern_length - p - 1][Alphabet::getComplementCode(i+1)-1];
     }
   }
 }
