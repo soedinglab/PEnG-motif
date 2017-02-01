@@ -434,6 +434,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
     int best_i = 0;
     int best_j = 0;
     int best_shift = 0;
+    bool best_comp = false;
     for(int i = 0; i < best_iupac_patterns.size(); i++) {
       IUPACPattern* p1 = best_iupac_patterns[i];
       if(p1->get_log_pvalue() > -5) {
@@ -452,6 +453,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
           best_j = j;
           best_score = std::get<0>(res);
           best_shift = std::get<1>(res);
+          best_comp = std::get<2>(res);
         }
       }
     }
@@ -460,11 +462,11 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
     if(best_score > pattern_length * merge_bit_factor_threshold) {
       IUPACPattern* merged_pattern = NULL;
       if(best_iupac_patterns[best_i]->get_pattern_length() < best_iupac_patterns[best_j]->get_pattern_length()) {
-        merged_pattern = new IUPACPattern(best_iupac_patterns[best_j], best_iupac_patterns[best_i],
+        merged_pattern = new IUPACPattern(best_iupac_patterns[best_j], best_iupac_patterns[best_i], best_comp,
                                                         bg_model->getV()[0], best_shift);
       }
       else {
-        merged_pattern = new IUPACPattern(best_iupac_patterns[best_i], best_iupac_patterns[best_j],
+        merged_pattern = new IUPACPattern(best_iupac_patterns[best_i], best_iupac_patterns[best_j], best_comp,
                                                         bg_model->getV()[0], best_shift);
       }
 

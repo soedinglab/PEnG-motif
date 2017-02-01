@@ -34,17 +34,23 @@ class IUPACPattern {
   static int getNucleotideAtPos(const size_t pattern, const size_t pos);
   static size_t baseToId(const size_t base_pattern, const size_t pattern_length);
   static size_t toId(std::string base_pattern, const size_t pattern_length);
-  static std::tuple<float, int> calculate_S(IUPACPattern* p1, IUPACPattern* p2, float* background);
+  static std::tuple<float, int, bool> calculate_S(IUPACPattern* p1, IUPACPattern* p2, float* background);
 
   IUPACPattern(size_t iupac_pattern, size_t pattern_length);
-  IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, float* background, const int shift);
+  IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
   ~IUPACPattern();
 
   size_t get_pattern();
   int get_pattern_length();
   float get_log_pvalue();
   float get_bg_p();
+
   float** get_pwm();
+  float** get_comp_pwm();
+
+  void calculate_comp_pwm();
+  void update_pwm(float** new_pwm);
+
   size_t get_sites();
   size_t* get_local_sites();
   std::vector<size_t>& get_base_patterns();
@@ -59,12 +65,12 @@ class IUPACPattern {
   bool operator<(const IUPACPattern& rhs) const;
 
  private:
-  static float calculate_s(IUPACPattern& p1, IUPACPattern& p2, float* background, const int offset1, const int offset2, const int l);
-  static float calculate_d(IUPACPattern& p1, IUPACPattern& p2, const int offset1, const int offset2, const int l);
-  static float calculate_d_bg(IUPACPattern& p, float* background, const int l, const int offset = 0);
+  static float calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l);
+  static float calculate_d(float** p1_pwm, float** p2_pwm, const int offset1, const int offset2, const int l);
+  static float calculate_d_bg(float** p_pwm, float* background, const int l, const int offset = 0);
   static void find_base_patterns(const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
 
-  float calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, float* background, const int shift);
+  float calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
 
   static float* log_bonferroni;
   size_t pattern_length;
@@ -75,6 +81,7 @@ class IUPACPattern {
   size_t n_sites;
   size_t* local_n_sites;
   float** pwm;
+  float** comp_pwm;
   std::vector<size_t> base_patterns;
   bool merged;
 };
