@@ -29,8 +29,9 @@ int main(int nargs, char **args) {
   #endif
 
   //init peng with base patterns
-  Peng peng(Global::patternLength, Global::bgModelOrder,
+  Peng peng(Global::patternLength, Global::strand, Global::bgModelOrder,
                 Global::inputSequenceSet, bgModel);
+
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;

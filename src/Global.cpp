@@ -26,6 +26,7 @@ SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
 bool Global::revcomp = false;                         // also search on reverse complement of sequences
 
 int Global::patternLength = 8;                        // length of patterns to be trained/searched
+Strand Global::strand = BOTH_STRANDS;
 
 bool Global::useEm = true;
 float Global::emSaturationFactor = 1000;
@@ -50,7 +51,12 @@ void Global::init(int nargs, char* args[]){
 	Alphabet::init(alphabetType);
 
 	inputSequenceSet = new SequenceSet(inputSequenceFilename);
-	backgroundSequenceSet = new SequenceSet(inputSequenceFilename, true);
+	if(strand == BOTH_STRANDS) {
+	  backgroundSequenceSet = new SequenceSet(inputSequenceFilename, true);
+	}
+	else {
+	  backgroundSequenceSet = new SequenceSet(inputSequenceFilename, false);
+	}
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -153,6 +159,25 @@ void Global::readArguments(int nargs, char* args[]){
       }
       emMaxIterations = std::stoi(args[i]);
     }
+    else if (!strcmp(args[i], "-strand")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -em-max-iterations" << std::endl;
+        exit(4);
+      }
+
+      if(!strcmp(args[i], "BOTH")) {
+        strand = BOTH_STRANDS;
+      }
+      else if(!strcmp(args[i], "PLUS")) {
+        strand = PLUS_STRAND;
+      }
+      else {
+        printHelp();
+        LOG(ERROR) << "Unknown expression flollowing -strand" << std::endl;
+        exit(4);
+      }
+    }
     else if (!strcmp(args[i], "-h")) {
       Global::printHelp();
       exit(0);
@@ -180,6 +205,8 @@ void Global::printHelp(){
       "           lower zscore threshold for basic patterns\n");
   printf("\n      -w, <PATTERN_LENGTH>\n"
       "           length of patterns to be searched\n");
+  printf("\n      -strand, <PULS|BOTH>\n"
+      "           select the strands to work on\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
       "           bit factor threshold for merging IUPAC patterns\n");
   printf("\n      -no-em\n"

@@ -8,10 +8,11 @@
 #include <array>
 #include <tuple>
 #include "iupac_pattern.h"
+#include "Global.h"
 
 class Peng{
  public:
-  Peng(const int pattern_length, const int k,
+  Peng(const int pattern_length, Strand s, const int k,
                 SequenceSet* sequence_set, BackgroundModel* bg);
   ~Peng();
   void process(const float zscore_threshold,
@@ -38,6 +39,7 @@ class Peng{
 
   size_t number_patterns;
   int pattern_length;
+  Strand strand;
   int alphabet_size;
   size_t ltot;
 

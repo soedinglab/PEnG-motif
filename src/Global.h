@@ -10,6 +10,10 @@
 
 #include "shared/SequenceSet.h"
 
+enum Strand {
+  PLUS_STRAND, BOTH_STRANDS
+};
+
 class Global{
 
 public:
@@ -23,6 +27,7 @@ public:
 
 	static int patternLength;                    // length of pattern to be searched/trained
 	static float zscoreThreshold;
+	static Strand strand;
 
 	static bool useEm;
 	static float emSaturationFactor;

@@ -418,7 +418,7 @@ float IUPACPattern::calculate_s(float** p1_pwm, float** p2_pwm, float* backgroun
   return s;
 }
 
-std::tuple<float, int, bool> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPattern* p2, float* background) {
+std::tuple<float, int, bool> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPattern* p2, Strand s, float* background) {
   IUPACPattern* p_larger = p1;
   IUPACPattern* p_shorter = p2;
 
@@ -431,7 +431,13 @@ std::tuple<float, int, bool> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPa
   int max_shift = -255;
   bool max_comp = false;
 
-  for(bool comp : {false, true}) {
+  std::vector<bool> comp_test;
+  comp_test.push_back(false);
+  if(s == BOTH_STRANDS) {
+    comp_test.push_back(true);
+  }
+
+  for(bool comp : comp_test) {
     for(int shift = MIN_MERGE_OVERLAP - p_shorter->get_pattern_length(); shift <= p_larger->get_pattern_length() - MIN_MERGE_OVERLAP; shift++) {
       int offset_p_shorter = -1.0 * std::min(shift, 0);
       int offset_p_larger = std::max(shift, 0);

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+#include "Global.h"
 
 static const int MIN_MERGE_OVERLAP = 6;
 
@@ -34,7 +35,7 @@ class IUPACPattern {
   static int getNucleotideAtPos(const size_t pattern, const size_t pos);
   static size_t baseToId(const size_t base_pattern, const size_t pattern_length);
   static size_t toId(std::string base_pattern, const size_t pattern_length);
-  static std::tuple<float, int, bool> calculate_S(IUPACPattern* p1, IUPACPattern* p2, float* background);
+  static std::tuple<float, int, bool> calculate_S(IUPACPattern* p1, IUPACPattern* p2, Strand s, float* background);
 
   IUPACPattern(size_t iupac_pattern, size_t pattern_length);
   IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);

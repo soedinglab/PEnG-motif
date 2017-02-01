@@ -17,7 +17,7 @@
 #endif
 
 
-Peng::Peng(const int pattern_length, const int k, SequenceSet* sequence_set, BackgroundModel* bg) {
+Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequence_set, BackgroundModel* bg) {
   int max_base_pattern_length = std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1;
   int max_iupac_pattern_length = std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1;
 
@@ -34,6 +34,7 @@ Peng::Peng(const int pattern_length, const int k, SequenceSet* sequence_set, Bac
 
   this->pattern_length = pattern_length;
   this->alphabet_size = Alphabet::getSize();
+  this->strand = s;
 
   ltot = 0;
 
@@ -42,7 +43,9 @@ Peng::Peng(const int pattern_length, const int k, SequenceSet* sequence_set, Bac
     ltot += seqs[i]->getL() - pattern_length + 1;
   }
   //for the - strand
-  ltot *= 2;
+  if(this->strand == BOTH_STRANDS) {
+    ltot *= 2;
+  }
 
   //init counter for patterns
   this->number_patterns = pow(Alphabet::getSize(), pattern_length);
@@ -56,7 +59,9 @@ Peng::Peng(const int pattern_length, const int k, SequenceSet* sequence_set, Bac
   this->pattern_zscore = new float[number_patterns];
 
   count_patterns(pattern_length, Alphabet::getSize(), number_patterns, sequence_set, pattern_counter);
-  count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
+  if(this->strand == BOTH_STRANDS) {
+    count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
+  }
 
   calculate_bg_probabilities(bg, alphabet_size, k);
   calculate_log_pvalues(ltot);
@@ -446,7 +451,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
           continue;
         }
 
-        auto res = IUPACPattern::calculate_S(p1, p2, bg_model->getV()[0]);
+        auto res = IUPACPattern::calculate_S(p1, p2, strand, bg_model->getV()[0]);
 
         if(std::get<0>(res) > best_score) {
           best_i = i;
@@ -651,10 +656,6 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
   std::vector<IUPACPattern*> sorted_iupac_patterns;
   sorted_iupac_patterns.insert(sorted_iupac_patterns.end(), best_iupac_patterns.begin(), best_iupac_patterns.end());
   std::sort(sorted_iupac_patterns.begin(), sorted_iupac_patterns.end(), sort_IUPAC_patterns);
-
-  auto res = IUPACPattern::calculate_S(sorted_iupac_patterns[0], sorted_iupac_patterns[1], bg_model->getV()[0]);
-  float best_score = std::get<0>(res);
-  int best_shift = std::get<1>(res);
 
   std::ofstream myfile (output_filename);
   if (myfile.is_open()) {
