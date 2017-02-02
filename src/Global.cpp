@@ -178,6 +178,14 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
     }
+    else if (!strcmp(args[i], "-bg-model-order")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -bg-model-order" << std::endl;
+        exit(4);
+      }
+      bgModelOrder = std::stoi(args[i]);
+    }
     else if (!strcmp(args[i], "-h")) {
       Global::printHelp();
       exit(0);
@@ -205,6 +213,8 @@ void Global::printHelp(){
       "           lower zscore threshold for basic patterns\n");
   printf("\n      -w, <PATTERN_LENGTH>\n"
       "           length of patterns to be searched\n");
+  printf("\n      -bg-model-order, <BG_MODEL_ORDER>\n"
+      "           order of the background model\n");
   printf("\n      -strand, <PULS|BOTH>\n"
       "           select the strands to work on\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
