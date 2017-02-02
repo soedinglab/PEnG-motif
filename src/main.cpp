@@ -43,7 +43,7 @@ int main(int nargs, char **args) {
   //print output
   std::string version_number("1.0.0");
   if(Global::outputFilename != NULL) {
-    peng.printShortMeme(result, Global::outputFilename, version_number, bgModel);
+    peng.printShortMeme(result, Global::outputFilename, bgModel);
   }
 
   if(Global::jsonFilename != NULL) {

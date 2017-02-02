@@ -650,7 +650,6 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
 
 void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                                    const std::string output_filename,
-                                   const std::string version_number,
                                    BackgroundModel* bg_model) {
 
   std::vector<IUPACPattern*> sorted_iupac_patterns;
@@ -659,7 +658,7 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
 
   std::ofstream myfile (output_filename);
   if (myfile.is_open()) {
-    myfile << "PEnG-motif version " << version_number << std::endl;
+    myfile << "MEME version 4" << std::endl;
     myfile << std::endl;
 
     char* alphabet = Alphabet::getAlphabet();

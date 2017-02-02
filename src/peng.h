@@ -22,7 +22,6 @@ class Peng{
 
   void printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                       const std::string output_filename,
-                      const std::string version_number,
                       BackgroundModel* bg_model);
 
   void printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
