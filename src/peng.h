@@ -117,7 +117,7 @@ class Peng{
   */
   void filter_base_patterns(const int pattern_length, const int alphabet_size,
                                   const size_t number_patterns, const float zscore_threshold,
-                                  float* pattern_zscore, std::set<size_t>& selected_patterns);
+                                  float* pattern_zscore, std::vector<size_t>& selected_patterns);
 
 
   /**
@@ -126,7 +126,7 @@ class Peng{
       @param selected_base_patterns set with id's of base patterns to be processed
       @param best_iupac_patterns result vector with pointers to objects of iupac patterns
   */
-  void optimize_iupac_patterns(std::set<size_t>& selected_base_patterns,
+  void optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
                                std::vector<IUPACPattern*>& best_iupac_patterns);
 
   /**

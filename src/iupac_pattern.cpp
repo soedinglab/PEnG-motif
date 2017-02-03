@@ -361,7 +361,7 @@ void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter, float* background_
       }
     }
 
-    const int pseudo_counts = 10;
+    const int pseudo_counts = 100;
 
     for(size_t p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
@@ -373,7 +373,7 @@ void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter, float* background_
         std::vector<size_t> i_base_patterns;
         find_base_patterns(ipattern, pattern_length, i_base_patterns);
 
-        i_total[i] = 10 * background_model[i];
+        i_total[i] = pseudo_counts * background_model[i];
         for(auto base : i_base_patterns) {
           i_total[i] += pattern_counter[base];
         }
