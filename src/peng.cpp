@@ -28,9 +28,11 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
     exit(1);
   }
 
-  BasePattern::init(pattern_length);
-  IUPACPattern::init(max_iupac_pattern_length, bg->getV()[0]);
   IUPACAlphabet::init(Alphabet::getAlphabet());
+  BasePattern::init(pattern_length);
+
+  //IUPACAlphabet needs to be initialized before this
+  IUPACPattern::init(max_iupac_pattern_length, bg->getV()[0]);
 
   this->pattern_length = pattern_length;
   this->alphabet_size = Alphabet::getSize();

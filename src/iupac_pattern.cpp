@@ -194,14 +194,14 @@ void IUPACPattern::initIUPACProfile(const float c, const float t, float* bg_mode
   }
 
 
-  for(int c = 0; c < IUPAC_ALPHABET_SIZE; c++) {
-    std::vector<uint8_t> rep = IUPACAlphabet::get_representative_iupac_nucleotides(c);
+  for(int iupac_c = 0; iupac_c < IUPAC_ALPHABET_SIZE; iupac_c++) {
+    std::vector<uint8_t> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
     for(int a = 0; a < 4; a++) {
-      iupac_profile[c][a] = c * bg_model[a];
+      iupac_profile[iupac_c][a] += c * bg_model[a];
 
       for(auto r : rep) {
         if(a == r) {
-          iupac_profile[c][a] += t;
+          iupac_profile[iupac_c][a] += t;
           break;
         }
       }
@@ -546,11 +546,7 @@ std::string IUPACPattern::get_pattern_string() {
       int min_iupac = 0;
 
       for(int m = 0; m < IUPAC_ALPHABET_SIZE; m++) {
-        float dist = 0;
-        for(int a = 0; a < 4; a++) {
-          dist += pow(pwm[i][a] - iupac_profile[m][a], 2);
-        }
-        dist = sqrt(dist);
+        float dist = calculate_d(pwm, iupac_profile, i, m, 1);
 
         if(dist < min_dist) {
           min_dist = dist;
