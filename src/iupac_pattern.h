@@ -30,18 +30,21 @@ class IUPACPattern {
  public:
   static size_t* iupac_factor;
 
-  static void init(size_t pattern_length);
+  static void init(size_t pattern_length, float* bg_model);
   static std::string toString(size_t pattern_id, size_t pattern_length);
   static int getNucleotideAtPos(const size_t pattern, const size_t pos);
   static size_t baseToId(const size_t base_pattern, const size_t pattern_length);
   static size_t toId(std::string base_pattern, const size_t pattern_length);
   static std::tuple<float, int, bool> calculate_S(IUPACPattern* p1, IUPACPattern* p2, Strand s, float* background);
 
+  static void initIUPACProfile(const float c, const float t, float* bg_model);
+
   IUPACPattern(size_t iupac_pattern, size_t pattern_length);
   IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
   ~IUPACPattern();
 
   size_t get_pattern();
+  std::string get_pattern_string();
   int get_pattern_length();
   float get_log_pvalue();
   float get_bg_p();
@@ -73,6 +76,7 @@ class IUPACPattern {
 
   float calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
 
+  static float** iupac_profile;
   static float* log_bonferroni;
   size_t pattern_length;
 

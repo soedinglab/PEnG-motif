@@ -16,6 +16,7 @@
 
 size_t* IUPACPattern::iupac_factor = NULL;
 float* IUPACPattern::log_bonferroni = NULL;
+float** IUPACPattern::iupac_profile = NULL;
 
 IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->pattern = iupac_pattern;
@@ -159,7 +160,7 @@ IUPACPattern::~IUPACPattern(){
   delete[] local_n_sites;
 }
 
-void IUPACPattern::init(size_t max_pattern_length) {
+void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
   //init factors to get patterns from their numerical identifiers
   iupac_factor = new size_t[max_pattern_length + 1];
   for(size_t i = 0; i < max_pattern_length + 1; i++) {
@@ -179,6 +180,33 @@ void IUPACPattern::init(size_t max_pattern_length) {
   log_bonferroni[M] = log(24);
   log_bonferroni[K] = log(24);
   log_bonferroni[N] = log(6);
+
+  initIUPACProfile(0.2, 0.7, bg_model);
+}
+
+void IUPACPattern::initIUPACProfile(const float c, const float t, float* bg_model) {
+  iupac_profile = new float*[IUPAC_ALPHABET_SIZE];
+  for(int c = 0; c < IUPAC_ALPHABET_SIZE; c++) {
+    iupac_profile[c] = new float[4];
+    for(int a = 0; a < 4; a++) {
+      iupac_profile[c][a] = 0;
+    }
+  }
+
+
+  for(int iupac_c = 0; iupac_c < IUPAC_ALPHABET_SIZE; iupac_c++) {
+    std::vector<uint8_t> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
+    for(int a = 0; a < 4; a++) {
+      iupac_profile[iupac_c][a] += c * bg_model[a];
+
+      for(auto r : rep) {
+        if(a == r) {
+          iupac_profile[iupac_c][a] += t;
+          break;
+        }
+      }
+    }
+  }
 }
 
 float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp,
@@ -502,9 +530,35 @@ float IUPACPattern::get_bg_p() {
   return bg_p;
 }
 
-
 size_t IUPACPattern::get_pattern() {
   return pattern;
+}
+
+std::string IUPACPattern::get_pattern_string() {
+  if(!merged) {
+    return IUPACPattern::toString(pattern, pattern_length);
+  }
+  else {
+    std::string res;
+
+    for(int i = 0; i < pattern_length; i++) {
+      float min_dist = std::numeric_limits<float>::infinity();
+      int min_iupac = 0;
+
+      for(int m = 0; m < IUPAC_ALPHABET_SIZE; m++) {
+        float dist = calculate_d(pwm, iupac_profile, i, m, 1);
+
+        if(dist < min_dist) {
+          min_dist = dist;
+          min_iupac = m;
+        }
+      }
+
+      res += IUPACAlphabet::getBase(min_iupac);
+    }
+
+    return res;
+  }
 }
 
 size_t IUPACPattern::get_sites() {

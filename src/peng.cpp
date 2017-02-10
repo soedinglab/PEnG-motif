@@ -28,9 +28,11 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
     exit(1);
   }
 
-  BasePattern::init(pattern_length);
-  IUPACPattern::init(max_iupac_pattern_length);
   IUPACAlphabet::init(Alphabet::getAlphabet());
+  BasePattern::init(pattern_length);
+
+  //IUPACAlphabet needs to be initialized before this
+  IUPACPattern::init(max_iupac_pattern_length, bg->getV()[0]);
 
   this->pattern_length = pattern_length;
   this->alphabet_size = Alphabet::getSize();
@@ -677,7 +679,7 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
     myfile << std::endl;
 
     for(auto pattern : best_iupac_patterns) {
-      myfile << "MOTIF " << IUPACPattern::toString(pattern->get_pattern(), BasePattern::getPatternLength()) << std::endl;
+      myfile << "MOTIF " << pattern->get_pattern_string() << std::endl;
       myfile << "letter-probability matrix:" <<
           " alength= " << 4 <<
           " w= " << pattern->get_pattern_length() <<
@@ -730,7 +732,7 @@ void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
     myfile << "\t\"patterns\" : [" << std::endl;
     for(auto pattern : best_iupac_patterns) {
       myfile << "\t\t{" << std::endl;
-      myfile << "\t\t\t\"iupac_motif\" : \"" << IUPACPattern::toString(pattern->get_pattern(), BasePattern::getPatternLength()) << "\"," << std::endl;
+      myfile << "\t\t\t\"iupac_motif\" : \"" << pattern->get_pattern_string() << "\"," << std::endl;
       myfile << "\t\t\t\"pattern_length\" : " << pattern->get_pattern_length() << "," << std::endl;
       myfile << "\t\t\t\"sites\" : " << pattern->get_sites() << "," << std::endl;
       myfile << "\t\t\t\"log(Pval)\" : " << pattern->get_log_pvalue() << "," << std::endl;
