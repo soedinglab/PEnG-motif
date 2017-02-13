@@ -358,7 +358,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
       for(size_t pattern = 0; pattern < number_patterns; pattern++) {
         for(int p = 0; p < pattern_length; p++) {
           int a = BasePattern::getNucleotideAtPos(pattern, p);
-          new_pwm[p][a] += pattern_counter[pattern] * saturation_factor / (1 + saturation_factor / prob_odds[pattern]);
+          new_pwm[p][a] += pattern_counter[pattern] * saturation_factor / (1 + saturation_factor / prob_odds[pattern]);//saturation_factor / (1 + saturation_factor / prob_odds[pattern]);// prob_odds[pattern]
         }
       }
 
@@ -502,7 +502,6 @@ void Peng::process(const float zscore_threshold,
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
     IUPACPattern* pattern = best_iupac_patterns[i];
     pattern->count_sites(pattern_counter);
-    //pattern->calculate_pwm(pattern_counter)
     pattern->calculate_adv_pwm(pattern_counter, bg_model->getV()[0]);
   }
 
@@ -628,7 +627,10 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
   kept_patterns.clear();
 
   std::sort(iupac_patterns.begin(), iupac_patterns.end(), sort_IUPAC_patterns);
-  float min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 0.1);
+  float min_pvalue = -5.0;
+  if(iupac_patterns.size() > 0) {
+    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 0.1);
+  }
 
   for(int i = 0; i < iupac_patterns.size(); i++) {
     IUPACPattern* pat = iupac_patterns[i];

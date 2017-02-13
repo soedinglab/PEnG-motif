@@ -515,7 +515,7 @@ void IUPACPattern::calculate_comp_pwm() {
 void IUPACPattern::update_pwm(float** new_pwm) {
   for(int p = 0; p < pattern_length; p++) {
     for(int i = 0; i < 4; i++) {
-      comp_pwm[p][i] = new_pwm[p][i];
+      pwm[p][i] = new_pwm[p][i];
     }
   }
 
