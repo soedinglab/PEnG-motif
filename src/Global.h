@@ -14,8 +14,9 @@ enum Strand {
   PLUS_STRAND, BOTH_STRANDS
 };
 
-class Global{
+const std::string VERSION_NUMBER("1.0.0");
 
+class Global{
 public:
 	static char* alphabetType;						       // provide alphabet type
 	static char* outputFilename;                 // filename for IUPAC pattern output in short meme format

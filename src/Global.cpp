@@ -60,16 +60,20 @@ void Global::init(int nargs, char* args[]){
 }
 
 void Global::readArguments(int nargs, char* args[]){
+  if (nargs > 1 && !strcmp(args[1], "-h")) {
+    Global::printHelp();
+    exit(0);
+  }
+  else if (nargs > 1 && !strcmp(args[1], "-version")) {
+    std::cout << "peng_motif version " << VERSION_NUMBER << std::endl;;
+    exit(0);
+  }
+
 	if( nargs < 2 ) {			// At least input_file is required
 		fprintf( stderr, "Error: Arguments are missing! \n" );
 		printHelp();
 		exit( -1 );
 	}
-
-  if (!strcmp(args[1], "-h")) {
-    Global::printHelp();
-    exit(0);
-  }
 
 	inputSequenceFilename = args[1];
 
@@ -186,6 +190,10 @@ void Global::readArguments(int nargs, char* args[]){
       }
       bgModelOrder = std::stoi(args[i]);
     }
+    else if (!strcmp(args[i], "-version")) {
+      std::cout << "peng_motif " << VERSION_NUMBER << std::endl;;
+      exit(0);
+    }
     else if (!strcmp(args[i], "-h")) {
       Global::printHelp();
       exit(0);
@@ -229,6 +237,8 @@ void Global::printHelp(){
       "           max number of em optimization iterations\n");
   printf("\n      -threads, <NUMBER_THREADS>\n"
       "           number of threads to be used for parallelization\n");
+  printf("\n      -version\n"
+      "           print the version number\n");
   printf("\n      -h\n"
       "           print this help \n");
 	printf("\n=================================================================\n");

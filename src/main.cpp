@@ -41,13 +41,12 @@ int main(int nargs, char **args) {
                result);
 
   //print output
-  std::string version_number("1.0.0");
   if(Global::outputFilename != NULL) {
     peng.printShortMeme(result, Global::outputFilename, bgModel);
   }
 
   if(Global::jsonFilename != NULL) {
-    peng.printJson(result, Global::jsonFilename, version_number, bgModel);
+    peng.printJson(result, Global::jsonFilename, VERSION_NUMBER, bgModel);
   }
 
   //cleanup
