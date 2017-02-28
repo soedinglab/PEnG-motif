@@ -21,6 +21,7 @@ char* Global::outputFilename = NULL;                  // filename for IUPAC patt
 char* Global::jsonFilename = NULL;                    // filename for IUPAC pattern output in json format
 
 char* Global::inputSequenceFilename = NULL;		        // filename with input FASTA sequences
+char* Global::backgroundSequenceFilename = NULL;      // filename with background FASTA sequences
 SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
 bool Global::revcomp = false;                         // also search on reverse complement of sequences
@@ -32,6 +33,8 @@ bool Global::useEm = true;
 float Global::emSaturationFactor = 1000;
 float Global::emMinThreshold = 0.08;
 int Global::emMaxIterations = 100;
+
+bool Global::useMerging = true;
 
 float Global::zscoreThreshold = 100;
 float Global::mergeBitfactorThreshold = 0.75;
@@ -51,12 +54,16 @@ void Global::init(int nargs, char* args[]){
 	Alphabet::init(alphabetType);
 
 	inputSequenceSet = new SequenceSet(inputSequenceFilename);
-	if(strand == BOTH_STRANDS) {
-	  backgroundSequenceSet = new SequenceSet(inputSequenceFilename, true);
+
+	char* currBackgroundSequenceFilename;
+	if(backgroundSequenceFilename != NULL) {
+	  currBackgroundSequenceFilename = backgroundSequenceFilename;
 	}
 	else {
-	  backgroundSequenceSet = new SequenceSet(inputSequenceFilename, false);
+	  currBackgroundSequenceFilename = inputSequenceFilename;
 	}
+
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand == BOTH_STRANDS);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -85,6 +92,14 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       patternLength = std::stoi(args[i]);
+    }
+    else if (!strcmp(args[i], "-background-sequences")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following -background-sequences" << std::endl;
+        exit(4);
+      }
+      backgroundSequenceFilename = args[i];
     }
     else if (!strcmp(args[i], "-v")) {
       if (++i>=nargs) {
@@ -163,6 +178,9 @@ void Global::readArguments(int nargs, char* args[]){
       }
       emMaxIterations = std::stoi(args[i]);
     }
+    else if (!strcmp(args[i], "-no-merging")) {
+      useEm = false;
+    }
     else if (!strcmp(args[i], "-strand")) {
       if (++i>=nargs) {
         printHelp();
@@ -217,6 +235,9 @@ void Global::printHelp(){
   printf("\n      -j, <OUTPUT_FILE>\n"
       "           best UIPAC motives will be written in OUTPUT_FILE\n"
       "           in JSON format\n");
+  printf("\n      -background-sequences, <FASTA_FILE>\n"
+      "           file with fasta sequences to be used for the"
+      "           background model calculation\n");
   printf("\n      -t, <ZSCORE_THRESHOLD>\n"
       "           lower zscore threshold for basic patterns\n");
   printf("\n      -w, <PATTERN_LENGTH>\n"
@@ -235,6 +256,8 @@ void Global::printHelp(){
       "           threshold for finishing the em optimization \n");
   printf("\n      -em-max-iterations, <EM_MAX_ITERATIONS>\n"
       "           max number of em optimization iterations\n");
+  printf("\n      -no-merging\n"
+      "           shuts off the merging \n");
   printf("\n      -threads, <NUMBER_THREADS>\n"
       "           number of threads to be used for parallelization\n");
   printf("\n      -version\n"

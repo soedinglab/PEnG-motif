@@ -362,16 +362,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
         }
       }
 
-      //normalize new pwm
-      for(int p = 0; p < pattern_length; p++) {
-        float sum = 0;
-        for(int a = 0; a < 4; a++) {
-          sum += new_pwm[p][a];
-        }
-        for(int a = 0; a < 4; a++) {
-          new_pwm[p][a] /= sum;
-        }
-      }
+      IUPACPattern::normalize_pwm(pattern_length, new_pwm);
 
       //calculate change
       change = 0;
@@ -488,7 +479,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
 
 void Peng::process(const float zscore_threshold,
                    const bool use_em, const float em_saturation_factor, const float min_em_threshold,
-                   const int em_max_iterations, const float bit_factor_merge_threshold,
+                   const int em_max_iterations, const bool use_merging, const float bit_factor_merge_threshold,
                    std::vector<IUPACPattern*>& best_iupac_patterns) {
 
   std::vector<size_t> filtered_base_patterns;
@@ -510,7 +501,9 @@ void Peng::process(const float zscore_threshold,
   }
 
   if(pattern_length >= MIN_MERGE_OVERLAP) {
-    merge_iupac_patterns(pattern_length, bit_factor_merge_threshold, bg_model, best_iupac_patterns);
+    if(use_merging) {
+      merge_iupac_patterns(pattern_length, bit_factor_merge_threshold, bg_model, best_iupac_patterns);
+    }
   }
   else {
     std::cerr << "Warning: Specified pattern length ("
@@ -695,7 +688,7 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
           if(a != 0) {
             myfile << " ";
           }
-          myfile << pwm[w][a];
+          myfile << std::fixed << std::setprecision(4) << pwm[w][a];
         }
         myfile << std::endl;
       }
@@ -744,7 +737,7 @@ void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
       for(size_t w = 0; w < pattern_length; w++) {
         myfile << "\t\t\t\t\t[";
         for(size_t a = 0; a < 4; a++) {
-          myfile << pwm[w][a];
+          myfile << std::fixed << std::setprecision(4) << pwm[w][a];
           if(a != 3) {
             myfile << ", ";
           }

@@ -22,6 +22,7 @@ public:
 	static char* outputFilename;                 // filename for IUPAC pattern output in short meme format
 	static char* jsonFilename;                   // filename for IUPAC pattern output in json format
 	static char* inputSequenceFilename;				   // filename of positive sequence FASTA file
+	static char* backgroundSequenceFilename;     // filename of background sequence FASTA file
 	static SequenceSet*	inputSequenceSet;				 // positive Sequence Set
 	static SequenceSet* backgroundSequenceSet;   // background Sequence Set
 	static bool revcomp;                         // also search on reverse complement of sequences
@@ -34,6 +35,8 @@ public:
 	static float emSaturationFactor;
 	static float emMinThreshold;
 	static int emMaxIterations;
+
+	static bool useMerging;
 
 	static float mergeBitfactorThreshold;
 

@@ -37,7 +37,7 @@ int main(int nargs, char **args) {
   std::vector<IUPACPattern*> result;
   peng.process(Global::zscoreThreshold, Global::useEm,
                Global::emSaturationFactor, Global::emMinThreshold,
-               Global::emMaxIterations, Global::mergeBitfactorThreshold,
+               Global::emMaxIterations, Global::useMerging, Global::mergeBitfactorThreshold,
                result);
 
   //print output

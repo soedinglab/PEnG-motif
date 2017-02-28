@@ -36,6 +36,7 @@ class IUPACPattern {
   static size_t baseToId(const size_t base_pattern, const size_t pattern_length);
   static size_t toId(std::string base_pattern, const size_t pattern_length);
   static std::tuple<float, int, bool> calculate_S(IUPACPattern* p1, IUPACPattern* p2, Strand s, float* background);
+  static void normalize_pwm(const int pattern_length, float** pwm);
 
   static void initIUPACProfile(const float c, const float t, float* bg_model);
 
@@ -70,8 +71,8 @@ class IUPACPattern {
 
  private:
   static float calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l);
-  static float calculate_d(float** p1_pwm, float** p2_pwm, const int offset1, const int offset2, const int l);
-  static float calculate_d_bg(float** p_pwm, float* background, const int l, const int offset = 0);
+  static float calculate_d(float** p1_pwm, float** p2_pwm, const int offset1, const int offset2, const int l, const float epsilon = 1E-4);
+  static float calculate_d_bg(float** p_pwm, float* background, const int l, const int offset = 0, const float epsilon = 1E-4);
   static void find_base_patterns(const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
 
   float calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
