@@ -478,12 +478,14 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
 }
 
 void Peng::process(const float zscore_threshold,
-                   const bool use_em, const float em_saturation_factor, const float min_em_threshold,
-                   const int em_max_iterations, const bool use_merging, const float bit_factor_merge_threshold,
+                   const bool use_em, const float em_saturation_factor,
+                   const float min_em_threshold, const int em_max_iterations,
+                   const bool use_merging, const float bit_factor_merge_threshold,
                    std::vector<IUPACPattern*>& best_iupac_patterns) {
 
   std::vector<size_t> filtered_base_patterns;
-  filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns, zscore_threshold, pattern_zscore, filtered_base_patterns);
+  filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
+                       zscore_threshold, pattern_zscore, filtered_base_patterns);
 
   optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
 
@@ -500,19 +502,19 @@ void Peng::process(const float zscore_threshold,
     em_optimize_pwms(best_iupac_patterns, em_saturation_factor, min_em_threshold, em_max_iterations);
   }
 
-  if(pattern_length >= MIN_MERGE_OVERLAP) {
-    if(use_merging) {
-      merge_iupac_patterns(pattern_length, bit_factor_merge_threshold, bg_model, best_iupac_patterns);
+  if(use_merging) {
+    if(pattern_length >= MIN_MERGE_OVERLAP) {
+        merge_iupac_patterns(pattern_length, bit_factor_merge_threshold, bg_model, best_iupac_patterns);
     }
-  }
-  else {
-    std::cerr << "Warning: Specified pattern length ("
-        << pattern_length << ") is too low for merging!" << std::endl;
+    else {
+      std::cerr << "Warning: Specified pattern length ("
+          << pattern_length << ") is too low for merging!" << std::endl;
+    }
   }
 }
 
 void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
-                                            std::vector<IUPACPattern*>& best_iupac_patterns) {
+                                   std::vector<IUPACPattern*>& best_iupac_patterns) {
   std::set<size_t> seen;
   std::set<size_t> best;
 

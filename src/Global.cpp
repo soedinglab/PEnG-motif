@@ -179,7 +179,7 @@ void Global::readArguments(int nargs, char* args[]){
       emMaxIterations = std::stoi(args[i]);
     }
     else if (!strcmp(args[i], "-no-merging")) {
-      useEm = false;
+      useMerging = false;
     }
     else if (!strcmp(args[i], "-strand")) {
       if (++i>=nargs) {
