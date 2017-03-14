@@ -443,7 +443,8 @@ float IUPACPattern::calculate_d(float** p1_pwm, float** p2_pwm, const int offset
   float d = 0;
   for(int i = 0; i < l; i++) {
     for(int a = 0; a < 4; a++) {
-      d += (p1_pwm[offset1 + i][a] - p2_pwm[offset2 + i][a]) * (log2(p1_pwm[offset1 + i][a] + epsilon) - log2(p2_pwm[offset2 + i][a] + epsilon));
+      float mean = (p1_pwm[offset1 + i][a] + p2_pwm[offset2 + i][a] + 2 * epsilon) / 2;
+      d += (p1_pwm[offset1 + i][a] + epsilon) * log2(p1_pwm[offset1 + i][a] + epsilon) + (p2_pwm[offset2 + i][a] + epsilon) * log2(p2_pwm[offset2 + i][a] + epsilon) - 2 * mean * log2(mean);
     }
   }
 
@@ -454,8 +455,8 @@ float IUPACPattern::calculate_d_bg(float** p_pwm, float* background, const int l
   float d = 0;
   for(int i = 0; i < l; i++) {
     for(int a = 0; a < 4; a++) {
-      float tmp = (p_pwm[i + offset][a] - background[a]) * (log2(p_pwm[i + offset][a] + epsilon) - log2(background[a] + epsilon));
-      d += tmp;
+      float mean = (p_pwm[offset + i][a] + background[a] + 2 * epsilon) / 2;
+      d += (p_pwm[offset + i][a] + epsilon) * log2(p_pwm[offset + i][a] + epsilon) + (background[a] + epsilon) * log2(background[a] + epsilon) - 2 * mean * log2(mean);
     }
   }
 
