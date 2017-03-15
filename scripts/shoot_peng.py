@@ -41,7 +41,7 @@ def main():
                         help='select the strand to work on')
     parser.add_argument('--no-em', dest='use_em', action='store_false',
                         help='shuts off the em optimization')
-    parser.add_argument('--em-saturation-threshold', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E5,
+    parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E5,
                         help='saturation factor for em optimization')
     parser.add_argument('--em-threshold', metavar='FLOAT', dest='em_threshold', type=float, default=0.08,
                         help='threshold for finishing the em optimization')
@@ -49,7 +49,7 @@ def main():
                         help='max number of em optimization iterations')
     parser.add_argument('--no-merging', dest='use_merging', action='store_true',
                         help='shuts off the merging of patterns')
-    parser.add_argument('-a', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=1000,
+    parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=1000,
                         help='bit factor threshold for merging IUPAC patterns')
     parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
                         help='number of threads to be used for parallelization')
@@ -88,7 +88,7 @@ def build_peng_command(args, peng_output_file, peng_json_file):
     command += ["--em-max-iterations", str(args.em_max_iterations)]
     if not args.use_merging:
         command += ["--no-merging"]
-    command += ["-a", str(args.bit_factor_threshold)]
+    command += ["-b", str(args.bit_factor_threshold)]
     command += ["--threads", str(args.number_threads)]
 
     return command
