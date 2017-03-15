@@ -24,7 +24,7 @@ char* Global::inputSequenceFilename = NULL;		        // filename with input FAST
 char* Global::backgroundSequenceFilename = NULL;      // filename with background FASTA sequences
 SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
-bool Global::revcomp = false;                         // also search on reverse complement of sequences
+//bool Global::revcomp = false;                         // also search on reverse complement of sequences
 
 int Global::patternLength = 8;                        // length of patterns to be trained/searched
 Strand Global::strand = BOTH_STRANDS;
@@ -143,7 +143,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       mergeBitfactorThreshold = std::stof(args[i]);
     }
-    else if (!strcmp(args[i], "-threads")) {
+    else if (!strcmp(args[i], "--threads")) {
       if (++i>=nargs) {
         printHelp();
         LOG(ERROR) << "No expression following -t" << std::endl;
@@ -151,7 +151,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       nr_threads = std::stoi(args[i]);
     }
-    else if (!strcmp(args[i], "-no-em")) {
+    else if (!strcmp(args[i], "--no-em")) {
       useEm = false;
     }
     else if (!strcmp(args[i], "-a")) {
@@ -162,7 +162,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       emSaturationFactor = std::stof(args[i]);
     }
-    else if (!strcmp(args[i], "-em-threshold")) {
+    else if (!strcmp(args[i], "--em-threshold")) {
       if (++i>=nargs) {
         printHelp();
         LOG(ERROR) << "No expression following -em-threshold" << std::endl;
@@ -170,7 +170,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       emMinThreshold = std::stof(args[i]);
     }
-    else if (!strcmp(args[i], "-em-max-iterations")) {
+    else if (!strcmp(args[i], "--em-max-iterations")) {
       if (++i>=nargs) {
         printHelp();
         LOG(ERROR) << "No expression following -em-max-iterations" << std::endl;
@@ -178,10 +178,10 @@ void Global::readArguments(int nargs, char* args[]){
       }
       emMaxIterations = std::stoi(args[i]);
     }
-    else if (!strcmp(args[i], "-no-merging")) {
+    else if (!strcmp(args[i], "--no-merging")) {
       useMerging = false;
     }
-    else if (!strcmp(args[i], "-strand")) {
+    else if (!strcmp(args[i], "--strand")) {
       if (++i>=nargs) {
         printHelp();
         LOG(ERROR) << "No expression following -em-max-iterations" << std::endl;
@@ -200,7 +200,7 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
     }
-    else if (!strcmp(args[i], "-bg-model-order")) {
+    else if (!strcmp(args[i], "--bg-model-order")) {
       if (++i>=nargs) {
         printHelp();
         LOG(ERROR) << "No expression following -bg-model-order" << std::endl;
@@ -208,7 +208,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       bgModelOrder = std::stoi(args[i]);
     }
-    else if (!strcmp(args[i], "-version")) {
+    else if (!strcmp(args[i], "--version")) {
       std::cout << "peng_motif " << VERSION_NUMBER << std::endl;;
       exit(0);
     }
@@ -235,32 +235,32 @@ void Global::printHelp(){
   printf("\n      -j, <OUTPUT_FILE>\n"
       "           best UIPAC motives will be written in OUTPUT_FILE\n"
       "           in JSON format\n");
-  printf("\n      -background-sequences, <FASTA_FILE>\n"
+  printf("\n      --background-sequences, <FASTA_FILE>\n"
       "           file with fasta sequences to be used for the"
       "           background model calculation\n");
   printf("\n      -t, <ZSCORE_THRESHOLD>\n"
       "           lower zscore threshold for basic patterns\n");
   printf("\n      -w, <PATTERN_LENGTH>\n"
       "           length of patterns to be searched\n");
-  printf("\n      -bg-model-order, <BG_MODEL_ORDER>\n"
+  printf("\n      --bg-model-order, <BG_MODEL_ORDER>\n"
       "           order of the background model\n");
-  printf("\n      -strand, <PULS|BOTH>\n"
+  printf("\n      --strand, <PULS|BOTH>\n"
       "           select the strands to work on\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
       "           bit factor threshold for merging IUPAC patterns\n");
-  printf("\n      -no-em\n"
+  printf("\n      --no-em\n"
       "           shuts off the em optimization \n");
   printf("\n      -a, <EM_SATURATION_THRESHOLD>\n"
       "           saturation factor for em optimization \n");
-  printf("\n      -em-threshold, <EM_THRESHOLD>\n"
+  printf("\n      --em-threshold, <EM_THRESHOLD>\n"
       "           threshold for finishing the em optimization \n");
-  printf("\n      -em-max-iterations, <EM_MAX_ITERATIONS>\n"
+  printf("\n      --em-max-iterations, <EM_MAX_ITERATIONS>\n"
       "           max number of em optimization iterations\n");
-  printf("\n      -no-merging\n"
+  printf("\n      --no-merging\n"
       "           shuts off the merging \n");
-  printf("\n      -threads, <NUMBER_THREADS>\n"
+  printf("\n      --threads, <NUMBER_THREADS>\n"
       "           number of threads to be used for parallelization\n");
-  printf("\n      -version\n"
+  printf("\n      --version\n"
       "           print the version number\n");
   printf("\n      -h\n"
       "           print this help \n");

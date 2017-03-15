@@ -12,9 +12,10 @@ import subprocess
 import tempfile
 import json
 import glob
+import sys
 import numpy as np
 
-RSCRIPT="/home/mmeier/git/bamm-private/R/plotAUSFC_rank.R"
+RSCRIPT="/home/mmeier/opt/bamm/R/plotAUSFC_rank.R"
 PENG="/home/mmeier/opt/PEnG/bin/peng_motif"
 BAMM="/home/mmeier/opt/bamm/BaMMmotif"
 
@@ -22,67 +23,113 @@ def main():
     parser = argparse.ArgumentParser(description='Translates a PWM into an IUPAC identifier and prints it')
     parser.add_argument(metavar='FASTA_FILE', dest='fasta_file', type=str,
                         help='file with the input fasta sequences')
+    parser.add_argument("-o", metavar='FILE', dest='meme_output_file', type=str,
+                        help='best UIPAC motives will be written in FILE in minimal MEME format')
+    parser.add_argument("-j", metavar='FILE', dest='json_output_file', type=str,
+                        help='best UIPAC motives will be written in OUTPUT_FILE in JSON format')
     parser.add_argument("-d", "--output_directory", metavar='DIR', dest='output_directory', type=str,
-                        help='file with the input fasta sequences')
-    parser.add_argument("-b", "--prefix", metavar='PREFIX', dest='prefix', type=str,
-                        help='prefix of output files')
+                        help='directory for the temporary files')
+    parser.add_argument('--background-sequences', metavar='FASTA_FILE', dest='background_sequences', type=str,
+                        help='file with fasta sequences to be used for the background model calculation')
+    parser.add_argument('-w', metavar='INT', dest='pattern_length', type=int, default=10,
+                        help='initial/minimal length of pattern to be searched')
+    parser.add_argument('-t', metavar='FLOAT', dest='zscore_threshold', type=float, default=100,
+                        help='lower zscore threshold for basic patterns')
+    parser.add_argument('--bg-model-order', metavar='INT', dest='bg_model_order', type=int, default=2,
+                        help='order of the background model')
+    parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default="BOTH",
+                        help='select the strand to work on')
+    parser.add_argument('--no-em', dest='use_em', action='store_false',
+                        help='shuts off the em optimization')
+    parser.add_argument('--em-saturation-threshold', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E5,
+                        help='saturation factor for em optimization')
+    parser.add_argument('--em-threshold', metavar='FLOAT', dest='em_threshold', type=float, default=0.08,
+                        help='threshold for finishing the em optimization')
+    parser.add_argument('--em-max-iterations', metavar='INT', dest='em_max_iterations', type=int, default=100,
+                        help='max number of em optimization iterations')
+    parser.add_argument('--no-merging', dest='use_merging', action='store_true',
+                        help='shuts off the merging of patterns')
+    parser.add_argument('-a', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=1000,
+                        help='bit factor threshold for merging IUPAC patterns')
+    parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
+                        help='number of threads to be used for parallelization')
 
     args = parser.parse_args()
 
+    if args.meme_output_file == None and args.json_output_file == None:
+        print("Warning: you did not define an output file (options -o or -j). Stopping here.", file=sys.stderr)
+        exit(0)
+
     output_directory = args.output_directory
-    if output_directory == None:
-        #make temp directory
-        output_directory = tempfile.mkdtemp()
-    elif not os.path.exists(output_directory):
-        #make user defined directory if not exist
-        os.makedirs(output_directory)
+    if args.output_directory == None:
+        #work in tmp directory
+        with TemporaryDirectory() as output_directory:
+            run_peng(args, output_directory)
+    else:
+        if not os.path.exists(output_directory):
+            #make user defined directory if not exist
+            os.makedirs(output_directory)
+        run_peng(args, output_directory)
 
-    prefix = args.prefix
-    if prefix == None:
-        prefix = ""
+def build_peng_command(args, peng_output_file, peng_json_file):
+    command = [PENG, args.fasta_file,
+                "-j", peng_json_file,
+                "-o", peng_output_file]
+    if args.background_sequences:
+        command += ["--background-sequences", args.background_sequences]
+    command += ["-w", str(args.pattern_length)]
+    command += ["-t", str(args.zscore_threshold)]
+    command += ["--bg-model-order", str(args.bg_model_order)]
+    command += ["--strand", args.strand]
+    if not args.use_em:
+        command += ["--no-em"]
+    command += ["-a", str(args.em_saturation_threshold)]
+    command += ["--em-threshold", str(args.em_threshold)]
+    command += ["--em-max-iterations", str(args.em_max_iterations)]
+    if not args.use_merging:
+        command += ["--no-merging"]
+    command += ["-a", str(args.bit_factor_threshold)]
+    command += ["--threads", str(args.number_threads)]
 
-    #run peng
+    return command
+
+def run_peng(args, output_directory):
+    # bamm takes the prefix from the input fasta-file
+    filename, extension = os.path.splitext(args.fasta_file)
+    prefix = os.path.basename(filename)
+
     peng_output_file = os.path.join(output_directory, prefix + ".tmp.out")
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
-    subprocess.check_output([PENG, args.fasta_file, "-j", peng_json_file,
-                                "-o", peng_output_file, "-b", str(10), "-w", str(10), "-a", str(1E5)])
+
+    #run peng
+    peng_command_line = build_peng_command(args, peng_output_file, peng_json_file)
+    subprocess.check_output(peng_command_line)
 
     #run bamm
     subprocess.check_output([BAMM, output_directory, args.fasta_file,
                                 "--PWMFile", peng_output_file, "--FDR", "--savePvalues"])
 
+    r_output_file = os.path.join(output_directory, prefix + ".rank.out")
+
+    subprocess.check_output(["Rscript", "--vanilla", RSCRIPT, output_directory, prefix, r_output_file])
+
     #run R script
-    #benchmark_file = os.path.join(output_directory, prefix + ".tmp.score")
-    #./FDRaveragedRecall.R <inputDir> <basename of your file>
     zoops_scores = dict()
     mops_scores = dict()
-    for bamm_output in glob.glob(os.path.join(output_directory, prefix + "_motif_*.zoops.pvalues")):
-        bn = os.path.basename(bamm_output)
-        bn = bn.replace(".zoops.pvalues", "")
-        index = int(bn.split("_motif_")[1]) - 1
-        print("index {}".format(index))
+    with open(r_output_file) as fh:
+        for line in fh:
+            prefix, motif_number, mops_rank_score, zoops_rank_score = line.split()
+            motif_number = int(motif_number)
 
-        try:
-            subprocess.check_output(["Rscript", "--vanilla", RSCRIPT, output_directory, bn])
-        except:
-            continue
+            try:
+                zoops_scores[motif_number] = float(zoops_rank_score)
+            except:
+                zoops_scores[motif_number] = np.nan
 
-        with open(os.path.join(output_directory, bn + ".rankscore")) as fh:
-            lines = fh.readlines()
-
-        for idx, line in enumerate(lines):
-            if line.startswith("Ranking score (ZOOPS):"):
-                if lines[idx+1] != "NA\n":
-                    zoops_scores[index] = float(lines[idx+1])
-                else:
-                    zoops_scores[index] = np.nan
-                print("\tzoops {}".format(float(lines[idx+1])))
-            elif line.startswith("Ranking score (MOPS):"):
-                if lines[idx+1] != "NA\n":
-                    mops_scores[index] = float(lines[idx+1])
-                else:
-                    mops_scores[index] = np.nan
-                print("\tmops {}".format(mops_scores[index]))
+            try:
+                mops_scores[motif_number] = float(mops_rank_score)
+            except:
+                mops_scores[motif_number] = np.nan
 
     with open(peng_json_file) as fh:
         peng_data = json.load(fh)
@@ -90,22 +137,22 @@ def main():
     #update information
     patterns = peng_data["patterns"]
     for idx, p in enumerate(patterns):
-        if idx in zoops_scores:
-            p["zoops_score"] = zoops_scores[idx]
+        if idx + 1 in zoops_scores:
+            p["zoops_score"] = zoops_scores[idx + 1]
         else:
             p["zoops_score"] = np.nan
-        if idx in mops_scores:
-            p["mops_score"] = mops_scores[idx]
+
+        if idx + 1 in mops_scores:
+            p["mops_score"] = mops_scores[idx + 1]
         else:
             p["mops_score"] = np.nan
 
     peng_data["patterns"] = sorted(peng_data["patterns"], key=lambda k: k['zoops_score'], reverse=True)
 
-    peng_final_output_file = os.path.join(output_directory, prefix + ".out")
-    write_meme(peng_data, peng_final_output_file)
-
-    peng_final_json_file = os.path.join(output_directory, prefix + ".json")
-    write_json(peng_data, peng_final_json_file)
+    if args.meme_output_file:
+        write_meme(peng_data, args.meme_output_file)
+    if args.json_output_file:
+        write_json(peng_data, args.json_output_file)
 
 def write_meme(peng_data, peng_output_file):
     with open(peng_output_file, "w") as fh:
