@@ -736,7 +736,7 @@ void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
       myfile << "\t\t\t\"bg_prob\" : " << pattern->get_bg_p() << "," << std::endl;
       myfile << "\t\t\t\"pwm\" : [" << std::endl;
       float** pwm = pattern->get_pwm();
-      for(size_t w = 0; w < pattern_length; w++) {
+      for(size_t w = 0; w < pattern->get_pattern_length(); w++) {
         myfile << "\t\t\t\t\t[";
         for(size_t a = 0; a < 4; a++) {
           myfile << std::fixed << std::setprecision(4) << pwm[w][a];
@@ -747,7 +747,7 @@ void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
             myfile << "]";
           }
         }
-        if(w != pattern_length - 1) {
+        if(w != pattern->get_pattern_length() - 1) {
           myfile << ", ";
         }
         myfile << std::endl;

@@ -11,16 +11,18 @@ import os
 import subprocess
 import tempfile
 import json
-import glob
 import sys
+import re
 import numpy as np
+import shutil
 
-RSCRIPT="/home/mmeier/opt/bamm/R/plotAUSFC_rank.R"
-PENG="/home/mmeier/opt/PEnG/bin/peng_motif"
-BAMM="/home/mmeier/opt/bamm/BaMMmotif"
+RSCRIPT = "/home/mmeier/opt/bamm/R/plotAUSFC_rank.R"
+PENG = "/home/mmeier/opt/PEnG/bin/peng_motif"
+BAMM = "/home/mmeier/opt/bamm/BaMMmotif"
+
 
 def main():
-    parser = argparse.ArgumentParser(description='Translates a PWM into an IUPAC identifier and prints it')
+    parser = argparse.ArgumentParser(description='A wrapper for PEnG that reranks the found motifs')
     parser.add_argument(metavar='FASTA_FILE', dest='fasta_file', type=str,
                         help='file with the input fasta sequences')
     parser.add_argument("-o", metavar='FILE', dest='meme_output_file', type=str,
@@ -37,7 +39,7 @@ def main():
                         help='lower zscore threshold for basic patterns')
     parser.add_argument('--bg-model-order', metavar='INT', dest='bg_model_order', type=int, default=2,
                         help='order of the background model')
-    parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default="BOTH",
+    parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default='BOTH', choices=['PLUS', 'BOTH'],
                         help='select the strand to work on')
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
@@ -56,27 +58,28 @@ def main():
 
     args = parser.parse_args()
 
-    if args.meme_output_file == None and args.json_output_file == None:
+    if args.meme_output_file is None and args.json_output_file is None:
         print("Warning: you did not define an output file (options -o or -j). Stopping here.", file=sys.stderr)
-        exit(0)
+        sys.exit(0)
 
     output_directory = args.output_directory
-    if args.output_directory == None:
-        #work in tmp directory
-        with TemporaryDirectory() as output_directory:
+    if args.output_directory is None:
+        # work in tmp directory
+        with tempfile.TemporaryDirectory() as output_directory:
             run_peng(args, output_directory)
     else:
         if not os.path.exists(output_directory):
-            #make user defined directory if not exist
+            # make user defined directory if not exist
             os.makedirs(output_directory)
         run_peng(args, output_directory)
 
-def build_peng_command(args, peng_output_file, peng_json_file):
-    command = [PENG, args.fasta_file,
-                "-j", peng_json_file,
-                "-o", peng_output_file]
+
+def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file):
+    command = [PENG, os.path.abspath(protected_fasta_file),
+               "-j", os.path.abspath(peng_json_file),
+               "-o", os.path.abspath(peng_output_file)]
     if args.background_sequences:
-        command += ["--background-sequences", args.background_sequences]
+        command += ["--background-sequences", os.path.abspath(args.background_sequences)]
     command += ["-w", str(args.pattern_length)]
     command += ["-t", str(args.zscore_threshold)]
     command += ["--bg-model-order", str(args.bg_model_order)]
@@ -94,27 +97,33 @@ def build_peng_command(args, peng_output_file, peng_json_file):
     print(" ".join(command))
     return command
 
+
 def run_peng(args, output_directory):
     # bamm takes the prefix from the input fasta-file
     filename, extension = os.path.splitext(args.fasta_file)
     prefix = os.path.basename(filename)
+    whitespace_matcher = re.compile(r'\s+')
+    prefix = re.sub(whitespace_matcher, '_', prefix)
+
+    protected_fasta_file = os.path.join(output_directory, prefix + ".fasta")
+    shutil.copyfile(args.fasta_file, protected_fasta_file)
 
     peng_output_file = os.path.join(output_directory, prefix + ".tmp.out")
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
 
-    #run peng
-    peng_command_line = build_peng_command(args, peng_output_file, peng_json_file)
+    # run peng
+    peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
     subprocess.check_output(peng_command_line)
 
-    #run bamm
-    subprocess.check_output([BAMM, output_directory, args.fasta_file,
-                                "--PWMFile", peng_output_file, "--FDR", "--savePvalues"])
+    # run bamm
+    subprocess.check_output([BAMM, output_directory, os.path.abspath(protected_fasta_file),
+                             "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePvalues"])
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
 
-    subprocess.check_output(["Rscript", "--vanilla", RSCRIPT, output_directory, prefix, r_output_file])
+    subprocess.check_output(["Rscript", "--vanilla", RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)])
 
-    #run R script
+    # run R script
     zoops_scores = dict()
     mops_scores = dict()
     with open(r_output_file) as fh:
@@ -135,7 +144,7 @@ def run_peng(args, output_directory):
     with open(peng_json_file) as fh:
         peng_data = json.load(fh)
 
-    #update information
+    # update information
     patterns = peng_data["patterns"]
     for idx, p in enumerate(patterns):
         if idx + 1 in zoops_scores:
@@ -154,6 +163,7 @@ def run_peng(args, output_directory):
         write_meme(peng_data, args.meme_output_file)
     if args.json_output_file:
         write_json(peng_data, args.json_output_file)
+
 
 def write_meme(peng_data, peng_output_file):
     with open(peng_output_file, "w") as fh:
@@ -178,18 +188,21 @@ def write_meme(peng_data, peng_output_file):
         for p in patterns:
             print("MOTIF {}".format(p["iupac_motif"]), file=fh)
             print(("letter-probability matrix: alength= {} w= {} "
-                    "nsites= {} bg_prob= {} log(Pval)= {} zoops_score= {} mops_score= {}").format(alphabet_length, p["pattern_length"], p["sites"], p["bg_prob"], p["log(Pval)"], p["zoops_score"], p["mops_score"]), file=fh)
+                   "nsites= {} bg_prob= {} log(Pval)= {} zoops_score= {} mops_score= {}").format(
+                   alphabet_length, p["pattern_length"], p["sites"], p["bg_prob"], p["log(Pval)"],
+                   p["zoops_score"], p["mops_score"]), file=fh)
             pwm = p["pwm"]
 
             for line in pwm:
                 print(" ".join(['{:.4f}'.format(x) for x in line]), file=fh)
             print(file=fh)
 
+
 def write_json(peng_data, json_output_file):
     with open(json_output_file, 'w') as fh:
         json.dump(peng_data, fh)
 
 
-#if called as a script; calls the main method
+# if called as a script; calls the main method
 if __name__ == '__main__':
     main()
