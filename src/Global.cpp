@@ -93,10 +93,10 @@ void Global::readArguments(int nargs, char* args[]){
       }
       patternLength = std::stoi(args[i]);
     }
-    else if (!strcmp(args[i], "-background-sequences")) {
+    else if (!strcmp(args[i], "--background-sequences")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following -background-sequences" << std::endl;
+        LOG(ERROR) << "No expression following --background-sequences" << std::endl;
         exit(4);
       }
       backgroundSequenceFilename = args[i];
@@ -165,7 +165,7 @@ void Global::readArguments(int nargs, char* args[]){
     else if (!strcmp(args[i], "--em-threshold")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following -em-threshold" << std::endl;
+        LOG(ERROR) << "No expression following --em-threshold" << std::endl;
         exit(4);
       }
       emMinThreshold = std::stof(args[i]);
@@ -173,7 +173,7 @@ void Global::readArguments(int nargs, char* args[]){
     else if (!strcmp(args[i], "--em-max-iterations")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following -em-max-iterations" << std::endl;
+        LOG(ERROR) << "No expression following --em-max-iterations" << std::endl;
         exit(4);
       }
       emMaxIterations = std::stoi(args[i]);
@@ -184,7 +184,7 @@ void Global::readArguments(int nargs, char* args[]){
     else if (!strcmp(args[i], "--strand")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following -em-max-iterations" << std::endl;
+        LOG(ERROR) << "No expression following --strand" << std::endl;
         exit(4);
       }
 
@@ -196,14 +196,14 @@ void Global::readArguments(int nargs, char* args[]){
       }
       else {
         printHelp();
-        LOG(ERROR) << "Unknown expression flollowing -strand" << std::endl;
+        LOG(ERROR) << "Unknown expression following --strand" << std::endl;
         exit(4);
       }
     }
     else if (!strcmp(args[i], "--bg-model-order")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following -bg-model-order" << std::endl;
+        LOG(ERROR) << "No expression following --bg-model-order" << std::endl;
         exit(4);
       }
       bgModelOrder = std::stoi(args[i]);

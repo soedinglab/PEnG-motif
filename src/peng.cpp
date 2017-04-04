@@ -487,9 +487,16 @@ void Peng::process(const float zscore_threshold,
   filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
                        zscore_threshold, pattern_zscore, filtered_base_patterns);
 
+//  for(auto pattern : filtered_base_patterns) {
+//    std::cerr << "base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
+//  }
+
   optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
 
   filter_iupac_patterns(best_iupac_patterns);
+//  for(auto pattern : best_iupac_patterns) {
+//    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+//  }
 
   #pragma omp parallel for
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
