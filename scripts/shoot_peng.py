@@ -98,6 +98,17 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     return command
 
 
+def build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory):
+    command = [BAMM, output_directory, os.path.abspath(protected_fasta_file),
+                "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePvalues"]
+    command += ["-K", str(args.bg_model_order)]
+    if args.strand == 'BOTH':
+        command += ["--reverseComp"]
+
+    print(" ".join(command))
+    return command
+
+
 def run_peng(args, output_directory):
     # bamm takes the prefix from the input fasta-file
     filename, extension = os.path.splitext(args.fasta_file)
@@ -116,8 +127,8 @@ def run_peng(args, output_directory):
     subprocess.check_output(peng_command_line)
 
     # run bamm
-    subprocess.check_output([BAMM, output_directory, os.path.abspath(protected_fasta_file),
-                             "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePvalues"])
+    bamm_command_line = build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory)
+    subprocess.check_output(bamm_command_line)
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
 
