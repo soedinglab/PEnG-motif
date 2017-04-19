@@ -16,9 +16,9 @@ import re
 import numpy as np
 import shutil
 
-RSCRIPT = "/home/mmeier/opt/bamm/R/plotAUSFC_rank.R"
-PENG = "/home/mmeier/opt/PEnG/bin/peng_motif"
-BAMM = "/home/mmeier/opt/bamm/BaMMmotif"
+RSCRIPT = "/usr/users/mmeier/opt/bamm/R/plotAUSFC_rank.R"
+PENG = "/usr/users/mmeier/opt/PEnG/bin/peng_motif"
+BAMM = "/usr/users/mmeier/opt/bamm/BaMMmotif"
 
 
 def main():
@@ -102,8 +102,8 @@ def build_bamm_command(args, protected_fasta_file, peng_output_file, output_dire
     command = [BAMM, output_directory, os.path.abspath(protected_fasta_file),
                 "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePvalues"]
     command += ["-K", str(args.bg_model_order)]
-    if args.strand == 'BOTH':
-        command += ["--reverseComp"]
+    if args.strand == 'PLUS':
+        command += ["--ss"]
 
     print(" ".join(command))
     return command
@@ -124,7 +124,7 @@ def run_peng(args, output_directory):
 
     # run peng
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
-    subprocess.check_output(peng_command_line)
+    peng_ret = subprocess.check_output(peng_command_line)
 
     # run bamm
     bamm_command_line = build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory)
