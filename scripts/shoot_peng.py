@@ -104,6 +104,7 @@ def build_bamm_command(args, protected_fasta_file, peng_output_file, output_dire
     command += ["-K", str(args.bg_model_order)]
     if args.strand == 'PLUS':
         command += ["--ss"]
+    command += ["--zoops"]
 
     print(" ".join(command))
     return command
@@ -136,21 +137,17 @@ def run_peng(args, output_directory):
 
     # run R script
     zoops_scores = dict()
-    mops_scores = dict()
     with open(r_output_file) as fh:
         for line in fh:
-            prefix, motif_number, mops_rank_score, zoops_rank_score = line.split()
+            if line.startswith("prefix"):
+                continue
+            prefix, motif_number, zoops_rank_score, fract_occ = line.split()
             motif_number = int(motif_number)
 
             try:
                 zoops_scores[motif_number] = float(zoops_rank_score)
             except:
                 zoops_scores[motif_number] = np.nan
-
-            try:
-                mops_scores[motif_number] = float(mops_rank_score)
-            except:
-                mops_scores[motif_number] = np.nan
 
     with open(peng_json_file) as fh:
         peng_data = json.load(fh)
@@ -162,11 +159,6 @@ def run_peng(args, output_directory):
             p["zoops_score"] = zoops_scores[idx + 1]
         else:
             p["zoops_score"] = np.nan
-
-        if idx + 1 in mops_scores:
-            p["mops_score"] = mops_scores[idx + 1]
-        else:
-            p["mops_score"] = np.nan
 
     peng_data["patterns"] = sorted(peng_data["patterns"], key=lambda k: k['zoops_score'], reverse=True)
 
@@ -199,9 +191,9 @@ def write_meme(peng_data, peng_output_file):
         for p in patterns:
             print("MOTIF {}".format(p["iupac_motif"]), file=fh)
             print(("letter-probability matrix: alength= {} w= {} "
-                   "nsites= {} bg_prob= {} log(Pval)= {} zoops_score= {} mops_score= {}").format(
+                   "nsites= {} bg_prob= {} log(Pval)= {} zoops_score= {}").format(
                    alphabet_length, p["pattern_length"], p["sites"], p["bg_prob"], p["log(Pval)"],
-                   p["zoops_score"], p["mops_score"]), file=fh)
+                   p["zoops_score"]), file=fh)
             pwm = p["pwm"]
 
             for line in pwm:
