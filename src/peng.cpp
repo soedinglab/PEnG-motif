@@ -28,6 +28,9 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
     exit(1);
   }
 
+  this->sequence_set = sequence_set;
+  this->k = k;
+  bg_model = bg;
   IUPACAlphabet::init(Alphabet::getAlphabet());
   BasePattern::init(pattern_length);
 
@@ -49,6 +52,8 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
     ltot *= 2;
   }
 
+  get_masks(pattern_length, masks);
+
   //init counter for patterns
   this->number_patterns = pow(Alphabet::getSize(), pattern_length);
   this->pattern_counter = new size_t[number_patterns];
@@ -59,17 +64,6 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
   this->pattern_bg_probabilities = new float[number_patterns];
   this->pattern_logp = new float[number_patterns];
   this->pattern_zscore = new float[number_patterns];
-
-  count_patterns(pattern_length, Alphabet::getSize(), number_patterns, sequence_set, pattern_counter);
-  if(this->strand == BOTH_STRANDS) {
-    count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
-  }
-
-  calculate_bg_probabilities(bg, alphabet_size, k);
-  calculate_log_pvalues(ltot);
-  calculate_zscores(ltot);
-
-  bg_model = bg;
 }
 
 Peng::~Peng() {
@@ -80,12 +74,11 @@ Peng::~Peng() {
   //do not delete bg_model
 }
 
-size_t Peng::get_bg_id(const size_t pattern, const int curr_pattern_length, const int k) {
+size_t Peng::get_bg_id(const size_t pattern, const int curr_pattern_length, const int k, size_t* factors) {
   size_t k_mer_pattern = 0;
-  size_t* base_factors = BasePattern::getFactors();
   for(int i = curr_pattern_length - k - 1; i < curr_pattern_length; i++) {
-    int c = BasePattern::getNucleotideAtPos(pattern, i);
-    k_mer_pattern += c * base_factors[curr_pattern_length - i - 1];
+    int c = BasePattern::getNucleotideAtPos(pattern, i, factors);
+    k_mer_pattern += c * factors[curr_pattern_length - i - 1];
   }
   return k_mer_pattern;
 }
@@ -114,37 +107,90 @@ void Peng::calculate_zscores(int ltot) {
   }
 }
 
-void Peng::calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k) {
+void Peng::calculate_bg_probabilities(const int alphabet_size, const int k, GapMask* mask, BackgroundModel* model) {
   float* background_model = model->getV()[k];
   size_t nr_initial_mers = pow(alphabet_size, k+1);
+
+  int number_full_patterns = pow(Alphabet::getSize(), mask->get_mask_length() + 1);
+  float* full_mask_patterns = new float[number_full_patterns];
+//  for(int i = 0; i < number_full_patterns; i++) {
+//    full_mask_patterns[i] = -1.0;
+//  }
+
+  size_t* factors = new size_t[mask->get_mask_length() + 1];
+  for(size_t i = 0; i <= mask->get_mask_length(); i++) {
+    factors[i] = pow(Alphabet::getSize(), i);
+  }
 
   #pragma omp parallel for schedule(dynamic, 1)
   for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
     float cur_prob = 1.0;
     for(int k_prime = 0; k_prime <= k; k_prime++) {
-      cur_prob *= background_model[get_bg_id(pattern, k_prime+1, k_prime)];
+      cur_prob *= background_model[get_bg_id(pattern, k_prime+1, k_prime, factors)];
     }
-    calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, cur_prob, this->pattern_bg_probabilities);
+    calculate_bg_probability(background_model, alphabet_size, mask->get_mask_length(), k,
+                             mask->get_mask_length() - k - 1,
+                             pattern, cur_prob, factors, full_mask_patterns);
   }
+
+  bool* raw_mask = mask->get_mask();
+
+  //merge patterns with masks...
+  for(size_t pattern = 0; pattern < number_patterns; pattern++) {
+    std::vector<size_t> full_base_patterns;
+    full_base_patterns.push_back(0);
+    int pos = 0;
+    for(int i = 0; i < mask->get_mask_length(); i++) {
+      std::vector<size_t> tmp;
+      if(raw_mask[i]) {
+        int nuc = BasePattern::getNucleotideAtPos(pattern, pos++);
+        for(auto prev_pattern : full_base_patterns) {
+          tmp.push_back(prev_pattern + nuc * factors[i]);
+        }
+      }
+      else {
+        for(auto prev_pattern : full_base_patterns) {
+          for(int nuc = 0; nuc < 4; nuc++) {
+            tmp.push_back(prev_pattern + nuc * factors[i]);
+          }
+        }
+      }
+
+      full_base_patterns.clear();
+      full_base_patterns.insert(full_base_patterns.begin(), tmp.begin(), tmp.end());
+    }
+
+//    std::cerr << BasePattern::toString(pattern) << std::endl;
+//    for(auto full_pattern : full_base_patterns) {
+//      std::cerr << "\t" << BasePattern::toString(full_pattern, mask->get_mask_length(), factors) << "\t" << full_mask_patterns[full_pattern] << std::endl;
+//    }
+
+    this->pattern_bg_probabilities[pattern] = 0;
+    for(auto full_pattern : full_base_patterns) {
+      this->pattern_bg_probabilities[pattern] += full_mask_patterns[full_pattern];
+    }
+  }
+
+  delete[] factors;
+  delete[] full_mask_patterns;
 }
 
-void Peng::calculate_bg_probability(float* background_model, const int alphabet_size,
+void Peng::calculate_bg_probability(float* background_model, const int alphabet_size, const int pattern_length,
                                          const int k,
                                          int missing_pattern_length, size_t pattern,
-                                         float cur_prob, float* final_probabilities) {
+                                         float cur_prob, size_t* factors, float* final_probabilities) {
   missing_pattern_length--;
-  size_t* base_factors = BasePattern::getFactors();
   for(int c = 0; c < Alphabet::getSize(); c++) {
-    size_t extended_pattern = pattern + c * base_factors[pattern_length - missing_pattern_length - 1];
-    size_t kmer_id = get_bg_id(extended_pattern, pattern_length - missing_pattern_length, k);
+    size_t extended_pattern = pattern + c * factors[pattern_length - missing_pattern_length - 1];
+    size_t kmer_id = get_bg_id(extended_pattern, pattern_length - missing_pattern_length, k, factors);
 
     float extended_pattern_prob = cur_prob * background_model[kmer_id];
     if(missing_pattern_length == 0) {
       final_probabilities[extended_pattern] = extended_pattern_prob;
     }
     else{
-      calculate_bg_probability(background_model, alphabet_size, k, missing_pattern_length,
-                           extended_pattern, extended_pattern_prob, final_probabilities);
+      calculate_bg_probability(background_model, alphabet_size, pattern_length, k, missing_pattern_length,
+                           extended_pattern, extended_pattern_prob, factors, final_probabilities);
     }
   }
 }
@@ -153,13 +199,19 @@ void Peng::calculate_bg_probability(float* background_model, const int alphabet_
 //count all possible patterns of a certain length within the alphabet on the given sequences (just one strand)
 //shift over characters not in the alphabet (seq[i] == 0)
 void Peng::count_patterns(const int pattern_length, const int alphabet_size,
-                          const size_t number_patterns,
+                          const size_t number_patterns, GapMask* mask,
                           SequenceSet* sequence_set, size_t* pattern_counter) {
   std::vector<Sequence*> sequences = sequence_set->getSequences();
 
   std::map<size_t, int> pattern_plus_positions;
   std::map<size_t, int> pattern_minus_positions;
   size_t* base_factors = BasePattern::getFactors();
+
+  for(size_t p = 0; p < number_patterns; p++) {
+    pattern_counter[p] = 0;
+  }
+
+  bool* raw_mask = mask->get_mask();
 
   for(size_t s = 0; s < sequences.size(); s++) {
     uint8_t* seq = sequences[s]->getSequence();
@@ -174,43 +226,29 @@ void Peng::count_patterns(const int pattern_length, const int alphabet_size,
     pattern_plus_positions.clear();
     pattern_minus_positions.clear();
 
-    //index in sequence; start point for current pattern
-    int i = 0;
-
-    //the numerical id of the current pattern
-    size_t id;
-
     //start point of pattern was shifted; always at the beginning and when a non-alphabetic character occurs in the sequence
-    bool shifted = true;
+    for(int i = 0; i <= length - mask->get_mask_length(); i++) {
+      //the numerical id of the current pattern
+      size_t id = 0;
+      int p = 0;
 
-    while(i <= length - pattern_length) {
-      if(seq[i + pattern_length - 1] == 0) {
-        shifted = true;
-        i += pattern_length;
+      bool is_invalid = false;
+      for (int j = 0; j < mask->get_mask_length(); j++) {
+        if(seq[i+j] == 0) {
+          i = i+j;
+          is_invalid = true;
+          break;
+        }
+
+        if (raw_mask[j]) {
+          id += base_factors[p++] * (seq[i+j] - 1);
+        }
+      }
+
+      if(is_invalid) {
         continue;
       }
-      if(shifted) {
-        shifted = false;
-        id = 0;
-        //init first pattern id without character [pattern_length - 1] for sequence
-        for(size_t p = 0; p < pattern_length - 1; p++) {
-          //could not match initial pattern without non-alphabetic character
-          if(seq[i+p] == 0) {
-            shifted = true;
-            break;
-          }
-          id += base_factors[p] * (seq[i+p] - 1); // -1 since the alphabet starts at 1
-        }
-        //could not match initial pattern without non-alphabetic character
-        if(shifted) {
-          i++;
-          continue;
-        }
-      }
 
-      //add new character to pattern
-      // seq[i + pattern_length - 1] - 1; -1 since the alphabet starts at 1
-      id += (seq[i + pattern_length - 1] - 1) * base_factors[pattern_length - 1];
       assert(id < number_patterns);
 
       size_t rev_id = BasePattern::getMinusId(id);
@@ -227,11 +265,6 @@ void Peng::count_patterns(const int pattern_length, const int alphabet_size,
         pattern_plus_positions[rev_id] = i;
         pattern_minus_positions[rev_id] = i;
       }
-
-      //remove first character from pattern
-      id -= (seq[i] - 1); // same as: -= (seq[i] - 1) * factor[0]; -1 since the alphabet starts at 1
-      id /= alphabet_size;
-      i++;
     }
   }
 }
@@ -483,30 +516,55 @@ void Peng::process(const float zscore_threshold,
                    const bool use_merging, const float bit_factor_merge_threshold,
                    std::vector<IUPACPattern*>& best_iupac_patterns) {
 
-  std::vector<size_t> filtered_base_patterns;
-  filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
-                       zscore_threshold, pattern_zscore, filtered_base_patterns);
+  for(int i = 0; i < masks.size(); i++) {
+    GapMask* gap_mask = masks[i];
+    count_patterns(pattern_length, Alphabet::getSize(), number_patterns, gap_mask, sequence_set, pattern_counter);
+    if(this->strand == BOTH_STRANDS) {
+      count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
+    }
 
-//  for(auto pattern : filtered_base_patterns) {
-//    std::cerr << "base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
-//  }
+    calculate_bg_probabilities(alphabet_size, k, gap_mask, bg_model);
 
-  optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
+    calculate_log_pvalues(ltot);
+    calculate_zscores(ltot);
 
-  filter_iupac_patterns(best_iupac_patterns);
-//  for(auto pattern : best_iupac_patterns) {
-//    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
-//  }
+    std::vector<size_t> filtered_base_patterns;
+    filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
+                         zscore_threshold, pattern_zscore, filtered_base_patterns);
 
-  #pragma omp parallel for
-  for(int i = 0; i < best_iupac_patterns.size(); i++) {
-    IUPACPattern* pattern = best_iupac_patterns[i];
-    pattern->count_sites(pattern_counter);
-    pattern->calculate_adv_pwm(pattern_counter, bg_model->getV()[0]);
-  }
+  //  for(auto pattern : filtered_base_patterns) {
+  //    std::cerr << "base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
+  //  }
 
-  if(use_em) {
-    em_optimize_pwms(best_iupac_patterns, em_saturation_factor, min_em_threshold, em_max_iterations);
+    std::vector<IUPACPattern*> iupac_patterns;
+    optimize_iupac_patterns(filtered_base_patterns, iupac_patterns);
+
+    filter_iupac_patterns(iupac_patterns);
+  //  for(auto pattern : best_iupac_patterns) {
+  //    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+  //  }
+
+    #pragma omp parallel for
+    for(int j = 0; j < iupac_patterns.size(); j++) {
+      IUPACPattern* pattern = iupac_patterns[j];
+      pattern->count_sites(pattern_counter);
+      pattern->calculate_adv_pwm(pattern_counter, bg_model->getV()[0]);
+    }
+
+    if(use_em) {
+      em_optimize_pwms(iupac_patterns, em_saturation_factor, min_em_threshold, em_max_iterations);
+    }
+
+    //add gaps
+    for(int j = 0; j < iupac_patterns.size(); j++) {
+      IUPACPattern* pattern = iupac_patterns[j];
+      if(pattern->get_pwm() != NULL) {
+        IUPACPattern* gapped_pattern = new IUPACPattern(pattern, gap_mask, bg_model->getV()[0]);
+        best_iupac_patterns.push_back(gapped_pattern);
+      }
+      delete pattern;
+    }
+    iupac_patterns.clear();
   }
 
   if(use_merging) {

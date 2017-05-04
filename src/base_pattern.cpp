@@ -36,6 +36,18 @@ std::string BasePattern::toString(size_t pattern_id) {
   return out;
 }
 
+std::string BasePattern::toString(size_t pattern_id, const int pattern_length, size_t* factors) {
+  std::string out = "";
+  for(size_t p = 0; p < pattern_length; p++) {
+    int c = BasePattern::getNucleotideAtPos(pattern_id, p, factors);
+    //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
+    out += Alphabet::getBase(c + 1);
+  }
+
+  return out;
+}
+
+
 size_t BasePattern::getMinusId(const size_t pattern_id) {
   size_t tmp_id = pattern_id;
   size_t rev_pattern_id = 0;
@@ -58,6 +70,12 @@ int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos) {
   size_t residue = (pattern % factor[pos + 1]);
   return int(residue / factor[pos]);
 }
+
+int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos, size_t* factor) {
+  size_t residue = (pattern % factor[pos + 1]);
+  return int(residue / factor[pos]);
+}
+
 
 size_t* BasePattern::getFactors() {
   return BasePattern::factor;

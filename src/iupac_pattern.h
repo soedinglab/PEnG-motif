@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include "Global.h"
+#include "gap_mask.h"
 
 static const int MIN_MERGE_OVERLAP = 6;
 
@@ -42,6 +43,7 @@ class IUPACPattern {
 
   IUPACPattern(size_t iupac_pattern, size_t pattern_length);
   IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
+  IUPACPattern(IUPACPattern* iupac_pattern, GapMask* mask, float* background);
   ~IUPACPattern();
 
   size_t get_pattern();
@@ -79,9 +81,9 @@ class IUPACPattern {
 
   static float** iupac_profile;
   static float* log_bonferroni;
-  size_t pattern_length;
 
   size_t pattern;
+  size_t pattern_length;
   float log_pvalue;
   float bg_p;
   size_t n_sites;

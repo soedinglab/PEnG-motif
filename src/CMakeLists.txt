@@ -24,6 +24,8 @@ set(PENG_SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.h
   ${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gap_mask.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gap_mask.h
 )
 
 add_library(PENG_OBJECTS OBJECT ${PENG_SOURCE})

@@ -9,6 +9,7 @@
 #include <tuple>
 #include "iupac_pattern.h"
 #include "Global.h"
+#include "gap_mask.h"
 
 class Peng{
  public:
@@ -30,6 +31,11 @@ class Peng{
                  BackgroundModel* bg_model);
 
  private:
+  std::vector<GapMask*> masks;
+
+  SequenceSet* sequence_set;
+  int k;
+
   BackgroundModel* bg_model;
   size_t* pattern_counter;
   float* pattern_bg_probabilities;
@@ -42,7 +48,7 @@ class Peng{
   int alphabet_size;
   size_t ltot;
 
-  void count_patterns(const int pattern_length, const int alphabet_size, const size_t number_patterns, SequenceSet* sequence_set, size_t* pattern_counter);
+  void count_patterns(const int pattern_length, const int alphabet_size, const size_t number_patterns, GapMask* mask, SequenceSet* sequence_set, size_t* pattern_counter);
 
   /**
       Helper function for the background model
@@ -64,7 +70,7 @@ class Peng{
       @param k is the length of the kmer
       @return the id of the k_mer ending at curr_pattern_pos
   */
-  size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k);
+  size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k, size_t* factors);
 
   /**
       Calculates the background probabilities of base patterns
@@ -73,7 +79,7 @@ class Peng{
       @param alphabet_size the size of the alphabet
       @param k length of mers to be used in the background model
   */
-  void calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k);
+  void calculate_bg_probabilities(const int alphabet_size, const int k, GapMask* mask, BackgroundModel* model);
 
   /**
       Recursive calculation of background probabilities of base patterns
@@ -87,9 +93,9 @@ class Peng{
       @param final_probabilities array with final background probabilities of full-length patterns
 
   */
-  void calculate_bg_probability(float* background_model, const int alphabet_size,
+  void calculate_bg_probability(float* background_model, const int alphabet_size, const int pattern_length,
                             const int k, int missing_pattern_length, size_t cur_pattern,
-                            float cur_prob, float* final_probabilities);
+                            float cur_prob, size_t* factors, float* final_probabilities);
 
   /**
       Calculation of the log(pvalues) of base patterns

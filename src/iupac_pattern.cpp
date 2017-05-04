@@ -32,6 +32,52 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->merged = false;
 }
 
+IUPACPattern::IUPACPattern(IUPACPattern* iupac_pattern, GapMask* mask, float* bg) {
+  pattern = iupac_pattern->pattern;
+  pattern_length = mask->get_mask_length();
+  bool* raw_mask = mask->get_mask();
+
+  pwm = new float*[pattern_length];
+  for(int p = 0; p < pattern_length; p++) {
+    pwm[p] = new float[4]; //base nucleotides ACGT
+    for(int i = 0; i < 4; i++) {
+      pwm[p][i] = 0;
+    }
+  }
+
+  int pos = 0;
+  for(int i = 0; i < pattern_length; i++) {
+    if(raw_mask[i]) {
+      for(int a = 0; a < 4; a++) {
+        pwm[i][a] = iupac_pattern->pwm[pos][a];
+      }
+      pos++;
+    }
+    else {
+      for(int a = 0; a < 4; a++) {
+        pwm[i][a] = bg[a];
+      }
+    }
+  }
+
+  comp_pwm = new float*[pattern_length];
+  for(int i = 0; i < pattern_length; i++) {
+    comp_pwm[i] = new float[4];
+  }
+
+  calculate_comp_pwm();
+
+  local_n_sites = new size_t[pattern_length];
+  for(int i = 0; i < pattern_length; i++) {
+    local_n_sites[i] = iupac_pattern->local_n_sites[0];
+  }
+
+  n_sites = iupac_pattern->n_sites;
+  log_pvalue = iupac_pattern->log_pvalue;
+  bg_p = iupac_pattern->bg_p;
+  merged = true;
+}
+
 //merge constructor
 IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift) {
   int offset_shorter = -1.0 * std::min(shift, 0);
@@ -145,7 +191,6 @@ IUPACPattern::~IUPACPattern(){
     }
     delete[] comp_pwm;
   }
-
 
   delete[] local_n_sites;
 }

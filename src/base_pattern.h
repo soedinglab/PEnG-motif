@@ -48,6 +48,7 @@ class BasePattern {
       @return string of base pattern
   */
   static std::string toString(const size_t pattern_id);
+  static std::string toString(size_t pattern_id, const int pattern_length, size_t* factors);
 
   /**
       Get id of corresponding pattern on the minus strand
@@ -63,6 +64,7 @@ class BasePattern {
       @return encoded nucleotide
   */
   static int getNucleotideAtPos(const size_t pattern, const size_t pos);
+  static int getNucleotideAtPos(const size_t pattern, const size_t pos, size_t* factor);
  private:
   // position specific factors used for encoding base patterns
   static size_t* factor;
