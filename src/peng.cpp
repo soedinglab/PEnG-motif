@@ -107,20 +107,17 @@ void Peng::calculate_zscores(int ltot) {
   }
 }
 
-void Peng::calculate_bg_probabilities(const int alphabet_size, const int k, GapMask* mask, BackgroundModel* model) {
-  float* background_model = model->getV()[k];
-  size_t nr_initial_mers = pow(alphabet_size, k+1);
+void Peng::calculate_bg_probabilities(const int alphabet_size, const int k, GapMask* mask, BackgroundModel* model, size_t* factors, float* full_mask_patterns) {
+//  factors = new size_t[mask->get_mask_length() + 1];
+//  full_mask_patterns = new float[number_full_patterns];
+  size_t number_full_patterns = pow(Alphabet::getSize(), mask->get_mask_length() + 1);
 
-  int number_full_patterns = pow(Alphabet::getSize(), mask->get_mask_length() + 1);
-  float* full_mask_patterns = new float[number_full_patterns];
-//  for(int i = 0; i < number_full_patterns; i++) {
-//    full_mask_patterns[i] = -1.0;
-//  }
-
-  size_t* factors = new size_t[mask->get_mask_length() + 1];
   for(size_t i = 0; i <= mask->get_mask_length(); i++) {
     factors[i] = pow(Alphabet::getSize(), i);
   }
+
+  float* background_model = model->getV()[k];
+  size_t nr_initial_mers = pow(alphabet_size, k+1);
 
   #pragma omp parallel for schedule(dynamic, 1)
   for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
@@ -129,9 +126,13 @@ void Peng::calculate_bg_probabilities(const int alphabet_size, const int k, GapM
       cur_prob *= background_model[get_bg_id(pattern, k_prime+1, k_prime, factors)];
     }
     calculate_bg_probability(background_model, alphabet_size, mask->get_mask_length(), k,
-                             mask->get_mask_length() - k - 1,
-                             pattern, cur_prob, factors, full_mask_patterns);
+                           mask->get_mask_length() - k - 1,
+                           pattern, cur_prob, factors, full_mask_patterns);
   }
+}
+
+void Peng::calculate_bg_probabilities(GapMask* mask, size_t* factors, float* full_mask_patterns) {
+  size_t number_full_patterns = pow(Alphabet::getSize(), mask->get_mask_length() + 1);
 
   bool* raw_mask = mask->get_mask();
 
@@ -160,19 +161,11 @@ void Peng::calculate_bg_probabilities(const int alphabet_size, const int k, GapM
       full_base_patterns.insert(full_base_patterns.begin(), tmp.begin(), tmp.end());
     }
 
-//    std::cerr << BasePattern::toString(pattern) << std::endl;
-//    for(auto full_pattern : full_base_patterns) {
-//      std::cerr << "\t" << BasePattern::toString(full_pattern, mask->get_mask_length(), factors) << "\t" << full_mask_patterns[full_pattern] << std::endl;
-//    }
-
     this->pattern_bg_probabilities[pattern] = 0;
     for(auto full_pattern : full_base_patterns) {
       this->pattern_bg_probabilities[pattern] += full_mask_patterns[full_pattern];
     }
   }
-
-  delete[] factors;
-  delete[] full_mask_patterns;
 }
 
 void Peng::calculate_bg_probability(float* background_model, const int alphabet_size, const int pattern_length,
@@ -516,6 +509,10 @@ void Peng::process(const float zscore_threshold,
                    const bool use_merging, const float bit_factor_merge_threshold,
                    std::vector<IUPACPattern*>& best_iupac_patterns) {
 
+  int last_gap_mask_length = -1;
+  size_t* factors = NULL;
+  float* full_mask_patterns = NULL;
+
   for(int i = 0; i < masks.size(); i++) {
     GapMask* gap_mask = masks[i];
     count_patterns(pattern_length, Alphabet::getSize(), number_patterns, gap_mask, sequence_set, pattern_counter);
@@ -523,7 +520,23 @@ void Peng::process(const float zscore_threshold,
       count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
     }
 
-    calculate_bg_probabilities(alphabet_size, k, gap_mask, bg_model);
+    if(gap_mask->get_mask_length() != last_gap_mask_length) {
+      last_gap_mask_length = gap_mask->get_mask_length();
+      if(factors != NULL) {
+        delete[] factors;
+      }
+      factors = new size_t[gap_mask->get_mask_length() + 1];
+
+      if(full_mask_patterns != NULL) {
+        delete[] full_mask_patterns;
+      }
+      size_t number_full_patterns = pow(Alphabet::getSize(), gap_mask->get_mask_length() + 1);
+      full_mask_patterns = new float[number_full_patterns];
+
+      calculate_bg_probabilities(Alphabet::getSize(), k, gap_mask, bg_model, factors, full_mask_patterns);
+    }
+
+    calculate_bg_probabilities(gap_mask, factors, full_mask_patterns);
 
     calculate_log_pvalues(ltot);
     calculate_zscores(ltot);

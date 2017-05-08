@@ -16,9 +16,9 @@ import re
 import numpy as np
 import shutil
 
-RSCRIPT = "/usr/users/mmeier/opt/bamm/R/plotAUSFC_rank.R"
-PENG = "/usr/users/mmeier/opt/PEnG/bin/peng_motif"
-BAMM = "/usr/users/mmeier/opt/bamm/BaMMmotif"
+RSCRIPT = "/home/mmeier/opt/bamm/R/plotAUSFC_rank.R"
+PENG = "/home/mmeier/opt/PEnG/bin/peng_motif"
+BAMM = "/home/mmeier/opt/bamm/BaMMmotif"
 
 
 def main():
@@ -125,15 +125,22 @@ def run_peng(args, output_directory):
 
     # run peng
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
-    peng_ret = subprocess.check_output(peng_command_line)
+    peng_ret = subprocess.check_output(peng_command_line, stderr=subprocess.STDOUT)
+    print("peng return: {}".format(peng_ret), file=sys.stderr)
 
     # run bamm
     bamm_command_line = build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory)
-    subprocess.check_output(bamm_command_line)
+    bamm_ret = subprocess.check_output(bamm_command_line, stderr=subprocess.STDOUT)
+    print("bamm return: {}".format(bamm_ret), file=sys.stderr)
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
 
-    subprocess.check_output(["Rscript", "--vanilla", RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)])
+    r_command_line = ["Rscript", "--vanilla", RSCRIPT,
+                        os.path.abspath(output_directory),
+                        prefix,
+                        os.path.abspath(r_output_file)]
+    r_ret = subprocess.check_output(r_command_line, stderr=subprocess.STDOUT)
+    print("r return: {}".format(r_ret), file=sys.stderr)
 
     # run R script
     zoops_scores = dict()

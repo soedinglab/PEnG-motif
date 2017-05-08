@@ -72,6 +72,8 @@ class Peng{
   */
   size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k, size_t* factors);
 
+
+
   /**
       Calculates the background probabilities of base patterns
 
@@ -79,7 +81,7 @@ class Peng{
       @param alphabet_size the size of the alphabet
       @param k length of mers to be used in the background model
   */
-  void calculate_bg_probabilities(const int alphabet_size, const int k, GapMask* mask, BackgroundModel* model);
+  void calculate_bg_probabilities(const int alphabet_size, const int k, GapMask* mask, BackgroundModel* model, size_t* factors, float* full_mask_patterns);
 
   /**
       Recursive calculation of background probabilities of base patterns
@@ -93,9 +95,13 @@ class Peng{
       @param final_probabilities array with final background probabilities of full-length patterns
 
   */
+  void calculate_bg_probabilities(GapMask* mask, size_t* factors, float* full_mask_patterns);
+
   void calculate_bg_probability(float* background_model, const int alphabet_size, const int pattern_length,
-                            const int k, int missing_pattern_length, size_t cur_pattern,
-                            float cur_prob, size_t* factors, float* final_probabilities);
+                                           const int k,
+                                           int missing_pattern_length, size_t pattern,
+                                           float cur_prob, size_t* factors, float* final_probabilities);
+
 
   /**
       Calculation of the log(pvalues) of base patterns
