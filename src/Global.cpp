@@ -36,6 +36,8 @@ int Global::emMaxIterations = 100;
 
 bool Global::useMerging = true;
 
+int Global::pseudoCounts = 100;
+
 float Global::zscoreThreshold = 100;
 float Global::mergeBitfactorThreshold = 0.75;
 
@@ -142,6 +144,14 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       mergeBitfactorThreshold = std::stof(args[i]);
+    }
+    else if (!strcmp(args[i], "--pseudo-counts")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following --pseudo-counts" << std::endl;
+        exit(4);
+      }
+      pseudoCounts = std::stoi(args[i]);
     }
     else if (!strcmp(args[i], "--threads")) {
       if (++i>=nargs) {
@@ -258,12 +268,16 @@ void Global::printHelp(){
       "           max number of em optimization iterations\n");
   printf("\n      --no-merging\n"
       "           shuts off the merging \n");
+  printf("\n        --pseudo-counts, <PSEUDO_COUNTS>\n"
+      "           number of pseudo-counts for optimization\n");
   printf("\n      --threads, <NUMBER_THREADS>\n"
       "           number of threads to be used for parallelization\n");
   printf("\n      --version\n"
       "           print the version number\n");
   printf("\n      -h\n"
       "           print this help \n");
+
+
 	printf("\n=================================================================\n");
 }
 

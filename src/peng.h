@@ -15,7 +15,7 @@ class Peng{
   Peng(const int pattern_length, Strand s, const int k,
                 SequenceSet* sequence_set, BackgroundModel* bg);
   ~Peng();
-  void process(const float zscore_threshold,
+  void process(const float zscore_threshold, const int pseudo_counts,
                      const bool use_em, const float em_saturation_factor, const float min_em_threshold,
                      const int em_max_iterations, const bool use_merging, const float bit_factor_merge_threshold,
                      std::vector<IUPACPattern*>& best_iupac_patterns);

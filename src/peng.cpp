@@ -477,7 +477,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
   }
 }
 
-void Peng::process(const float zscore_threshold,
+void Peng::process(const float zscore_threshold, const int pseudo_counts,
                    const bool use_em, const float em_saturation_factor,
                    const float min_em_threshold, const int em_max_iterations,
                    const bool use_merging, const float bit_factor_merge_threshold,
@@ -502,7 +502,7 @@ void Peng::process(const float zscore_threshold,
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
     IUPACPattern* pattern = best_iupac_patterns[i];
     pattern->count_sites(pattern_counter);
-    pattern->calculate_adv_pwm(pattern_counter, bg_model->getV()[0]);
+    pattern->calculate_adv_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
   }
 
   if(use_em) {
