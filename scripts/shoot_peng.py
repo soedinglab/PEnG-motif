@@ -133,7 +133,7 @@ def run_peng(args, output_directory):
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
 
-    subprocess.check_output(["Rscript", "--vanilla", RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)])
+    subprocess.check_output([RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)])
 
     # run R script
     zoops_scores = dict()
