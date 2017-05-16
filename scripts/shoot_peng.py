@@ -16,9 +16,9 @@ import re
 import numpy as np
 import shutil
 
-RSCRIPT = "/usr/users/mmeier/opt/bamm/R/plotAUSFC_rank.R"
-PENG = "/usr/users/mmeier/opt/PEnG/bin/peng_motif"
-BAMM = "/usr/users/mmeier/opt/bamm/BaMMmotif"
+RSCRIPT = "plotAUSFC_rank.R"
+PENG = "peng_motif"
+BAMM = "BaMMmotif"
 
 
 def main():
