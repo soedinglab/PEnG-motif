@@ -40,6 +40,7 @@ public:
 
 	static float mergeBitfactorThreshold;
 
+	static bool useAdvPWM;
 	static int pseudoCounts;
 
 	static int bgModelOrder;						         // background model order, defaults to 2

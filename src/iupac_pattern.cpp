@@ -369,14 +369,14 @@ void IUPACPattern::count_sites(size_t* pattern_counter) {
   }
 }
 
-void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
+void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
   if(pwm == NULL && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT
       for(int i = 0; i < 4; i++) {
-        pwm[p][i] = 0;
+        pwm[p][i] = pseudo_counts * background_model[i];
       }
     }
 
@@ -391,7 +391,7 @@ void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
 
     for(int p = 0; p < pattern_length; p++) {
       for(int i = 0; i < 4; i++) {
-        pwm[p][i] /= 1.0 * n_sites;
+        pwm[p][i] /= 1.0 * n_sites + pseudo_counts;
       }
     }
 

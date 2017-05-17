@@ -37,6 +37,7 @@ int Global::emMaxIterations = 100;
 bool Global::useMerging = true;
 
 int Global::pseudoCounts = 100;
+bool Global::useAdvPWM = true;
 
 float Global::zscoreThreshold = 100;
 float Global::mergeBitfactorThreshold = 0.75;
@@ -44,6 +45,7 @@ float Global::mergeBitfactorThreshold = 0.75;
 // background model options
 bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities
                                                       // instead of background frequencies of mononucleotides
+
 int Global::bgModelOrder = 2;                         // background model order, defaults to 2
 std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // background model alpha
 
@@ -144,6 +146,9 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       mergeBitfactorThreshold = std::stof(args[i]);
+    }
+    else if (!strcmp(args[i], "--use-default-pwm")) {
+      useAdvPWM = false;
     }
     else if (!strcmp(args[i], "--pseudo-counts")) {
       if (++i>=nargs) {
@@ -268,6 +273,8 @@ void Global::printHelp(){
       "           max number of em optimization iterations\n");
   printf("\n      --no-merging\n"
       "           shuts off the merging \n");
+  printf("\n        --use-default-pwm\n"
+      "           use the default calculation of the pwm\n");
   printf("\n        --pseudo-counts, <PSEUDO_COUNTS>\n"
       "           number of pseudo-counts for optimization\n");
   printf("\n      --threads, <NUMBER_THREADS>\n"

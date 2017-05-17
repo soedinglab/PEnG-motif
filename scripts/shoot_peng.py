@@ -53,6 +53,8 @@ def main():
                         help='shuts off the merging of patterns')
     parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=0.5,
                         help='bit factor threshold for merging IUPAC patterns')
+    parser.add_argument('--use-default-pwm', action='store_true', dest='use_default_pwm', default=False,
+                        help='use the default calculation of the PWM')
     parser.add_argument('--pseudo-counts', metavar='INT', dest='pseudo_counts', type=int, default=100,
                         help='number of pseudo counts for the calculation of the PWM')
     parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
@@ -93,6 +95,8 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     command += ["--em-max-iterations", str(args.em_max_iterations)]
     if not args.use_merging:
         command += ["--no-merging"]
+    if args.use_default_pwm:
+        command += ["--use-default-pwm"]
     command += ["-b", str(args.bit_factor_threshold)]
     command += ["--pseudo-counts", str(args.pseudo_counts)]
     command += ["--threads", str(args.number_threads)]

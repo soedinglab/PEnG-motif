@@ -314,6 +314,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
 
   #pragma omp parallel for
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
+    size_t ori_pattern = best_iupac_patterns[i]->get_pattern();
     //allocate pwm's for optimization
     float** old_pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
@@ -380,6 +381,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
     }
 
     best_iupac_patterns[i]->update_pwm(old_pwm);
+    std::cerr << "em: " << IUPACPattern::toString(ori_pattern, pattern_length) << " -> " << best_iupac_patterns[i]->get_pattern_string() << std::endl;
 
     //de-allocate pwm's
     for(int p = 0; p < pattern_length; p++) {
@@ -481,28 +483,44 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
                    const bool use_em, const float em_saturation_factor,
                    const float min_em_threshold, const int em_max_iterations,
                    const bool use_merging, const float bit_factor_merge_threshold,
+                   const bool adv_pwm,
                    std::vector<IUPACPattern*>& best_iupac_patterns) {
 
   std::vector<size_t> filtered_base_patterns;
   filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
                        zscore_threshold, pattern_zscore, filtered_base_patterns);
 
-//  for(auto pattern : filtered_base_patterns) {
-//    std::cerr << "base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
-//  }
+  for(auto pattern : filtered_base_patterns) {
+    std::cerr << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
+  }
 
   optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
 
+  for(auto pattern : best_iupac_patterns) {
+    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+  }
+
+
   filter_iupac_patterns(best_iupac_patterns);
-//  for(auto pattern : best_iupac_patterns) {
-//    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
-//  }
+  for(auto pattern : best_iupac_patterns) {
+    std::cerr << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+  }
 
   #pragma omp parallel for
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
     IUPACPattern* pattern = best_iupac_patterns[i];
     pattern->count_sites(pattern_counter);
-    pattern->calculate_adv_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
+
+    if(adv_pwm) {
+      pattern->calculate_adv_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
+    }
+    else {
+      pattern->calculate_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
+    }
+  }
+
+  for(auto pattern : best_iupac_patterns) {
+    std::cerr << "adv pwm: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
   }
 
   if(use_em) {
@@ -583,8 +601,11 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
       best_iupac_patterns.push_back(best_mutant);
       best.insert(best_mutant->get_pattern());
       seen.insert(best_mutant->get_pattern());
+
+      std::cerr << "optimization: " << BasePattern::toString(pattern) << " -> " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
     }
     else{
+      std::cerr << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
       delete best_mutant;
       best_mutant = NULL;
     }
@@ -599,16 +620,16 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
     IUPACPattern* pat = iupac_patterns[i];
     size_t pattern = pat->get_pattern();
 
-    //pattern shall not start with non-informative position ('N')
-    int c = IUPACPattern::getNucleotideAtPos(pattern, 0);
-    if(c == N) {
-      deselected_patterns.push_back(pat);
-      continue;
-    }
+//    //pattern shall not start with non-informative position ('N')
+//    int c = IUPACPattern::getNucleotideAtPos(pattern, 0);
+//    if(c == N) {
+//      deselected_patterns.push_back(pat);
+//      continue;
+//    }
 
     //count non-informative positions ('N')
     int non_informative_positions = 0;
-    for(int p = 1; p < pattern_length; p++) {
+    for(int p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
       if(c == N) {
         non_informative_positions += 1;

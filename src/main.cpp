@@ -39,6 +39,7 @@ int main(int nargs, char **args) {
                Global::useEm, Global::emSaturationFactor,
                Global::emMinThreshold, Global::emMaxIterations,
                Global::useMerging, Global::mergeBitfactorThreshold,
+               Global::useAdvPWM,
                result);
 
   //print output
