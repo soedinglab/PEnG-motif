@@ -494,12 +494,22 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
     std::cerr << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
   }
 
-  optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
+  //  optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
+
+  for(auto pattern : filtered_base_patterns) {
+    size_t iupac_pattern = IUPACPattern::baseToId(pattern, pattern_length);
+    IUPACPattern* iupac = new IUPACPattern(iupac_pattern, pattern_length);
+    iupac->calculate_log_pvalue(ltot,
+                                          this->pattern_bg_probabilities,
+                                          this->pattern_counter);
+    iupac->count_sites(pattern_counter);
+
+    best_iupac_patterns.push_back(iupac);
+  }
 
   for(auto pattern : best_iupac_patterns) {
     std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
   }
-
 
   filter_iupac_patterns(best_iupac_patterns);
   for(auto pattern : best_iupac_patterns) {
@@ -650,10 +660,10 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
   kept_patterns.clear();
 
   std::sort(iupac_patterns.begin(), iupac_patterns.end(), sort_IUPAC_patterns);
-  float min_pvalue = -5.0;
-  if(iupac_patterns.size() > 0) {
-    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 0.1);
-  }
+  float min_pvalue = 100;
+//  if(iupac_patterns.size() > 0) {
+//    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 0.1);
+//  }
 
   for(int i = 0; i < iupac_patterns.size(); i++) {
     IUPACPattern* pat = iupac_patterns[i];
