@@ -465,6 +465,10 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
                                                         bg_model->getV()[0], best_shift);
       }
 
+      std::cerr << "merge: " << best_iupac_patterns[best_j]->get_pattern_string() <<
+          " + " << best_iupac_patterns[best_i]->get_pattern_string() <<
+          " -> " << merged_pattern->get_pattern_string() << std::endl;
+
       delete best_iupac_patterns[best_j];
       delete best_iupac_patterns[best_i];
 
@@ -660,10 +664,10 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
   kept_patterns.clear();
 
   std::sort(iupac_patterns.begin(), iupac_patterns.end(), sort_IUPAC_patterns);
-  float min_pvalue = 100;
-//  if(iupac_patterns.size() > 0) {
-//    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 0.1);
-//  }
+  float min_pvalue = -5;
+  if(iupac_patterns.size() > 0) {
+    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 1E-2);
+  }
 
   for(int i = 0; i < iupac_patterns.size(); i++) {
     IUPACPattern* pat = iupac_patterns[i];
