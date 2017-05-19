@@ -63,8 +63,8 @@ class IUPACPattern {
   std::vector<size_t>& get_base_patterns();
 
   void count_sites(size_t* pattern_counter);
-  void calculate_pwm(size_t* pattern_counter);
-  void calculate_adv_pwm(size_t* pattern_counter, float* background_model);
+  void calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model);
+  void calculate_adv_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model);
   void calculate_log_pvalue(const int ltot,
                             float* base_background_prob,
                             size_t* base_counts);

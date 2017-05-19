@@ -40,6 +40,9 @@ public:
 
 	static float mergeBitfactorThreshold;
 
+	static bool useAdvPWM;
+	static int pseudoCounts;
+
 	static int bgModelOrder;						         // background model order, defaults to 2
 	static bool interpolateBG;                   // calculate prior probabilities from lower-order probabilities
 	                                             // instead of background frequencies of mononucleotides

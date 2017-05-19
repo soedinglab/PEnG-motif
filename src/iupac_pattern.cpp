@@ -90,9 +90,31 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
   if(is_comp && longer_pattern->get_sites() < shorter_pattern->get_sites()) {
     longer_pattern_pwm = longer_pattern->get_comp_pwm();
   }
-  else {
+  else if(is_comp) {
     shorter_pattern_pwm = shorter_pattern->get_comp_pwm();
   }
+
+  std::cerr << "\tis_comp: " << is_comp << std::endl;
+  std::cerr << "\tshift: " << shift << std::endl;
+
+  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
+  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
+    std::cerr << "\t" << std::endl;
+    for(int a = 0; a < 4; a++) {
+      std::cerr << shorter_pattern_pwm[i][a] << "\t";
+    }
+    std::cerr << std::endl;
+  }
+
+  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
+  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
+    std::cerr << "\t" << std::endl;
+    for(int a = 0; a < 4; a++) {
+      std::cerr << longer_pattern_pwm[i][a] << "\t";
+    }
+    std::cerr << std::endl;
+  }
+
 
   this->pattern_length = longer_pattern->get_pattern_length() + shorter_pattern->get_pattern_length() - overlap;
 
@@ -159,8 +181,11 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
     if(pos_in_shorter >= 0 && pos_in_shorter < shorter_pattern->get_pattern_length() &&
         pos_in_longer >= 0 && pos_in_longer < longer_pattern->get_pattern_length()) {
       for(int a = 0; a < 4; a++) {
-        pwm[p][a] = (shorter_pattern->local_n_sites[pos_in_shorter] * shorter_pattern_pwm[pos_in_shorter][a] + longer_pattern->local_n_sites[pos_in_longer] * longer_pattern_pwm[pos_in_longer][a])
+        pwm[p][a] = (shorter_pattern->local_n_sites[pos_in_shorter] * shorter_pattern_pwm[pos_in_shorter][a] +
+            longer_pattern->local_n_sites[pos_in_longer] * longer_pattern_pwm[pos_in_longer][a])
             / (shorter_pattern->local_n_sites[pos_in_shorter] + longer_pattern->local_n_sites[pos_in_longer]);
+        std::cerr << "\t" << p << "\t" << a << "\t" << shorter_pattern->local_n_sites[pos_in_shorter] << "\t" << shorter_pattern_pwm[pos_in_shorter][a] << "\t" <<
+            longer_pattern->local_n_sites[pos_in_longer] << "\t" << longer_pattern_pwm[pos_in_longer][a] << " -> " << pwm[p][a] << std::endl;
       }
     }
   }
@@ -414,14 +439,14 @@ void IUPACPattern::count_sites(size_t* pattern_counter) {
   }
 }
 
-void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
+void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
   if(pwm == NULL && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT
       for(int i = 0; i < 4; i++) {
-        pwm[p][i] = 0;
+        pwm[p][i] = pseudo_counts * background_model[i];
       }
     }
 
@@ -436,7 +461,7 @@ void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
 
     for(int p = 0; p < pattern_length; p++) {
       for(int i = 0; i < 4; i++) {
-        pwm[p][i] /= 1.0 * n_sites;
+        pwm[p][i] /= 1.0 * n_sites + pseudo_counts;
       }
     }
 
@@ -444,7 +469,7 @@ void IUPACPattern::calculate_pwm(size_t* pattern_counter) {
   }
 }
 
-void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter, float* background_model) {
+void IUPACPattern::calculate_adv_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
   if(pwm == NULL && merged == false) {
     pwm = new float*[pattern_length];
@@ -454,8 +479,6 @@ void IUPACPattern::calculate_adv_pwm(size_t* pattern_counter, float* background_
         pwm[p][i] = 0;
       }
     }
-
-    const int pseudo_counts = 100;
 
     for(size_t p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
