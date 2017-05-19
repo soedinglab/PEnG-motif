@@ -498,18 +498,18 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
     std::cerr << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
   }
 
-  //  optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
+  optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
 
-  for(auto pattern : filtered_base_patterns) {
-    size_t iupac_pattern = IUPACPattern::baseToId(pattern, pattern_length);
-    IUPACPattern* iupac = new IUPACPattern(iupac_pattern, pattern_length);
-    iupac->calculate_log_pvalue(ltot,
-                                          this->pattern_bg_probabilities,
-                                          this->pattern_counter);
-    iupac->count_sites(pattern_counter);
-
-    best_iupac_patterns.push_back(iupac);
-  }
+//  for(auto pattern : filtered_base_patterns) {
+//    size_t iupac_pattern = IUPACPattern::baseToId(pattern, pattern_length);
+//    IUPACPattern* iupac = new IUPACPattern(iupac_pattern, pattern_length);
+//    iupac->calculate_log_pvalue(ltot,
+//                                          this->pattern_bg_probabilities,
+//                                          this->pattern_counter);
+//    iupac->count_sites(pattern_counter);
+//
+//    best_iupac_patterns.push_back(iupac);
+//  }
 
   for(auto pattern : best_iupac_patterns) {
     std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
