@@ -79,7 +79,7 @@ std::string GapMask::toString() {
 }
 
 
-void permutate_mask(const int left_informative, const int left_gaps, GapMask* curr_mask, std::vector<GapMask*>& masks) {
+void permutate_mask(const int left_informative, const int left_gaps, GapMask* curr_mask, std::vector<GapMask*>& masks, std::vector<GapMask*>& rejected_masks) {
   if(left_informative == 0 && left_gaps == 0) {
     if(curr_mask->starts_with_informative() &&
         curr_mask->is_symmetric() &&
@@ -87,7 +87,7 @@ void permutate_mask(const int left_informative, const int left_gaps, GapMask* cu
       masks.push_back(curr_mask);
     }
     else {
-      delete curr_mask;
+      rejected_masks.push_back(curr_mask);
     }
 
     return;
@@ -96,19 +96,25 @@ void permutate_mask(const int left_informative, const int left_gaps, GapMask* cu
   if(left_informative > 0) {
     GapMask* new_mask = new GapMask(curr_mask);
     new_mask->set_mask(new_mask->get_mask_length() - (left_informative + left_gaps), true);
-    permutate_mask(left_informative - 1, left_gaps, new_mask, masks);
+    permutate_mask(left_informative - 1, left_gaps, new_mask, masks, rejected_masks);
   }
   if(left_gaps > 0) {
     curr_mask->set_mask(curr_mask->get_mask_length() - (left_informative + left_gaps), false);
-    permutate_mask(left_informative, left_gaps - 1, curr_mask, masks);
+    permutate_mask(left_informative, left_gaps - 1, curr_mask, masks, rejected_masks);
   }
 }
 
 
 void get_masks(const int pattern_length, std::vector<GapMask*>& masks) {
+  std::vector<GapMask*> rejected_masks;
   const int max_gaps = pattern_length / 2 + 1;
   for(int nr_gaps = 0; nr_gaps <= max_gaps; nr_gaps++) {
     GapMask* mask = new GapMask(pattern_length + nr_gaps);
-    permutate_mask(pattern_length, nr_gaps, mask, masks);
+    permutate_mask(pattern_length, nr_gaps, mask, masks, rejected_masks);
   }
+
+  for(int i = 0; i < rejected_masks.size(); i++) {
+    delete rejected_masks[i];
+  }
+  rejected_masks.clear();
 }

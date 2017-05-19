@@ -31,5 +31,6 @@ class GapMask {
 };
 
 void get_masks(const int pattern_length, std::vector<GapMask*>& masks);
+void permutate_mask(const int left_informative, const int left_gaps, GapMask* curr_mask, std::vector<GapMask*>& masks, std::vector<GapMask*>& rejected_masks);
 
 #endif /* SRC_GAP_MASK_H_ */

@@ -520,7 +520,6 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
   size_t* factors = NULL;
   float* full_mask_patterns = NULL;
 
-<<<<<<< HEAD
   for(int i = 0; i < masks.size(); i++) {
     GapMask* gap_mask = masks[i];
     count_patterns(pattern_length, Alphabet::getSize(), number_patterns, gap_mask, sequence_set, pattern_counter);
@@ -553,18 +552,20 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
     filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
                          zscore_threshold, pattern_zscore, filtered_base_patterns);
 
+    for(auto pattern : filtered_base_patterns) {
+      std::cerr << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
+    }
+
   //  for(auto pattern : filtered_base_patterns) {
   //    std::cerr << "base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
   //  }
 
     std::vector<IUPACPattern*> iupac_patterns;
     optimize_iupac_patterns(filtered_base_patterns, iupac_patterns);
-=======
-  for(auto pattern : filtered_base_patterns) {
-    std::cerr << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
-  }
 
-  optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
+    for(auto pattern : iupac_patterns) {
+      std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+    }
 
 //  for(auto pattern : filtered_base_patterns) {
 //    size_t iupac_pattern = IUPACPattern::baseToId(pattern, pattern_length);
@@ -577,43 +578,26 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
 //    best_iupac_patterns.push_back(iupac);
 //  }
 
-  for(auto pattern : best_iupac_patterns) {
-    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
-  }
-
-  filter_iupac_patterns(best_iupac_patterns);
-  for(auto pattern : best_iupac_patterns) {
-    std::cerr << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
-  }
-
-  #pragma omp parallel for
-  for(int i = 0; i < best_iupac_patterns.size(); i++) {
-    IUPACPattern* pattern = best_iupac_patterns[i];
-    pattern->count_sites(pattern_counter);
-
-    if(adv_pwm) {
-      pattern->calculate_adv_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
-    }
-    else {
-      pattern->calculate_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
-    }
-  }
-
-  for(auto pattern : best_iupac_patterns) {
-    std::cerr << "adv pwm: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
-  }
->>>>>>> master
-
     filter_iupac_patterns(iupac_patterns);
-  //  for(auto pattern : best_iupac_patterns) {
-  //    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
-  //  }
+    for(auto pattern : iupac_patterns) {
+      std::cerr << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+    }
 
     #pragma omp parallel for
-    for(int j = 0; j < iupac_patterns.size(); j++) {
-      IUPACPattern* pattern = iupac_patterns[j];
+    for(int i = 0; i < iupac_patterns.size(); i++) {
+      IUPACPattern* pattern = iupac_patterns[i];
       pattern->count_sites(pattern_counter);
-      pattern->calculate_adv_pwm(pattern_counter, bg_model->getV()[0]);
+
+      if(adv_pwm) {
+        pattern->calculate_adv_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
+      }
+      else {
+        pattern->calculate_pwm(pseudo_counts, pattern_counter, bg_model->getV()[0]);
+      }
+    }
+
+    for(auto pattern : iupac_patterns) {
+      std::cerr << "adv pwm: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
     }
 
     if(use_em) {
@@ -641,6 +625,9 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
           << pattern_length << ") is too low for merging!" << std::endl;
     }
   }
+
+  delete[] factors;
+  delete[] full_mask_patterns;
 }
 
 void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
