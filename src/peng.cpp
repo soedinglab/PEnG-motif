@@ -122,7 +122,7 @@ void Peng::calculate_bg_probabilities(BackgroundModel* model, const int alphabet
   for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
     float cur_prob = 1.0;
     for(int k_prime = 0; k_prime <= k; k_prime++) {
-      cur_prob *= background_model[get_bg_id(pattern, k_prime+1, k_prime)];
+      cur_prob *= model->getV()[k_prime][get_bg_id(pattern, k_prime+1, k_prime)];
     }
     calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, cur_prob, this->pattern_bg_probabilities);
   }
@@ -165,6 +165,11 @@ void Peng::count_patterns(const int pattern_length, const int alphabet_size,
     uint8_t* seq = sequences[s]->getSequence();
     int length = sequences[s]->getL();
 
+//    std::cerr << sequences[s]->getHeader() << std::endl;
+//    for(int i = 0; i < length; i++) {
+//      std::cerr << Alphabet::getBase(seq[i]);
+//    }
+//    std::cerr << std::endl;
 
     //sequence is too small for matches with the pattern
     if(length < pattern_length) {
@@ -213,14 +218,21 @@ void Peng::count_patterns(const int pattern_length, const int alphabet_size,
       id += (seq[i + pattern_length - 1] - 1) * base_factors[pattern_length - 1];
       assert(id < number_patterns);
 
+//      for(int j = 0; j < i; j++) {
+//        std::cerr << " ";
+//      }
+//      std::cerr << BasePattern::toString(id) << std::endl;
+
       size_t rev_id = BasePattern::getMinusId(id);
 
       if((pattern_plus_positions.find(id) == pattern_plus_positions.end() || i - pattern_plus_positions[id] >= pattern_length)
           && (pattern_minus_positions.find(id) == pattern_minus_positions.end() || i - pattern_minus_positions[id] >= pattern_length)
           && (pattern_plus_positions.find(rev_id) == pattern_plus_positions.end() || i - pattern_plus_positions[rev_id] >= pattern_length)
           && (pattern_minus_positions.find(rev_id) == pattern_minus_positions.end() || i - pattern_minus_positions[rev_id] >= pattern_length)) {
+
         //raise counter for pattern
         pattern_counter[id] += 1;
+//        std::cerr << "counts: " << pattern_counter[id] << std::endl;
 
         pattern_plus_positions[id] = i;
         pattern_minus_positions[id] = i;
@@ -558,6 +570,7 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
   std::set<size_t> best;
 
   for(auto pattern : selected_base_patterns) {
+    std::cerr << "IUPAC optimization: " << BasePattern::toString(pattern) << std::endl;
     size_t iupac_pattern = IUPACPattern::baseToId(pattern, pattern_length);
 
     bool found_better_mutant = true;
@@ -567,6 +580,8 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
                                       this->pattern_bg_probabilities,
                                       this->pattern_counter);
     best_mutant->count_sites(pattern_counter);
+
+    bool already_seen = false;
 
     while(found_better_mutant) {
       found_better_mutant = false;
@@ -597,6 +612,7 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
             found_better_mutant = true;
             best_log_pvalue = mutated_pattern->get_log_pvalue();
             best_mutant = mutated_pattern;
+            std::cerr << "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << "\t" << best_mutant->get_log_pvalue() << std::endl;
           }
           else {
             delete mutated_pattern;
@@ -605,10 +621,16 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
       }
 
       if(seen.count(best_mutant->get_pattern()) == 1) {
-        found_better_mutant = false;
+        already_seen = true;
+//        found_better_mutant = false;
       }
       current_seen.erase(best_mutant->get_pattern());
       seen.insert(current_seen.begin(), current_seen.end());
+    }
+
+    if(already_seen) {
+      std::cerr << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
+      std::cerr << "\tended at " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
     }
 
     if(best.count(best_mutant->get_pattern()) == 0 && seen.count(best_mutant->get_pattern()) == 0) {
@@ -618,7 +640,7 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
 
       std::cerr << "optimization: " << BasePattern::toString(pattern) << " -> " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
     }
-    else{
+    else {
       std::cerr << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
       delete best_mutant;
       best_mutant = NULL;

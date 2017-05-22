@@ -194,7 +194,7 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
   log_bonferroni[Y] = log(16);
   log_bonferroni[M] = log(24);
   log_bonferroni[K] = log(24);
-  log_bonferroni[N] = log(6);
+  log_bonferroni[N] = log(32);
 
   initIUPACProfile(0.2, 0.7, bg_model);
 }
@@ -359,7 +359,11 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     for(auto p : base_patterns) {
       sum_backgroud_prob += base_background_prob[p];
       sum_counts += base_counts[p];
+//      std::cerr << "\t\t\tbase pattern:\t" << BasePattern::toString(p) << "\t" << base_background_prob[p] << "\t" << base_counts[p] << std::endl;
     }
+//    std::cerr << "\t\tsum bg: " << sum_backgroud_prob << std::endl;
+//    std::cerr << "\t\tsum counts: " << sum_counts << std::endl;
+//    std::cerr << "\t\tltot: " << ltot << std::endl;
 
     this->bg_p = sum_backgroud_prob;
 
@@ -371,12 +375,18 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     float mu = ltot * sum_backgroud_prob;
     float frac = 1 - mu / (sum_counts + 1);
 
+
+
     float log_pvalue = sum_counts * log(mu/sum_counts) + sum_counts - mu - 0.5 * log(6.283*sum_counts*frac*frac);
+
+//    std::cerr << "\t\t" << sum_counts << "\t" << mu << std::endl;
+//    std::cerr << "\t\t" << IUPACPattern::toString(pattern, pattern_length) << "\t" << sum_counts << "\t" << bg_p << "\t" << log_pvalue << std::endl;
 
     for(int p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
       log_pvalue += log_bonferroni[c];
     }
+//    std::cerr << "\t\t" << log_pvalue << std::endl;
 
     this->log_pvalue = log_pvalue;
   }

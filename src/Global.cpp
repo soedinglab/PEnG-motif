@@ -57,7 +57,7 @@ void Global::init(int nargs, char* args[]){
 
 	Alphabet::init(alphabetType);
 
-	inputSequenceSet = new SequenceSet(inputSequenceFilename);
+	inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
 	char* currBackgroundSequenceFilename;
 	if(backgroundSequenceFilename != NULL) {
@@ -67,7 +67,7 @@ void Global::init(int nargs, char* args[]){
 	  currBackgroundSequenceFilename = inputSequenceFilename;
 	}
 
-  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand == BOTH_STRANDS);
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != BOTH_STRANDS);
 }
 
 void Global::readArguments(int nargs, char* args[]){
