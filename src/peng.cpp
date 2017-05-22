@@ -546,8 +546,16 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
   }
 
   for(auto pattern : best_iupac_patterns) {
-    std::cerr << "adv pwm: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
+    if(adv_pwm) {
+      std::cerr << "adv pwm: ";
+    }
+    else {
+      std::cerr << "def pwm: ";
+    }
+    std::cerr << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
   }
+
+
 
   if(use_em) {
     em_optimize_pwms(best_iupac_patterns, em_saturation_factor, min_em_threshold, em_max_iterations);
