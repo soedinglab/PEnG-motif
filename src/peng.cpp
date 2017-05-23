@@ -118,8 +118,8 @@ void Peng::calculate_log_pvalues(int ltot) {
 void Peng::calculate_zscores(int ltot) {
   #pragma omp parallel for schedule(static)
   for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
-    this->pattern_zscore[pattern] = this->pattern_counter[pattern] - ltot * pattern_bg_probabilities[pattern];
-    this->pattern_zscore[pattern] *= this->pattern_zscore[pattern] / (ltot * pattern_bg_probabilities[pattern]);
+    this->pattern_zscore[pattern] = (this->pattern_counter[pattern] -
+        ltot * pattern_bg_probabilities[pattern]) / sqrt(ltot * pattern_bg_probabilities[pattern]);
   }
 }
 

@@ -39,7 +39,7 @@ bool Global::useMerging = true;
 int Global::pseudoCounts = 100;
 bool Global::useAdvPWM = true;
 
-float Global::zscoreThreshold = 100;
+float Global::zscoreThreshold = 10;
 float Global::mergeBitfactorThreshold = 0.75;
 
 // background model options
