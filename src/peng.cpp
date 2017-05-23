@@ -393,7 +393,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
     }
 
     best_iupac_patterns[i]->update_pwm(old_pwm);
-    std::cerr << "em: " << IUPACPattern::toString(ori_pattern, pattern_length) << " -> " << best_iupac_patterns[i]->get_pattern_string() << std::endl;
+    std::cout << "em: " << IUPACPattern::toString(ori_pattern, pattern_length) << " -> " << best_iupac_patterns[i]->get_pattern_string() << std::endl;
 
     //de-allocate pwm's
     for(int p = 0; p < pattern_length; p++) {
@@ -477,7 +477,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
                                                         bg_model->getV()[0], best_shift);
       }
 
-      std::cerr << "merge: " << best_iupac_patterns[best_j]->get_pattern_string() <<
+      std::cout << "merge: " << best_iupac_patterns[best_j]->get_pattern_string() <<
           " + " << best_iupac_patterns[best_i]->get_pattern_string() <<
           " -> " << merged_pattern->get_pattern_string() << std::endl;
 
@@ -507,7 +507,7 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
                        zscore_threshold, pattern_zscore, filtered_base_patterns);
 
   for(auto pattern : filtered_base_patterns) {
-    std::cerr << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
+    std::cout << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;
   }
 
   optimize_iupac_patterns(filtered_base_patterns, best_iupac_patterns);
@@ -524,12 +524,13 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
 //  }
 
   for(auto pattern : best_iupac_patterns) {
-    std::cerr << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+    std::cout << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) <<
+        "\t" << pattern->get_sites() << "\t" << pattern->get_log_pvalue() << std::endl;
   }
 
   filter_iupac_patterns(best_iupac_patterns);
   for(auto pattern : best_iupac_patterns) {
-    std::cerr << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
+    std::cout << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
   }
 
   #pragma omp parallel for
@@ -547,12 +548,12 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
 
   for(auto pattern : best_iupac_patterns) {
     if(adv_pwm) {
-      std::cerr << "adv pwm: ";
+      std::cout << "adv pwm: ";
     }
     else {
-      std::cerr << "def pwm: ";
+      std::cout << "def pwm: ";
     }
-    std::cerr << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
+    std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
   }
 
 
@@ -578,7 +579,6 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
   std::set<size_t> best;
 
   for(auto pattern : selected_base_patterns) {
-    std::cerr << "IUPAC optimization: " << BasePattern::toString(pattern) << std::endl;
     size_t iupac_pattern = IUPACPattern::baseToId(pattern, pattern_length);
 
     bool found_better_mutant = true;
@@ -589,7 +589,7 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
                                       this->pattern_counter);
     best_mutant->count_sites(pattern_counter);
 
-    bool already_seen = false;
+//    bool already_seen = false;
 
     while(found_better_mutant) {
       found_better_mutant = false;
@@ -620,7 +620,7 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
             found_better_mutant = true;
             best_log_pvalue = mutated_pattern->get_log_pvalue();
             best_mutant = mutated_pattern;
-            std::cerr << "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << "\t" << best_mutant->get_log_pvalue() << std::endl;
+            std::cout << "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << "\t" << best_mutant->get_log_pvalue() << std::endl;
           }
           else {
             delete mutated_pattern;
@@ -629,27 +629,27 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
       }
 
       if(seen.count(best_mutant->get_pattern()) == 1) {
-        already_seen = true;
-//        found_better_mutant = false;
+//        already_seen = true;
+        found_better_mutant = false;
       }
       current_seen.erase(best_mutant->get_pattern());
       seen.insert(current_seen.begin(), current_seen.end());
     }
 
-    if(already_seen) {
-      std::cerr << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
-      std::cerr << "\tended at " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
-    }
+//    if(already_seen) {
+//      std::cout << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
+//      std::cout << "\tended at " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
+//    }
 
     if(best.count(best_mutant->get_pattern()) == 0 && seen.count(best_mutant->get_pattern()) == 0) {
       best_iupac_patterns.push_back(best_mutant);
       best.insert(best_mutant->get_pattern());
       seen.insert(best_mutant->get_pattern());
 
-      std::cerr << "optimization: " << BasePattern::toString(pattern) << " -> " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
+      std::cout << "optimization: " << BasePattern::toString(pattern) << " -> " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
     }
     else {
-      std::cerr << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
+      std::cout << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
       delete best_mutant;
       best_mutant = NULL;
     }

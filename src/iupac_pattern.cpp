@@ -48,26 +48,26 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
     shorter_pattern_pwm = shorter_pattern->get_comp_pwm();
   }
 
-  std::cerr << "\tis_comp: " << is_comp << std::endl;
-  std::cerr << "\tshift: " << shift << std::endl;
-
-  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
-  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
-    std::cerr << "\t" << std::endl;
-    for(int a = 0; a < 4; a++) {
-      std::cerr << shorter_pattern_pwm[i][a] << "\t";
-    }
-    std::cerr << std::endl;
-  }
-
-  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
-  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
-    std::cerr << "\t" << std::endl;
-    for(int a = 0; a < 4; a++) {
-      std::cerr << longer_pattern_pwm[i][a] << "\t";
-    }
-    std::cerr << std::endl;
-  }
+//  std::cerr << "\tis_comp: " << is_comp << std::endl;
+//  std::cerr << "\tshift: " << shift << std::endl;
+//
+//  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
+//  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
+//    std::cerr << "\t" << std::endl;
+//    for(int a = 0; a < 4; a++) {
+//      std::cerr << shorter_pattern_pwm[i][a] << "\t";
+//    }
+//    std::cerr << std::endl;
+//  }
+//
+//  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
+//  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
+//    std::cerr << "\t" << std::endl;
+//    for(int a = 0; a < 4; a++) {
+//      std::cerr << longer_pattern_pwm[i][a] << "\t";
+//    }
+//    std::cerr << std::endl;
+//  }
 
 
   this->pattern_length = longer_pattern->get_pattern_length() + shorter_pattern->get_pattern_length() - overlap;
@@ -138,8 +138,6 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
         pwm[p][a] = (shorter_pattern->local_n_sites[pos_in_shorter] * shorter_pattern_pwm[pos_in_shorter][a] +
             longer_pattern->local_n_sites[pos_in_longer] * longer_pattern_pwm[pos_in_longer][a])
             / (shorter_pattern->local_n_sites[pos_in_shorter] + longer_pattern->local_n_sites[pos_in_longer]);
-        std::cerr << "\t" << p << "\t" << a << "\t" << shorter_pattern->local_n_sites[pos_in_shorter] << "\t" << shorter_pattern_pwm[pos_in_shorter][a] << "\t" <<
-            longer_pattern->local_n_sites[pos_in_longer] << "\t" << longer_pattern_pwm[pos_in_longer][a] << " -> " << pwm[p][a] << std::endl;
       }
     }
   }
