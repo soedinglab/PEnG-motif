@@ -38,16 +38,15 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
   this->alphabet_size = Alphabet::getSize();
   this->strand = s;
 
-  ltot = 0;
-
-  std::vector<Sequence*> seqs = sequence_set->getSequences();
-  for(size_t i = 0; i < seqs.size(); i++) {
-    ltot += seqs[i]->getL() - pattern_length + 1;
-  }
-  //for the - strand
-  if(this->strand == BOTH_STRANDS) {
-    ltot *= 2;
-  }
+//  ltot = 0;
+//  std::vector<Sequence*> seqs = sequence_set->getSequences();
+//  for(size_t i = 0; i < seqs.size(); i++) {
+//    ltot += seqs[i]->getL() - pattern_length + 1;
+//  }
+//  //for the - strand
+//  if(this->strand == BOTH_STRANDS) {
+//    ltot *= 2;
+//  }
 
   //init counter for patterns
   this->number_patterns = pow(Alphabet::getSize(), pattern_length);
@@ -63,6 +62,11 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
   count_patterns(pattern_length, Alphabet::getSize(), number_patterns, sequence_set, pattern_counter);
   if(this->strand == BOTH_STRANDS) {
     count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
+  }
+
+  ltot = 0;
+  for(size_t i = 0; i < number_patterns; i++) {
+    ltot += pattern_counter[i];
   }
 
   calculate_bg_probabilities(bg, alphabet_size, k);
@@ -100,8 +104,13 @@ void Peng::calculate_log_pvalues(int ltot) {
       float mu = ltot * this->pattern_bg_probabilities[pattern];
       float frac = 1.0 - mu / (this->pattern_counter[pattern] + 1);
 
-      this->pattern_logp[pattern] = this->pattern_counter[pattern] * log(mu/this->pattern_counter[pattern])
-          + this->pattern_counter[pattern] - mu - 0.5 * log(6.283 * this->pattern_counter[pattern] * frac * frac);
+      if(this->pattern_counter[pattern] > mu) {
+        this->pattern_logp[pattern] = this->pattern_counter[pattern] * log(mu/this->pattern_counter[pattern])
+            + this->pattern_counter[pattern] - mu - 0.5 * log(6.283 * this->pattern_counter[pattern] * frac * frac);
+      }
+      else {
+        this->pattern_logp[pattern] = 0;
+      }
     }
   }
 }
@@ -120,11 +129,14 @@ void Peng::calculate_bg_probabilities(BackgroundModel* model, const int alphabet
 
   #pragma omp parallel for schedule(dynamic, 1)
   for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
+//    std::cout << BasePattern::toString(pattern) << std::endl;
     float cur_prob = 1.0;
     for(int k_prime = 0; k_prime <= k; k_prime++) {
       cur_prob *= model->getV()[k_prime][get_bg_id(pattern, k_prime+1, k_prime)];
+//      std::cout << "\t\t" << BasePattern::toString(get_bg_id(pattern, k_prime+1, k_prime)) << "\t" << model->getV()[k_prime][get_bg_id(pattern, k_prime+1, k_prime)] << std::endl;
     }
     calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, cur_prob, this->pattern_bg_probabilities);
+//    std::cout << std::endl << std::endl;
   }
 }
 
@@ -139,6 +151,8 @@ void Peng::calculate_bg_probability(float* background_model, const int alphabet_
     size_t kmer_id = get_bg_id(extended_pattern, pattern_length - missing_pattern_length, k);
 
     float extended_pattern_prob = cur_prob * background_model[kmer_id];
+//    std::cout << "\t" << BasePattern::toString(extended_pattern) << "\t" << extended_pattern_prob << std::endl;
+//    std::cout << "\t\t" << BasePattern::toString(kmer_id) << "\t" << background_model[kmer_id] << std::endl;
     if(missing_pattern_length == 0) {
       final_probabilities[extended_pattern] = extended_pattern_prob;
     }

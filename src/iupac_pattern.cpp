@@ -373,12 +373,13 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     float mu = ltot * sum_backgroud_prob;
     float frac = 1 - mu / (sum_counts + 1);
 
-
-
-    float log_pvalue = sum_counts * log(mu/sum_counts) + sum_counts - mu - 0.5 * log(6.283*sum_counts*frac*frac);
+    float log_pvalue = 0;
+    if(sum_counts > mu) {
+      log_pvalue = sum_counts * log(mu/sum_counts) + sum_counts - mu - 0.5 * log(6.283*sum_counts*frac*frac);
+    }
 
 //    std::cerr << "\t\t" << sum_counts << "\t" << mu << std::endl;
-//    std::cerr << "\t\t" << IUPACPattern::toString(pattern, pattern_length) << "\t" << sum_counts << "\t" << bg_p << "\t" << log_pvalue << std::endl;
+//    std::cout << "\t\t" << IUPACPattern::toString(pattern, pattern_length) << "\t" << ltot << "\t" << sum_counts << "\t" << bg_p << "\t" << log_pvalue << std::endl;
 
     for(int p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
