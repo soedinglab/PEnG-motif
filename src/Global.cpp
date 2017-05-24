@@ -40,6 +40,7 @@ int Global::pseudoCounts = 100;
 bool Global::useAdvPWM = true;
 
 float Global::zscoreThreshold = 10;
+size_t Global::countThreshold = 5;
 float Global::mergeBitfactorThreshold = 0.75;
 
 // background model options
@@ -138,6 +139,14 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       zscoreThreshold = std::stof(args[i]);
+    }
+    else if (!strcmp(args[i], "--count-threshold")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following --count-threshold" << std::endl;
+        exit(4);
+      }
+      countThreshold = std::stoi(args[i]);
     }
     else if (!strcmp(args[i], "-b")) {
       if (++i>=nargs) {
@@ -259,6 +268,8 @@ void Global::printHelp(){
       "           length of patterns to be searched\n");
   printf("\n      --bg-model-order, <BG_MODEL_ORDER>\n"
       "           order of the background model\n");
+  printf("\n      --count-threshold, <COUNT_THRESHOLD>\n"
+      "           lower threshold for counts of basic patterns\n");
   printf("\n      --strand, <PULS|BOTH>\n"
       "           select the strands to work on\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"

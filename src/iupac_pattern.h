@@ -83,6 +83,7 @@ class IUPACPattern {
 
   size_t pattern;
   float log_pvalue;
+  float zscore;
   float bg_p;
   size_t n_sites;
   size_t* local_n_sites;

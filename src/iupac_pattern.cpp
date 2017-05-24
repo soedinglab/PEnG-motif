@@ -365,6 +365,8 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
 
     this->bg_p = sum_backgroud_prob;
 
+    this->zscore = (sum_counts - ltot * sum_backgroud_prob) / sqrt(ltot * sum_backgroud_prob);
+
     if(sum_counts == 0) {
       this->log_pvalue = std::numeric_limits<float>::infinity();
       return;
@@ -374,7 +376,7 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     float frac = 1 - mu / (sum_counts + 1);
 
     float log_pvalue = 0;
-    if(sum_counts > mu) {
+    if(sum_counts > mu && sum_counts > 5 && zscore > 2) {
       log_pvalue = sum_counts * log(mu/sum_counts) + sum_counts - mu - 0.5 * log(6.283*sum_counts*frac*frac);
     }
 

@@ -104,7 +104,7 @@ void Peng::calculate_log_pvalues(int ltot) {
       float mu = ltot * this->pattern_bg_probabilities[pattern];
       float frac = 1.0 - mu / (this->pattern_counter[pattern] + 1);
 
-      if(this->pattern_counter[pattern] > mu) {
+      if(this->pattern_counter[pattern] > mu && this->pattern_counter[pattern] > 5) {
         this->pattern_logp[pattern] = this->pattern_counter[pattern] * log(mu/this->pattern_counter[pattern])
             + this->pattern_counter[pattern] - mu - 0.5 * log(6.283 * this->pattern_counter[pattern] * frac * frac);
       }
@@ -290,6 +290,7 @@ void Peng::count_patterns_minus_strand(const int pattern_length, const int alpha
 
 void Peng::filter_base_patterns(const int pattern_length, const int alphabet_size,
                                 const size_t number_patterns, const float zscore_threshold,
+                                const size_t count_threshold,
                                 float* pattern_zscore, std::vector<size_t>& selected_patterns) {
 
   bool* seen_array = new bool[number_patterns];
@@ -308,6 +309,9 @@ void Peng::filter_base_patterns(const int pattern_length, const int alphabet_siz
     size_t pattern = sorted_array[i];
     if(pattern_zscore[pattern] < zscore_threshold) {
       break;
+    }
+    if(pattern_counter[pattern] < count_threshold) {
+      continue;
     }
 
     size_t rev_pattern = BasePattern::getMinusId(pattern);
@@ -509,7 +513,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
   }
 }
 
-void Peng::process(const float zscore_threshold, const int pseudo_counts,
+void Peng::process(const float zscore_threshold, const size_t count_threshold, const int pseudo_counts,
                    const bool use_em, const float em_saturation_factor,
                    const float min_em_threshold, const int em_max_iterations,
                    const bool use_merging, const float bit_factor_merge_threshold,
@@ -518,7 +522,7 @@ void Peng::process(const float zscore_threshold, const int pseudo_counts,
 
   std::vector<size_t> filtered_base_patterns;
   filter_base_patterns(pattern_length, Alphabet::getSize(), number_patterns,
-                       zscore_threshold, pattern_zscore, filtered_base_patterns);
+                       zscore_threshold, count_threshold, pattern_zscore, filtered_base_patterns);
 
   for(auto pattern : filtered_base_patterns) {
     std::cout << "selected base pattern: " << BasePattern::toString(pattern) << "\t" << pattern_counter[pattern] << "\t" << pattern_zscore[pattern] << "\t" << pattern_logp[pattern] << std::endl;

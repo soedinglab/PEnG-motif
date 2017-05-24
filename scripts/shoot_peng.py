@@ -37,6 +37,8 @@ def main():
                         help='initial/minimal length of pattern to be searched')
     parser.add_argument('-t', metavar='FLOAT', dest='zscore_threshold', type=float, default=10,
                         help='lower zscore threshold for basic patterns')
+    parser.add_argument('--count-threshold', metavar='INT', dest='count_threshold', type=int, default=5,
+                        help='lower threshold for counts of base patterns')
     parser.add_argument('--bg-model-order', metavar='INT', dest='bg_model_order', type=int, default=2,
                         help='order of the background model')
     parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default='BOTH', choices=['PLUS', 'BOTH'],
@@ -86,6 +88,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
         command += ["--background-sequences", os.path.abspath(args.background_sequences)]
     command += ["-w", str(args.pattern_length)]
     command += ["-t", str(args.zscore_threshold)]
+    command += ["--count-threshold", str(args.count_threshold)]
     command += ["--bg-model-order", str(args.bg_model_order)]
     command += ["--strand", args.strand]
     if not args.use_em:
