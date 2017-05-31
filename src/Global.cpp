@@ -26,22 +26,22 @@ SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
 //bool Global::revcomp = false;                         // also search on reverse complement of sequences
 
-int Global::patternLength = 8;                        // length of patterns to be trained/searched
+int Global::patternLength = 10;                        // length of patterns to be trained/searched
 Strand Global::strand = BOTH_STRANDS;
 
 bool Global::useEm = true;
-float Global::emSaturationFactor = 1000;
+float Global::emSaturationFactor = 1E4;
 float Global::emMinThreshold = 0.08;
 int Global::emMaxIterations = 100;
 
 bool Global::useMerging = true;
 
-int Global::pseudoCounts = 100;
+int Global::pseudoCounts = 10;
 bool Global::useAdvPWM = true;
 
 float Global::zscoreThreshold = 10;
 size_t Global::countThreshold = 5;
-float Global::mergeBitfactorThreshold = 0.75;
+float Global::mergeBitfactorThreshold = 0.4;
 
 // background model options
 bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities

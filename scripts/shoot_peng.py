@@ -45,7 +45,7 @@ def main():
                         help='select the strand to work on')
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
-    parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E5,
+    parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
                         help='saturation factor for em optimization')
     parser.add_argument('--em-threshold', metavar='FLOAT', dest='em_threshold', type=float, default=0.08,
                         help='threshold for finishing the em optimization')
@@ -53,11 +53,11 @@ def main():
                         help='max number of em optimization iterations')
     parser.add_argument('--no-merging', dest='use_merging', action='store_false', default=True,
                         help='shuts off the merging of patterns')
-    parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=0.5,
+    parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=0.4,
                         help='bit factor threshold for merging IUPAC patterns')
     parser.add_argument('--use-default-pwm', action='store_true', dest='use_default_pwm', default=False,
                         help='use the default calculation of the PWM')
-    parser.add_argument('--pseudo-counts', metavar='INT', dest='pseudo_counts', type=int, default=100,
+    parser.add_argument('--pseudo-counts', metavar='INT', dest='pseudo_counts', type=int, default=10,
                         help='number of pseudo counts for the calculation of the PWM')
     parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
                         help='number of threads to be used for parallelization')
