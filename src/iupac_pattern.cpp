@@ -498,7 +498,7 @@ float IUPACPattern::calculate_d_bg(float** p_pwm, float* background, const int l
 }
 
 float IUPACPattern::calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l) {
-  float s = 0.5 * (calculate_d_bg(p1_pwm, background, l) +  calculate_d_bg(p2_pwm, background, l)) - calculate_d(p1_pwm, p2_pwm, offset1, offset2, l);
+  float s = 0.5 * (calculate_d_bg(p1_pwm, background, l, offset1) +  calculate_d_bg(p2_pwm, background, l, offset2)) - calculate_d(p1_pwm, p2_pwm, offset1, offset2, l);
   return s;
 }
 
