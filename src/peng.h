@@ -34,6 +34,7 @@ class Peng{
   BackgroundModel* bg_model;
   size_t* pattern_counter;
   float* pattern_bg_probabilities;
+  float* pattern_zero_bg_probabilities;
   float* pattern_logp;
   float* pattern_zscore;
 
@@ -74,7 +75,7 @@ class Peng{
       @param alphabet_size the size of the alphabet
       @param k length of mers to be used in the background model
   */
-  void calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k);
+  void calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k, float* pattern_bg_probs);
 
   /**
       Recursive calculation of background probabilities of base patterns
@@ -169,7 +170,7 @@ class Peng{
       @param pwm the pwm of a pattern that is optimized by the em
       @param prob_odds float array contains in the end for each base pattern the log probs
   */
-  void init_prob_odds(const size_t pattern_length,
+  void calculate_prob_odds(const size_t pattern_length,
                       size_t curr_pattern, float curr_prob, int curr_length,
                       float** pwm, float* pattern_bg_probabilities, float* prob_odds);
 };

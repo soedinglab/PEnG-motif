@@ -56,6 +56,7 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
   }
 
   this->pattern_bg_probabilities = new float[number_patterns];
+  this->pattern_zero_bg_probabilities = new float[number_patterns];
   this->pattern_logp = new float[number_patterns];
   this->pattern_zscore = new float[number_patterns];
 
@@ -69,7 +70,8 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
     ltot += pattern_counter[i];
   }
 
-  calculate_bg_probabilities(bg, alphabet_size, k);
+  calculate_bg_probabilities(bg, alphabet_size, k, pattern_bg_probabilities);
+  calculate_bg_probabilities(bg, alphabet_size, 0, pattern_zero_bg_probabilities);
   calculate_log_pvalues(ltot);
   calculate_zscores(ltot);
 
@@ -79,6 +81,7 @@ Peng::Peng(const int pattern_length, Strand s, const int k, SequenceSet* sequenc
 Peng::~Peng() {
   delete[] pattern_counter;
   delete[] pattern_bg_probabilities;
+  delete[] pattern_zero_bg_probabilities;
   delete[] pattern_logp;
   delete[] pattern_zscore;
   //do not delete bg_model
@@ -123,7 +126,7 @@ void Peng::calculate_zscores(int ltot) {
   }
 }
 
-void Peng::calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k) {
+void Peng::calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k, float* pattern_bg_probs) {
   float* background_model = model->getV()[k];
   size_t nr_initial_mers = pow(alphabet_size, k+1);
 
@@ -135,7 +138,7 @@ void Peng::calculate_bg_probabilities(BackgroundModel* model, const int alphabet
       cur_prob *= model->getV()[k_prime][get_bg_id(pattern, k_prime+1, k_prime)];
 //      std::cout << "\t\t" << BasePattern::toString(get_bg_id(pattern, k_prime+1, k_prime)) << "\t" << model->getV()[k_prime][get_bg_id(pattern, k_prime+1, k_prime)] << std::endl;
     }
-    calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, cur_prob, this->pattern_bg_probabilities);
+    calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, cur_prob, pattern_bg_probs);
 //    std::cout << std::endl << std::endl;
   }
 }
@@ -383,7 +386,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
       }
 
       //init prob_odds
-      init_prob_odds(pattern_length, 0, 1.0, 0, old_pwm, pattern_bg_probabilities, prob_odds);
+      calculate_prob_odds(pattern_length, 0, 1.0, 0, old_pwm, pattern_zero_bg_probabilities, prob_odds);
 
       //calculate new pwm
       for(size_t pattern = 0; pattern < number_patterns; pattern++) {
@@ -428,7 +431,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
   }
 }
 
-void Peng::init_prob_odds(const size_t pattern_length,
+void Peng::calculate_prob_odds(const size_t pattern_length,
                           size_t curr_pattern, float curr_prob, int curr_length,
                           float** pwm, float* pattern_bg_probabilities, float* prob_odds) {
   if(curr_length < pattern_length) {
@@ -438,7 +441,7 @@ void Peng::init_prob_odds(const size_t pattern_length,
       size_t next_pattern = curr_pattern + a * factors[curr_length];
       int next_pattern_length = curr_length + 1;
 
-      init_prob_odds(pattern_length, next_pattern, next_prob, next_pattern_length,
+      calculate_prob_odds(pattern_length, next_pattern, next_prob, next_pattern_length,
                      pwm, pattern_bg_probabilities, prob_odds);
     }
   }
@@ -714,7 +717,7 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
   std::sort(iupac_patterns.begin(), iupac_patterns.end(), sort_IUPAC_patterns);
   float min_pvalue = -5;
   if(iupac_patterns.size() > 0) {
-    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 1E-2);
+    min_pvalue = std::min(-5.0, iupac_patterns[0]->get_log_pvalue() * 0.2);
   }
 
   for(int i = 0; i < iupac_patterns.size(); i++) {

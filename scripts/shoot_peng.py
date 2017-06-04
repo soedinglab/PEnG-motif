@@ -37,7 +37,7 @@ def main():
                         help='initial/minimal length of pattern to be searched')
     parser.add_argument('-t', metavar='FLOAT', dest='zscore_threshold', type=float, default=10,
                         help='lower zscore threshold for basic patterns')
-    parser.add_argument('--count-threshold', metavar='INT', dest='count_threshold', type=int, default=5,
+    parser.add_argument('--count-threshold', metavar='INT', dest='count_threshold', type=int, default=1,
                         help='lower threshold for counts of base patterns')
     parser.add_argument('--bg-model-order', metavar='INT', dest='bg_model_order', type=int, default=2,
                         help='order of the background model')

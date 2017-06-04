@@ -40,7 +40,7 @@ int Global::pseudoCounts = 10;
 bool Global::useAdvPWM = true;
 
 float Global::zscoreThreshold = 10;
-size_t Global::countThreshold = 5;
+size_t Global::countThreshold = 1;
 float Global::mergeBitfactorThreshold = 0.4;
 
 // background model options
