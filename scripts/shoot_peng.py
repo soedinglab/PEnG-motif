@@ -35,15 +35,17 @@ def main():
                         help='file with fasta sequences to be used for the background model calculation')
     parser.add_argument('-w', metavar='INT', dest='pattern_length', type=int, default=10,
                         help='initial/minimal length of pattern to be searched')
-    parser.add_argument('-t', metavar='FLOAT', dest='zscore_threshold', type=float, default=100,
+    parser.add_argument('-t', metavar='FLOAT', dest='zscore_threshold', type=float, default=10,
                         help='lower zscore threshold for basic patterns')
+    parser.add_argument('--count-threshold', metavar='INT', dest='count_threshold', type=int, default=5,
+                        help='lower threshold for counts of base patterns')
     parser.add_argument('--bg-model-order', metavar='INT', dest='bg_model_order', type=int, default=2,
                         help='order of the background model')
     parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default='BOTH', choices=['PLUS', 'BOTH'],
                         help='select the strand to work on')
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
-    parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E5,
+    parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
                         help='saturation factor for em optimization')
     parser.add_argument('--em-threshold', metavar='FLOAT', dest='em_threshold', type=float, default=0.08,
                         help='threshold for finishing the em optimization')
@@ -51,11 +53,11 @@ def main():
                         help='max number of em optimization iterations')
     parser.add_argument('--no-merging', dest='use_merging', action='store_false', default=True,
                         help='shuts off the merging of patterns')
-    parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=0.5,
+    parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=0.4,
                         help='bit factor threshold for merging IUPAC patterns')
     parser.add_argument('--use-default-pwm', action='store_true', dest='use_default_pwm', default=False,
                         help='use the default calculation of the PWM')
-    parser.add_argument('--pseudo-counts', metavar='INT', dest='pseudo_counts', type=int, default=100,
+    parser.add_argument('--pseudo-counts', metavar='INT', dest='pseudo_counts', type=int, default=10,
                         help='number of pseudo counts for the calculation of the PWM')
     parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
                         help='number of threads to be used for parallelization')
@@ -86,6 +88,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
         command += ["--background-sequences", os.path.abspath(args.background_sequences)]
     command += ["-w", str(args.pattern_length)]
     command += ["-t", str(args.zscore_threshold)]
+    command += ["--count-threshold", str(args.count_threshold)]
     command += ["--bg-model-order", str(args.bg_model_order)]
     command += ["--strand", args.strand]
     if not args.use_em:
@@ -132,13 +135,11 @@ def run_peng(args, output_directory):
 
     # run peng
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
-    peng_ret = subprocess.check_output(peng_command_line, stderr=subprocess.STDOUT)
-    print("peng return: {}".format(peng_ret), file=sys.stderr)
+    peng_ret = subprocess.run(peng_command_line, check=True)
 
     # run bamm
     bamm_command_line = build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory)
-    bamm_ret = subprocess.check_output(bamm_command_line, stderr=subprocess.STDOUT)
-    print("bamm return: {}".format(bamm_ret), file=sys.stderr)
+    subprocess.run(bamm_command_line, check=True)
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
 
@@ -146,8 +147,7 @@ def run_peng(args, output_directory):
                         os.path.abspath(output_directory),
                         prefix,
                         os.path.abspath(r_output_file)]
-    r_ret = subprocess.check_output(r_command_line, stderr=subprocess.STDOUT)
-    print("r return: {}".format(r_ret), file=sys.stderr)
+    subprocess.run(r_command_line, check=True)
 
     # run R script
     zoops_scores = dict()

@@ -29,6 +29,7 @@ public:
 
 	static int patternLength;                    // length of pattern to be searched/trained
 	static float zscoreThreshold;
+	static size_t countThreshold;
 	static Strand strand;
 
 	static bool useEm;

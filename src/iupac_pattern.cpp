@@ -94,26 +94,26 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
     shorter_pattern_pwm = shorter_pattern->get_comp_pwm();
   }
 
-  std::cerr << "\tis_comp: " << is_comp << std::endl;
-  std::cerr << "\tshift: " << shift << std::endl;
-
-  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
-  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
-    std::cerr << "\t" << std::endl;
-    for(int a = 0; a < 4; a++) {
-      std::cerr << shorter_pattern_pwm[i][a] << "\t";
-    }
-    std::cerr << std::endl;
-  }
-
-  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
-  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
-    std::cerr << "\t" << std::endl;
-    for(int a = 0; a < 4; a++) {
-      std::cerr << longer_pattern_pwm[i][a] << "\t";
-    }
-    std::cerr << std::endl;
-  }
+//  std::cerr << "\tis_comp: " << is_comp << std::endl;
+//  std::cerr << "\tshift: " << shift << std::endl;
+//
+//  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
+//  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
+//    std::cerr << "\t" << std::endl;
+//    for(int a = 0; a < 4; a++) {
+//      std::cerr << shorter_pattern_pwm[i][a] << "\t";
+//    }
+//    std::cerr << std::endl;
+//  }
+//
+//  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
+//  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
+//    std::cerr << "\t" << std::endl;
+//    for(int a = 0; a < 4; a++) {
+//      std::cerr << longer_pattern_pwm[i][a] << "\t";
+//    }
+//    std::cerr << std::endl;
+//  }
 
 
   this->pattern_length = longer_pattern->get_pattern_length() + shorter_pattern->get_pattern_length() - overlap;
@@ -184,8 +184,6 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
         pwm[p][a] = (shorter_pattern->local_n_sites[pos_in_shorter] * shorter_pattern_pwm[pos_in_shorter][a] +
             longer_pattern->local_n_sites[pos_in_longer] * longer_pattern_pwm[pos_in_longer][a])
             / (shorter_pattern->local_n_sites[pos_in_shorter] + longer_pattern->local_n_sites[pos_in_longer]);
-        std::cerr << "\t" << p << "\t" << a << "\t" << shorter_pattern->local_n_sites[pos_in_shorter] << "\t" << shorter_pattern_pwm[pos_in_shorter][a] << "\t" <<
-            longer_pattern->local_n_sites[pos_in_longer] << "\t" << longer_pattern_pwm[pos_in_longer][a] << " -> " << pwm[p][a] << std::endl;
       }
     }
   }
@@ -239,7 +237,7 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
   log_bonferroni[Y] = log(16);
   log_bonferroni[M] = log(24);
   log_bonferroni[K] = log(24);
-  log_bonferroni[N] = log(6);
+  log_bonferroni[N] = log(32);
 
   initIUPACProfile(0.2, 0.7, bg_model);
 }
@@ -404,9 +402,15 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     for(auto p : base_patterns) {
       sum_backgroud_prob += base_background_prob[p];
       sum_counts += base_counts[p];
+//      std::cerr << "\t\t\tbase pattern:\t" << BasePattern::toString(p) << "\t" << base_background_prob[p] << "\t" << base_counts[p] << std::endl;
     }
+//    std::cerr << "\t\tsum bg: " << sum_backgroud_prob << std::endl;
+//    std::cerr << "\t\tsum counts: " << sum_counts << std::endl;
+//    std::cerr << "\t\tltot: " << ltot << std::endl;
 
     this->bg_p = sum_backgroud_prob;
+
+    this->zscore = (sum_counts - ltot * sum_backgroud_prob) / sqrt(ltot * sum_backgroud_prob);
 
     if(sum_counts == 0) {
       this->log_pvalue = std::numeric_limits<float>::infinity();
@@ -416,12 +420,19 @@ void IUPACPattern::calculate_log_pvalue(const int ltot,
     float mu = ltot * sum_backgroud_prob;
     float frac = 1 - mu / (sum_counts + 1);
 
-    float log_pvalue = sum_counts * log(mu/sum_counts) + sum_counts - mu - 0.5 * log(6.283*sum_counts*frac*frac);
+    float log_pvalue = 0;
+    if(sum_counts > mu && sum_counts > 5 && zscore > 2) {
+      log_pvalue = sum_counts * log(mu/sum_counts) + sum_counts - mu - 0.5 * log(6.283*sum_counts*frac*frac);
+    }
+
+//    std::cerr << "\t\t" << sum_counts << "\t" << mu << std::endl;
+//    std::cout << "\t\t" << IUPACPattern::toString(pattern, pattern_length) << "\t" << ltot << "\t" << sum_counts << "\t" << bg_p << "\t" << log_pvalue << std::endl;
 
     for(int p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
       log_pvalue += log_bonferroni[c];
     }
+//    std::cerr << "\t\t" << log_pvalue << std::endl;
 
     this->log_pvalue = log_pvalue;
   }
@@ -532,7 +543,7 @@ float IUPACPattern::calculate_d_bg(float** p_pwm, float* background, const int l
 }
 
 float IUPACPattern::calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l) {
-  float s = 0.5 * (calculate_d_bg(p1_pwm, background, l) +  calculate_d_bg(p2_pwm, background, l)) - calculate_d(p1_pwm, p2_pwm, offset1, offset2, l);
+  float s = 0.5 * (calculate_d_bg(p1_pwm, background, l, offset1) +  calculate_d_bg(p2_pwm, background, l, offset2)) - calculate_d(p1_pwm, p2_pwm, offset1, offset2, l);
   return s;
 }
 

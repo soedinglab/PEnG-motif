@@ -35,7 +35,7 @@ int main(int nargs, char **args) {
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;
-  peng.process(Global::zscoreThreshold, Global::pseudoCounts,
+  peng.process(Global::zscoreThreshold, Global::countThreshold, Global::pseudoCounts,
                Global::useEm, Global::emSaturationFactor,
                Global::emMinThreshold, Global::emMaxIterations,
                Global::useMerging, Global::mergeBitfactorThreshold,
