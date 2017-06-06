@@ -41,7 +41,9 @@ class IUPACPattern {
   static void initIUPACProfile(const float c, const float t, float* bg_model);
 
   IUPACPattern(size_t iupac_pattern, size_t pattern_length);
-  IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
+  IUPACPattern(IUPACPattern* ori, float** pwm);
+  IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern,
+               bool is_comp, float* background, const int shift);
   ~IUPACPattern();
 
   size_t get_pattern();

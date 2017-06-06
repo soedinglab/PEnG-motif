@@ -45,6 +45,7 @@ public:
 	static int pseudoCounts;
 
 	static int bgModelOrder;						         // background model order, defaults to 2
+	static int maxOptBgModelOrder;               // max background model order for optimization, defaults to 3
 	static bool interpolateBG;                   // calculate prior probabilities from lower-order probabilities
 	                                             // instead of background frequencies of mononucleotides
 	static std::vector<float> bgModelAlpha;      // background model alpha

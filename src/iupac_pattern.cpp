@@ -28,8 +28,36 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->comp_pwm = NULL;
   this->n_sites = 0;
   this->log_pvalue = 0;
+  this->zscore = 0;
   this->bg_p = 0;
   this->merged = false;
+}
+
+IUPACPattern::IUPACPattern(IUPACPattern* ori, float** pwm) {
+  this->pattern = ori->pattern;
+  this->pattern_length = ori->pattern_length;
+
+  this->local_n_sites = new size_t[pattern_length];
+  for(int i = 0; i < pattern_length; i++) {
+    this->local_n_sites[i] = ori->local_n_sites[i];
+  }
+
+  this->pwm = new float*[pattern_length];
+  for(int p = 0; p < pattern_length; p++) {
+    this->pwm[p] = new float[4];
+    for(int i = 0; i < 4; i++) {
+      this->pwm[p][i] = pwm[p][i];
+    }
+  }
+  IUPACPattern::normalize_pwm(pattern_length, this->pwm);
+
+  this->comp_pwm = NULL;
+  calculate_comp_pwm();
+
+  this->n_sites = ori->n_sites;
+  this->log_pvalue = ori->log_pvalue;
+  this->bg_p = ori->bg_p;
+  this->merged = ori->merged;
 }
 
 //merge constructor

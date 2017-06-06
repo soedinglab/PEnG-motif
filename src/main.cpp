@@ -29,14 +29,14 @@ int main(int nargs, char **args) {
   #endif
 
   //init peng with base patterns
-  Peng peng(Global::patternLength, Global::strand, Global::bgModelOrder,
+  Peng peng(Global::patternLength, Global::strand, Global::bgModelOrder, Global::maxOptBgModelOrder,
                 Global::inputSequenceSet, bgModel);
 
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;
   peng.process(Global::zscoreThreshold, Global::countThreshold, Global::pseudoCounts,
-               Global::useEm, Global::emSaturationFactor,
+               Global::maxOptBgModelOrder, Global::useEm, Global::emSaturationFactor,
                Global::emMinThreshold, Global::emMaxIterations,
                Global::useMerging, Global::mergeBitfactorThreshold,
                Global::useAdvPWM,

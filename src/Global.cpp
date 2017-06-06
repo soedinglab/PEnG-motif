@@ -48,6 +48,7 @@ bool Global::interpolateBG = true;                    // calculate prior probabi
                                                       // instead of background frequencies of mononucleotides
 
 int Global::bgModelOrder = 2;                         // background model order, defaults to 2
+int Global::maxOptBgModelOrder = 2;
 std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // background model alpha
 
 int Global::verbosity = 2;            	              // verbosity
