@@ -24,6 +24,7 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
 
   this->local_n_sites = new size_t[pattern_length];
 
+  this->optimization_bg_model_order = 0;
   this->pwm = NULL;
   this->comp_pwm = NULL;
   this->n_sites = 0;
@@ -36,6 +37,7 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
 IUPACPattern::IUPACPattern(IUPACPattern* ori, float** pwm) {
   this->pattern = ori->pattern;
   this->pattern_length = ori->pattern_length;
+
 
   this->local_n_sites = new size_t[pattern_length];
   for(int i = 0; i < pattern_length; i++) {
@@ -58,6 +60,7 @@ IUPACPattern::IUPACPattern(IUPACPattern* ori, float** pwm) {
   this->log_pvalue = ori->log_pvalue;
   this->bg_p = ori->bg_p;
   this->merged = ori->merged;
+  this->optimization_bg_model_order = ori->optimization_bg_model_order;
 }
 
 //merge constructor
@@ -371,6 +374,14 @@ int IUPACPattern::getNucleotideAtPos(const size_t pattern, const unsigned long i
   size_t residue = (pattern % IUPACPattern::iupac_factor[pos+1]);
   int c = int(residue / IUPACPattern::iupac_factor[pos]);
   return c;
+}
+
+int IUPACPattern::get_optimization_bg_model_order() {
+  return optimization_bg_model_order;
+}
+
+void IUPACPattern::set_optimization_bg_model_order(int order) {
+  optimization_bg_model_order = order;
 }
 
 void IUPACPattern::calculate_log_pvalue(const int ltot,

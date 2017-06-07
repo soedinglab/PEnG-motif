@@ -16,7 +16,6 @@ class Peng{
                 SequenceSet* sequence_set, BackgroundModel* bg);
   ~Peng();
   void process(const float zscore_threshold, const size_t count_threshold, const int pseudo_counts,
-                     const int max_opt_k,
                      const bool use_em, const float em_saturation_factor, const float min_em_threshold,
                      const int em_max_iterations, const bool use_merging, const float bit_factor_merge_threshold,
                      const bool adv_pwm,

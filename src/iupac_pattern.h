@@ -61,6 +61,8 @@ class IUPACPattern {
   size_t get_sites();
   size_t* get_local_sites();
   std::vector<size_t>& get_base_patterns();
+  int get_optimization_bg_model_order();
+  void set_optimization_bg_model_order(int order);
 
   void count_sites(size_t* pattern_counter);
   void calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model);
@@ -87,6 +89,7 @@ class IUPACPattern {
   float log_pvalue;
   float zscore;
   float bg_p;
+  int optimization_bg_model_order;
   size_t n_sites;
   size_t* local_n_sites;
   float** pwm;

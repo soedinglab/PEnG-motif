@@ -531,7 +531,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
 }
 
 void Peng::process(const float zscore_threshold, const size_t count_threshold,
-                   const int pseudo_counts, const int max_opt_k, const bool use_em,
+                   const int pseudo_counts, const bool use_em,
                    const float em_saturation_factor,
                    const float min_em_threshold, const int em_max_iterations,
                    const bool use_merging, const float bit_factor_merge_threshold,
@@ -593,8 +593,9 @@ void Peng::process(const float zscore_threshold, const size_t count_threshold,
     std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
   }
 
-
-  for(int background = 0; background <= max_opt_k; background++) {
+  std::cout << "max_k: " << this->max_k << std::endl;
+  for(int background = 0; background <= this->max_k; background++) {
+    std::cout << "k: " << background << std::endl;
     std::vector<IUPACPattern*> optimized_patterns;
     if(use_em) {
       em_optimize_pwms(unoptimized_iupac_patterns, em_saturation_factor, min_em_threshold, em_max_iterations, pattern_bg_probabilities[background], optimized_patterns);
@@ -612,6 +613,7 @@ void Peng::process(const float zscore_threshold, const size_t count_threshold,
     }
 
     for(int i = 0; i < optimized_patterns.size(); i++) {
+      optimized_patterns[i]->set_optimization_bg_model_order(background);
       best_iupac_patterns.push_back(optimized_patterns[i]);
     }
   }
@@ -798,6 +800,7 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
           " w= " << pattern->get_pattern_length() <<
           " nsites= " << pattern->get_sites() <<
           " bg_prob= " << pattern->get_bg_p() <<
+          " opt_bg_order= " << pattern->get_optimization_bg_model_order() <<
           " log(Pval)= " << pattern->get_log_pvalue()<< std::endl;
 
       float** pwm = pattern->get_pwm();
@@ -850,6 +853,7 @@ void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
       myfile << "\t\t\t\"sites\" : " << pattern->get_sites() << "," << std::endl;
       myfile << "\t\t\t\"log(Pval)\" : " << pattern->get_log_pvalue() << "," << std::endl;
       myfile << "\t\t\t\"bg_prob\" : " << pattern->get_bg_p() << "," << std::endl;
+      myfile << "\t\t\t\"opt_bg_order\" : " << pattern->get_optimization_bg_model_order() << "," << std::endl;
       myfile << "\t\t\t\"pwm\" : [" << std::endl;
       float** pwm = pattern->get_pwm();
       for(size_t w = 0; w < pattern->get_pattern_length(); w++) {
