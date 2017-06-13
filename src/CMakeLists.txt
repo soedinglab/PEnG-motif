@@ -18,12 +18,13 @@ set(PENG_SOURCE
 	${CMAKE_CURRENT_SOURCE_DIR}/peng.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/peng.h
 	${CMAKE_CURRENT_SOURCE_DIR}/log.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.h
+	${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/iupac_alphabet.h
+	${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/iupac_pattern.h
+	${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.h
+	${CMAKE_CURRENT_SOURCE_DIR}/helper-inl.h
 )
 
 add_library(PENG_OBJECTS OBJECT ${PENG_SOURCE})

@@ -11,6 +11,7 @@
 #include "iupac_alphabet.h"
 #include "base_pattern.h"
 #include "peng.h"
+#include "helper-inl.h"
 
 #ifdef OPENMP
   #include <omp.h>
@@ -675,17 +676,11 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
       }
 
       if(seen.count(best_mutant->get_pattern()) == 1) {
-//        already_seen = true;
         found_better_mutant = false;
       }
       current_seen.erase(best_mutant->get_pattern());
       seen.insert(current_seen.begin(), current_seen.end());
     }
-
-//    if(already_seen) {
-//      std::cout << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
-//      std::cout << "\tended at " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
-//    }
 
     if(best.count(best_mutant->get_pattern()) == 0 && seen.count(best_mutant->get_pattern()) == 0) {
       best_iupac_patterns.push_back(best_mutant);
@@ -710,18 +705,11 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
     IUPACPattern* pat = iupac_patterns[i];
     size_t pattern = pat->get_pattern();
 
-//    //pattern shall not start with non-informative position ('N')
-//    int c = IUPACPattern::getNucleotideAtPos(pattern, 0);
-//    if(c == N) {
-//      deselected_patterns.push_back(pat);
-//      continue;
-//    }
-
     //count non-informative positions ('N')
     int non_informative_positions = 0;
     for(int p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
-      if(c == N) {
+      if(c == to_underlying(IUPAC_Alphabet::N)) {
         non_informative_positions += 1;
       }
     }

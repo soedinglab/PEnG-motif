@@ -13,6 +13,7 @@
 #include "iupac_pattern.h"
 #include "iupac_alphabet.h"
 #include "base_pattern.h"
+#include "helper-inl.h"
 
 size_t* IUPACPattern::iupac_factor = NULL;
 float* IUPACPattern::log_bonferroni = NULL;
@@ -78,28 +79,6 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
   else if(is_comp) {
     shorter_pattern_pwm = shorter_pattern->get_comp_pwm();
   }
-
-//  std::cerr << "\tis_comp: " << is_comp << std::endl;
-//  std::cerr << "\tshift: " << shift << std::endl;
-//
-//  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
-//  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
-//    std::cerr << "\t" << std::endl;
-//    for(int a = 0; a < 4; a++) {
-//      std::cerr << shorter_pattern_pwm[i][a] << "\t";
-//    }
-//    std::cerr << std::endl;
-//  }
-//
-//  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
-//  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
-//    std::cerr << "\t" << std::endl;
-//    for(int a = 0; a < 4; a++) {
-//      std::cerr << longer_pattern_pwm[i][a] << "\t";
-//    }
-//    std::cerr << std::endl;
-//  }
-
 
   this->pattern_length = longer_pattern->get_pattern_length() + shorter_pattern->get_pattern_length() - overlap;
 
@@ -213,17 +192,17 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
 
   float bf = log(2.0);
   log_bonferroni = new float[IUPAC_ALPHABET_SIZE];
-  log_bonferroni[A] = log(8);
-  log_bonferroni[C] = log(8);
-  log_bonferroni[G] = log(8);
-  log_bonferroni[T] = log(8);
-  log_bonferroni[S] = log(16);
-  log_bonferroni[W] = log(16);
-  log_bonferroni[R] = log(16);
-  log_bonferroni[Y] = log(16);
-  log_bonferroni[M] = log(24);
-  log_bonferroni[K] = log(24);
-  log_bonferroni[N] = log(32);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::A)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::C)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::G)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::T)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::S)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::W)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::R)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::Y)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::M)] = log(24);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::K)] = log(24);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::N)] = log(32);
 
   initIUPACProfile(0.2, 0.7, bg_model);
 }
@@ -239,7 +218,7 @@ void IUPACPattern::initIUPACProfile(const float c, const float t, float* bg_mode
 
 
   for(int iupac_c = 0; iupac_c < IUPAC_ALPHABET_SIZE; iupac_c++) {
-    std::vector<uint8_t> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
+    std::vector<int> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
     for(int a = 0; a < 4; a++) {
       iupac_profile[iupac_c][a] += c * bg_model[a];
 
@@ -695,7 +674,7 @@ void IUPACPattern::find_base_patterns(const size_t pattern, const size_t pattern
   for(int p = 0; p < pattern_length; p++) {
     int c = IUPACPattern::getNucleotideAtPos(pattern, p);
 
-    std::vector<uint8_t> representatives = IUPACAlphabet::get_representative_iupac_nucleotides(c);
+    std::vector<int> representatives = IUPACAlphabet::get_representative_iupac_nucleotides(c);
     size_t* base_factors = BasePattern::getFactors();
 
     for(auto r : representatives) {
