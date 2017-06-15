@@ -43,11 +43,11 @@ int main(int nargs, char **args) {
                result);
 
   //print output
-  if(Global::outputFilename != NULL) {
+  if(Global::outputFilename) {
     peng.printShortMeme(result, Global::outputFilename, bgModel);
   }
 
-  if(Global::jsonFilename != NULL) {
+  if(Global::jsonFilename) {
     peng.printJson(result, Global::jsonFilename, VERSION_NUMBER, bgModel);
   }
 

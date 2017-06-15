@@ -503,7 +503,7 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
 
     //if best score is above threshold; merge and continue searching for appropriate merges
     if(best_score > pattern_length * merge_bit_factor_threshold) {
-      IUPACPattern* merged_pattern = NULL;
+      IUPACPattern* merged_pattern = nullptr;
       if(iupac_patterns[best_i]->get_pattern_length() < iupac_patterns[best_j]->get_pattern_length()) {
         merged_pattern = new IUPACPattern(iupac_patterns[best_j], iupac_patterns[best_i], best_comp,
                                                         bg_model->getV()[0], best_shift);
@@ -692,7 +692,7 @@ void Peng::optimize_iupac_patterns(std::vector<size_t>& selected_base_patterns,
     else {
       std::cout << "optimization: " << BasePattern::toString(pattern) << " removed" << std::endl;
       delete best_mutant;
-      best_mutant = NULL;
+      best_mutant = nullptr;
     }
   }
 }

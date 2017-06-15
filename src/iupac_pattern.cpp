@@ -15,9 +15,9 @@
 #include "base_pattern.h"
 #include "helper-inl.h"
 
-size_t* IUPACPattern::iupac_factor = NULL;
-float* IUPACPattern::log_bonferroni = NULL;
-float** IUPACPattern::iupac_profile = NULL;
+size_t* IUPACPattern::iupac_factor = nullptr;
+float* IUPACPattern::log_bonferroni = nullptr;
+float** IUPACPattern::iupac_profile = nullptr;
 
 IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->pattern = iupac_pattern;
@@ -26,8 +26,8 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->local_n_sites = new size_t[pattern_length];
 
   this->optimization_bg_model_order = 0;
-  this->pwm = NULL;
-  this->comp_pwm = NULL;
+  this->pwm = nullptr;
+  this->comp_pwm = nullptr;
   this->n_sites = 0;
   this->log_pvalue = 0;
   this->zscore = 0;
@@ -54,7 +54,7 @@ IUPACPattern::IUPACPattern(IUPACPattern* ori, float** pwm) {
   }
   IUPACPattern::normalize_pwm(pattern_length, this->pwm);
 
-  this->comp_pwm = NULL;
+  this->comp_pwm = nullptr;
   calculate_comp_pwm();
 
   this->n_sites = ori->n_sites;
@@ -153,7 +153,7 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
   }
 
   IUPACPattern::normalize_pwm(pattern_length, pwm);
-  comp_pwm = NULL;
+  comp_pwm = nullptr;
   this->calculate_comp_pwm();
 
   this->log_pvalue = calculate_merged_pvalue(longer_pattern, shorter_pattern, is_comp, background, shift);
@@ -178,7 +178,6 @@ IUPACPattern::~IUPACPattern(){
     }
     delete[] comp_pwm;
   }
-
 
   delete[] local_n_sites;
 }
@@ -425,7 +424,7 @@ void IUPACPattern::count_sites(size_t* pattern_counter) {
 
 void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
-  if(pwm == NULL && merged == false) {
+  if(pwm == nullptr && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT
@@ -455,7 +454,7 @@ void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counte
 
 void IUPACPattern::calculate_adv_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
-  if(pwm == NULL && merged == false) {
+  if(pwm == nullptr && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT

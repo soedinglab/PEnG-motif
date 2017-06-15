@@ -15,15 +15,15 @@
 #include <string>
 
 
-char*	Global::alphabetType = NULL;			              // alphabet type is defaulted to standard which is ACGT
+char*	Global::alphabetType = nullptr;			              // alphabet type is defaulted to standard which is ACGT
 
-char* Global::outputFilename = NULL;                  // filename for IUPAC pattern output in short meme format
-char* Global::jsonFilename = NULL;                    // filename for IUPAC pattern output in json format
+char* Global::outputFilename = nullptr;                  // filename for IUPAC pattern output in short meme format
+char* Global::jsonFilename = nullptr;                    // filename for IUPAC pattern output in json format
 
-char* Global::inputSequenceFilename = NULL;		        // filename with input FASTA sequences
-char* Global::backgroundSequenceFilename = NULL;      // filename with background FASTA sequences
-SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
-SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
+char* Global::inputSequenceFilename = nullptr;		        // filename with input FASTA sequences
+char* Global::backgroundSequenceFilename = nullptr;      // filename with background FASTA sequences
+SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
+SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
 //bool Global::revcomp = false;                         // also search on reverse complement of sequences
 
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
@@ -62,7 +62,7 @@ void Global::init(int nargs, char* args[]){
 	inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
 	char* currBackgroundSequenceFilename;
-	if(backgroundSequenceFilename != NULL) {
+	if(backgroundSequenceFilename) {
 	  currBackgroundSequenceFilename = backgroundSequenceFilename;
 	}
 	else {
