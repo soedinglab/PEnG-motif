@@ -24,10 +24,9 @@ char* Global::inputSequenceFilename = nullptr;		        // filename with input F
 char* Global::backgroundSequenceFilename = nullptr;      // filename with background FASTA sequences
 SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
-//bool Global::revcomp = false;                         // also search on reverse complement of sequences
 
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
-Strand Global::strand = BOTH_STRANDS;
+Strand Global::strand = Strand::BOTH_STRANDS;
 
 bool Global::useEm = true;
 float Global::emSaturationFactor = 1E4;
@@ -69,7 +68,7 @@ void Global::init(int nargs, char* args[]){
 	  currBackgroundSequenceFilename = inputSequenceFilename;
 	}
 
-  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != BOTH_STRANDS);
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != Strand::BOTH_STRANDS);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -214,10 +213,10 @@ void Global::readArguments(int nargs, char* args[]){
       }
 
       if(!strcmp(args[i], "BOTH")) {
-        strand = BOTH_STRANDS;
+        strand = Strand::BOTH_STRANDS;
       }
       else if(!strcmp(args[i], "PLUS")) {
-        strand = PLUS_STRAND;
+        strand = Strand::PLUS_STRAND;
       }
       else {
         printHelp();

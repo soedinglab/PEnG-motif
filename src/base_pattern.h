@@ -16,55 +16,33 @@
     BasePattern deals with the encoding of Patterns
     The nucleotide encoding is defined in Alphabet
 
-    The pattern encoding is a "binary" representation:
-    Alphabet: 'other'<->0, A<->1, C<->2, G<->3, T<->4
-    We do not need 'other': A<->0, C<->1, G<->2, T<->3
+    The patterns are encoded in numerical values:
+    (BaMM-)Alphabet: 'other'<->0, A<->1, C<->2, G<->3, T<->4
+    (PEnG-)Alphabet: A<->0, C<->1, G<->2, T<->3
     Alphabet Size a = 4
-    Pattern: ATGC <-> 0*a^0 + 3*a^1 + 2*a^2 + 1*a^3
+    Pattern: "ATGC" <-> id: 0*a^0 + 3*a^1 + 2*a^2 + 1*a^3
 */
 class BasePattern {
  public:
-  /**
-      Inits static variables of BasePattern
-      Needs to be called before BasePattern is used
-
-      @param pattern_length length of base patterns
-  */
+  //inits factor and pattern_length
   static void init(const size_t pattern_length);
 
-  /**
-      Getter for factors used to encode base pattern ids
-  */
+  //returns factors
   static size_t* getFactors();
 
-  /**
-      Getter for pattern length
-  */
+  //returns pattern_length
   static size_t getPatternLength();
 
-  /**
-      Get string of encoded base pattern id
-      @param pattern_id encoded base pattern id
-      @return string of base pattern
-  */
+  //get string to pattern id
   static std::string toString(const size_t pattern_id);
 
-  /**
-      Get id of corresponding pattern on the minus strand
-      @param pattern_id encoded base pattern id (on the plus strand)
-      @return encoded pattern id on the minus strand
-  */
-  static size_t getMinusId(const size_t pattern_id);
+  //get pattern id of reverse complementary pattern
+  static size_t getRevCompId(const size_t pattern_id);
 
-  /**
-      get nucleotide id of pattern id at position pos
-      @param pattern encoded base pattern id
-      @param pos position in the pattern
-      @return encoded nucleotide
-  */
+  //get nucleotide id of pattern at pos
   static int getNucleotideAtPos(const size_t pattern, const size_t pos);
  private:
-  // position specific factors used for encoding base patterns
+  // position specific factors used for encoding of base patterns
   static size_t* factor;
 
   // length of pattern

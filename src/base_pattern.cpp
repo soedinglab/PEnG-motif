@@ -11,7 +11,7 @@
 #include "base_pattern.h"
 
 //declare static variables
-size_t* BasePattern::factor = NULL;
+size_t* BasePattern::factor = nullptr;
 size_t BasePattern::pattern_length = 0;
 
 void BasePattern::init(size_t pattern_length) {
@@ -36,7 +36,7 @@ std::string BasePattern::toString(size_t pattern_id) {
   return out;
 }
 
-size_t BasePattern::getMinusId(const size_t pattern_id) {
+size_t BasePattern::getRevCompId(const size_t pattern_id) {
   size_t tmp_id = pattern_id;
   size_t rev_pattern_id = 0;
 
@@ -55,6 +55,8 @@ size_t BasePattern::getMinusId(const size_t pattern_id) {
 }
 
 int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos) {
+  //id: a0*|a|^0 + a1*|a|^1 + a2*|a|^2 + a3*|a|^3
+  // a2 = floor((id % |a|^3) / |a|^2)
   size_t residue = (pattern % factor[pos + 1]);
   return int(residue / factor[pos]);
 }

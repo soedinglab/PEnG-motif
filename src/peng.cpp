@@ -39,16 +39,6 @@ Peng::Peng(const int pattern_length, Strand s, const int k, const int max_opt_k,
   this->alphabet_size = Alphabet::getSize();
   this->strand = s;
 
-//  ltot = 0;
-//  std::vector<Sequence*> seqs = sequence_set->getSequences();
-//  for(size_t i = 0; i < seqs.size(); i++) {
-//    ltot += seqs[i]->getL() - pattern_length + 1;
-//  }
-//  //for the - strand
-//  if(this->strand == BOTH_STRANDS) {
-//    ltot *= 2;
-//  }
-
   //init counter for patterns
   this->number_patterns = pow(Alphabet::getSize(), pattern_length);
   this->pattern_counter = new size_t[number_patterns];
@@ -61,7 +51,7 @@ Peng::Peng(const int pattern_length, Strand s, const int k, const int max_opt_k,
   this->pattern_zscore = new float[number_patterns];
 
   count_patterns(pattern_length, Alphabet::getSize(), number_patterns, sequence_set, pattern_counter);
-  if(this->strand == BOTH_STRANDS) {
+  if(this->strand == Strand::BOTH_STRANDS) {
     count_patterns_minus_strand(pattern_length, Alphabet::getSize(), number_patterns, pattern_counter);
   }
 
@@ -251,7 +241,7 @@ void Peng::count_patterns(const int pattern_length, const int alphabet_size,
 //      }
 //      std::cerr << BasePattern::toString(id) << std::endl;
 
-      size_t rev_id = BasePattern::getMinusId(id);
+      size_t rev_id = BasePattern::getRevCompId(id);
 
       if((pattern_plus_positions.find(id) == pattern_plus_positions.end() || i - pattern_plus_positions[id] >= pattern_length)
           && (pattern_minus_positions.find(id) == pattern_minus_positions.end() || i - pattern_minus_positions[id] >= pattern_length)
@@ -285,7 +275,7 @@ void Peng::count_patterns_minus_strand(const int pattern_length, const int alpha
   }
 
   for(size_t i = 0; i < number_patterns; i++) {
-    size_t rev_pattern_id = BasePattern::getMinusId(i);
+    size_t rev_pattern_id = BasePattern::getRevCompId(i);
     assert(rev_pattern_id < number_patterns);
 
     //do not count palindromic patterns from minus strand
@@ -328,7 +318,7 @@ void Peng::filter_base_patterns(const int pattern_length, const int alphabet_siz
       continue;
     }
 
-    size_t rev_pattern = BasePattern::getMinusId(pattern);
+    size_t rev_pattern = BasePattern::getRevCompId(pattern);
     if(not seen_array[pattern] and not seen_array[rev_pattern]) {
       selected_patterns.push_back(pattern);
       seen_array[pattern] = true;
@@ -706,16 +696,16 @@ void Peng::filter_iupac_patterns(std::vector<IUPACPattern*>& iupac_patterns) {
     size_t pattern = pat->get_pattern();
 
     //count non-informative positions ('N')
-    int non_informative_positions = 0;
+    int less_informative_positions = 0;
     for(int p = 0; p < pattern_length; p++) {
       int c = IUPACPattern::getNucleotideAtPos(pattern, p);
       if(c == to_underlying(IUPAC_Alphabet::N)) {
-        non_informative_positions += 1;
+        less_informative_positions += 1;
       }
     }
 
     //limit fraction of non-informative positions ('N')
-    if(pattern_length - non_informative_positions <= 3) {
+    if(pattern_length - less_informative_positions <= 3) {
       deselected_patterns.push_back(pat);
     }
     else {

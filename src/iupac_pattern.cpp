@@ -534,7 +534,7 @@ std::tuple<float, int, bool> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPa
 
   std::vector<bool> comp_test;
   comp_test.push_back(false);
-  if(s == BOTH_STRANDS) {
+  if(s == Strand::BOTH_STRANDS) {
     comp_test.push_back(true);
   }
 
