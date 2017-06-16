@@ -31,7 +31,7 @@ Strand Global::strand = Strand::BOTH_STRANDS;
 bool Global::useEm = true;
 float Global::emSaturationFactor = 1E4;
 float Global::emMinThreshold = 0.08;
-int Global::emMaxIterations = 100;
+int Global::emMaxIterations = 10;
 
 bool Global::useMerging = true;
 

@@ -32,7 +32,6 @@ Peng::Peng(Strand s, const int k, const int max_opt_k,
   IUPACAlphabet::init(Alphabet::getAlphabet());
 
   //IUPACAlphabet needs to be initialized before this
-  //TODO init with max pattern length of base patterns
   IUPACPattern::init(max_iupac_pattern_length, bg->getV()[0]);
 
   bg_model = bg;
@@ -56,20 +55,38 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
   const size_t number_patterns = base_patterns->getNumberPatterns();
   size_t* pattern_counter = base_patterns->getPatternCounter();
 
+  //TODO threads
+  int threads = 1;
+  //allocate pwm's for optimization
+  float*** threads_old_pwm = new float**[threads];
+  for(int thread = 0; thread < threads; thread++) {
+    threads_old_pwm[thread] = new float*[pattern_length];
+    for(int p = 0; p < pattern_length; p++) {
+      threads_old_pwm[thread][p] = new float[4];
+    }
+  }
+
+  float*** threads_new_pwm = new float**[threads];
+  for(int thread = 0; thread < threads; thread++) {
+    threads_new_pwm[thread] = new float*[pattern_length];
+    for(int p = 0; p < pattern_length; p++) {
+      threads_new_pwm[thread][p] = new float[4];
+    }
+  }
+
+  float** threads_prob_odds = new float*[threads];
+  for(int thread = 0; thread < threads; thread++) {
+    threads_prob_odds[thread] = new float[number_patterns];
+  }
+
   for(int i = 0; i < best_iupac_patterns.size(); i++) {
     size_t ori_pattern = best_iupac_patterns[i]->get_pattern();
-    //allocate pwm's for optimization
-    float** old_pwm = new float*[pattern_length];
-    for(int p = 0; p < pattern_length; p++) {
-      old_pwm[p] = new float[4];
-    }
 
-    float** new_pwm = new float*[pattern_length];
-    for(int p = 0; p < pattern_length; p++) {
-      new_pwm[p] = new float[4];
-    }
-
-    float* prob_odds = new float[number_patterns];
+    //TODO threads
+    int thread_number = 0;
+    float** new_pwm = threads_new_pwm[thread_number];
+    float** old_pwm = threads_old_pwm[thread_number];
+    float* prob_odds= threads_prob_odds[thread_number];
 
     //copy pwm to old_pwm
     float** ori_pwm = best_iupac_patterns[i]->get_pwm();
@@ -126,20 +143,30 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
     IUPACPattern* optimized_pattern = new IUPACPattern(best_iupac_patterns[i], old_pwm);
     optimized_iupac_patterns.push_back(optimized_pattern);
     std::cout << "em: " << IUPACPattern::toString(ori_pattern, pattern_length) << " -> " << optimized_pattern->get_pattern_string() << std::endl;
-
-    //de-allocate pwm's
-    for(int p = 0; p < pattern_length; p++) {
-      delete[] new_pwm[p];
-    }
-    delete[] new_pwm;
-
-    for(int p = 0; p < pattern_length; p++) {
-      delete[] old_pwm[p];
-    }
-    delete[] old_pwm;
-
-    delete[] prob_odds;
   }
+
+  //de-allocate pwm's
+  for(int thread = 0; thread < threads; thread++) {
+    for(int p = 0; p < pattern_length; p++) {
+      delete[] threads_new_pwm[thread][p];
+    }
+    delete[] threads_new_pwm[thread];
+  }
+  delete[] threads_new_pwm;
+
+  for(int thread = 0; thread < threads; thread++) {
+    for(int p = 0; p < pattern_length; p++) {
+      delete[] threads_old_pwm[thread][p];
+    }
+    delete[] threads_old_pwm[thread];
+  }
+  delete[] threads_old_pwm;
+
+  for(int thread = 0; thread < threads; thread++) {
+    delete [] threads_prob_odds[thread];
+
+  }
+  delete[] threads_prob_odds;
 }
 
 void Peng::calculate_prob_odds(const size_t pattern_length,
@@ -160,9 +187,47 @@ void Peng::calculate_prob_odds(const size_t pattern_length,
   }
 }
 
+void Peng::filter_redundancy(const float merge_bit_factor_threshold, std::vector<IUPACPattern*>& iupac_patterns) {
+  std::sort(iupac_patterns.begin(), iupac_patterns.end(), sort_IUPAC_patterns);
+
+  std::set<size_t, std::greater<size_t>> deselected;
+
+  for(size_t i = 0; i < iupac_patterns.size(); i++) {
+    if(deselected.find(i) == deselected.end()) {
+      for(size_t j = i+1; j < iupac_patterns.size(); j++) {
+        if(deselected.find(j) == deselected.end() &&
+          iupac_patterns[i]->get_pattern_length() == iupac_patterns[j]->get_pattern_length()) {
+
+          //TODO depends on strand...
+          float similarity_score = IUPACPattern::calculate_s(iupac_patterns[i]->get_pwm(),
+                                                           iupac_patterns[j]->get_pwm(),
+                                                           bg_model->getV()[0], 0, 0,
+                                                           iupac_patterns[i]->get_pattern_length());
+          float comp_similarity_score = IUPACPattern::calculate_s(iupac_patterns[i]->get_comp_pwm(),
+                                                                         iupac_patterns[j]->get_pwm(),
+                                                                         bg_model->getV()[0], 0, 0,
+                                                                         iupac_patterns[i]->get_pattern_length());
+          float threshold = merge_bit_factor_threshold * iupac_patterns[i]->get_pattern_length();
+          if(similarity_score > threshold || comp_similarity_score > threshold) {
+            deselected.insert(j);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  for (std::set<size_t>::iterator it=deselected.begin(); it != deselected.end(); ++it) {
+    size_t index = *it;
+    delete iupac_patterns[index];
+    iupac_patterns.erase(iupac_patterns.begin() + index);
+  }
+}
+
 void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_bit_factor_threshold,
                                 BackgroundModel* bg, std::vector<IUPACPattern*>& iupac_patterns) {
   bool found_better = true;
+  //TODO not necessary to recalculate the whole grid each time...
   while(found_better) {
     found_better = false;
 
@@ -273,8 +338,7 @@ void Peng::process(const int max_pattern_length, const float zscore_threshold, c
     }
 
     std::cout << "max_k: " << this->max_k << std::endl;
-    //TODO for testing...
-    for(int background = 2; background <= this->max_k; background++) {
+    for(int background = 0; background <= this->max_k; background++) {
       float* pattern_bg_probs = base_pattern->getBackgroundProb(background);
       std::cout << "k: " << background << std::endl;
       std::vector<IUPACPattern*> optimized_patterns;

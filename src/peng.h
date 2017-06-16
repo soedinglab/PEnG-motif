@@ -21,6 +21,8 @@ class Peng{
                      const bool adv_pwm,
                      std::vector<IUPACPattern*>& best_iupac_patterns);
 
+  void filter_redundancy(const float merge_bit_factor_threshold, std::vector<IUPACPattern*>& iupac_patterns);
+
   void printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                       const std::string output_filename,
                       BackgroundModel* bg_model);

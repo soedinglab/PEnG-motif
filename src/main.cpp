@@ -42,6 +42,8 @@ int main(int nargs, char **args) {
                Global::useAdvPWM,
                result);
 
+  peng.filter_redundancy(Global::mergeBitfactorThreshold, result);
+
   //print output
   if(Global::outputFilename) {
     peng.printShortMeme(result, Global::outputFilename, bgModel);
