@@ -282,18 +282,6 @@ float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACP
   }
 }
 
-size_t IUPACPattern::baseToId(const size_t base_pattern,
-                            const size_t pattern_length) {
-  //map pattern to basic pattern in iupac base
-  //TODO: map M and H to C
-  size_t iupac_pattern = 0;
-  for (int p = 0; p < pattern_length; p++) {
-    int c = BasePattern::getNucleotideAtPos(base_pattern, p);
-    iupac_pattern += c * IUPACPattern::iupac_factor[p];
-  }
-  return iupac_pattern;
-}
-
 void IUPACPattern::normalize_pwm(const int pattern_length, float** pwm) {
   const float rounding_threshold = 0.0001;
   //normalize new pwm
@@ -362,12 +350,13 @@ void IUPACPattern::set_optimization_bg_model_order(int order) {
   optimization_bg_model_order = order;
 }
 
-void IUPACPattern::calculate_log_pvalue(const int ltot,
+void IUPACPattern::calculate_log_pvalue(BasePattern* base_pattern,
+                                        const int ltot,
                                         float* base_background_prob,
                                         size_t* base_counts) {
   //works just for unmerged iupac patterns; iupac patterns need to have the same same size as the base_patterns
   if(merged == false) {
-    find_base_patterns(pattern, pattern_length, base_patterns);
+    find_base_patterns(base_pattern, pattern, pattern_length, base_patterns);
 
     float sum_backgroud_prob = 0;
     float sum_counts = 0;
@@ -422,9 +411,9 @@ void IUPACPattern::count_sites(size_t* pattern_counter) {
   }
 }
 
-void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
+void IUPACPattern::calculate_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
-  if(pwm == nullptr && merged == false) {
+  if(!pwm && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT
@@ -436,7 +425,7 @@ void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counte
     for(auto base : base_patterns) {
       size_t count = pattern_counter[base];
       for(size_t p = 0; p < pattern_length; p++) {
-        int c = BasePattern::getNucleotideAtPos(base, p);
+        int c = base_pattern->getNucleotideAtPos(base, p);
         //TODO: map c to base nucleotides for MH...
         pwm[p][c] += count;
       }
@@ -452,7 +441,7 @@ void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counte
   }
 }
 
-void IUPACPattern::calculate_adv_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
+void IUPACPattern::calculate_adv_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
   if(pwm == nullptr && merged == false) {
     pwm = new float*[pattern_length];
@@ -471,7 +460,7 @@ void IUPACPattern::calculate_adv_pwm(const int pseudo_counts, size_t* pattern_co
       for(int i = 0; i < 4; i++) {
         size_t ipattern = pattern - c * IUPACPattern::iupac_factor[p] + i * IUPACPattern::iupac_factor[p];
         std::vector<size_t> i_base_patterns;
-        find_base_patterns(ipattern, pattern_length, i_base_patterns);
+        find_base_patterns(base_pattern, ipattern, pattern_length, i_base_patterns);
 
         i_total[i] = pseudo_counts * background_model[i];
         for(auto base : i_base_patterns) {
@@ -664,17 +653,17 @@ std::vector<size_t>& IUPACPattern::get_base_patterns() {
   return base_patterns;
 }
 
-void IUPACPattern::find_base_patterns(const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns) {
+void IUPACPattern::find_base_patterns(BasePattern* base_pattern, const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns) {
   std::vector<size_t> ids;
   ids.push_back(0);
 
   std::vector<size_t> tmp_ids;
+  size_t* base_factors = base_pattern->getFactors();
 
   for(int p = 0; p < pattern_length; p++) {
     int c = IUPACPattern::getNucleotideAtPos(pattern, p);
 
     std::vector<int> representatives = IUPACAlphabet::get_representative_iupac_nucleotides(c);
-    size_t* base_factors = BasePattern::getFactors();
 
     for(auto r : representatives) {
       for(auto pat : ids) {
