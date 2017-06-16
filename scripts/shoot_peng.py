@@ -107,16 +107,14 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     print(" ".join(command))
     return command
 
-
-#--FDR --savePRs -m 10 -k 0 --zoops -n 1
+#--FDR --savePRs -m 10 -k 0 --zoops
 def build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory):
     command = [BAMM, output_directory, os.path.abspath(protected_fasta_file),
-                "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePvalues", "--savePRs"]
+                "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePRs"]
     if args.strand == 'PLUS':
         command += ["--ss"]
     command += ["--zoops"]
     command += ["-m", str(10)]
-    command += ["-n", str(1)]
     command += ["-k", str(0)]
 
     print(" ".join(command))
