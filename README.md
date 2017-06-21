@@ -3,6 +3,7 @@
  (C) Johannes Soeding, Markus Meier
 
 PEnG-motif is an open-source software package for searching motifs (position specific weight matrices, PWMs) in a set of DNA sequences.
+It is intended to be a fast prefilter for a future release of [BaMMmotif](https://github.com/soedinglab/BaMMmotif).
 
 
 ## Requirements
@@ -25,7 +26,9 @@ With the source code ready, simply run cmake with the default settings and libra
 
 	mkdir build
 	cd build
-  # Adjust ${HOME}/opt/PEnG if you want to change the installation directory
+
+Adjust ${HOME}/opt/PEnG if you want to change the installation directory
+
 	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${HOME}/opt/PEnG ..
 	make
 	make install
@@ -33,11 +36,11 @@ With the source code ready, simply run cmake with the default settings and libra
 ### Environment setup
 Add this line to your $HOME/.bashrc (or .zshrc...) to add peng_motif to your PATH:
 
-  export PATH=${PATH}:${HOME}/opt/PEnG/bin
+	export PATH=${PATH}:${HOME}/opt/PEnG/bin
 
 Update your environment:
 
-  source $HOME/.bashrc
+	source $HOME/.bashrc
 
 
 ## Usage
@@ -49,11 +52,10 @@ You can get a detailed list of options for peng_motif by calling it without argu
 This script is a wrapper for PEnG that will rerank the models using binaries and scripts from BaMM.
 
 ## Future
-With a future release of BaMMmotif we can rerank the models of PEnG with a proper score.
-For this purpose the python script shoot_peng.py exists and has the following requirements:
-* Shared binaries/scripts from [BaMMmotif](https://github.com/soedinglab/BaMMmotif) (to be updated in the future; current release won't work)
+With a future release of [BaMMmotif](https://github.com/soedinglab/BaMMmotif) we can rerank
+the models of PEnG with a proper score. For this purpose the python script shoot_peng.py
+exists.
 
-With the release of the new version of BaMMmotif, we can submodule the code in src/shared.
 
 ## License
 
@@ -74,4 +76,4 @@ Please contact us at soeding@mpibpc.mpg.de
 ## Acknowledgements
 
 PEnG-motif uses shared code from BaMMmotif.
-Many thanks to the developers of BaMMmotif for their great code!
+Many thanks to the developers of BaMMmotif!
