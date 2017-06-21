@@ -13,22 +13,22 @@
 #include <cstdint>
 
 const int IUPAC_ALPHABET_SIZE = 11;
-enum IUPAC_Alphabet { A = 0, C = 1, G = 2, T = 3, S = 4, W = 5, R = 6, Y = 7, M = 8, K = 9, N = 10};
+enum class IUPAC_Alphabet { A = 0, C = 1, G = 2, T = 3, S = 4, W = 5, R = 6, Y = 7, M = 8, K = 9, N = 10};
 
 class IUPACAlphabet {
  private:
   static char* base_2_char;
-  static uint8_t* char_2_base;
+  static int* char_2_base;
 
-  static std::map<uint8_t, std::vector<uint8_t>> similar_iupac_nucleotides;
-  static std::map<uint8_t, std::vector<uint8_t>> representative_iupac_nucleotides;
+  static std::map<int, std::vector<int>> similar_iupac_nucleotides;
+  static std::map<int, std::vector<int>> representative_iupac_nucleotides;
 
  public:
   static void init(char* alphabet);
-  static std::vector<uint8_t> get_similar_iupac_nucleotides(uint8_t c);
-  static std::vector<uint8_t> get_representative_iupac_nucleotides(uint8_t c);
-  static char getBase(uint8_t c);
-  static uint8_t getCode(char c);
+  static std::vector<int> get_similar_iupac_nucleotides(int c);
+  static std::vector<int> get_representative_iupac_nucleotides(int c);
+  static char getBase(int c);
+  static int getCode(char c);
   static size_t getAlphabetSize();
 };
 

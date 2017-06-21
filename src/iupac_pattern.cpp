@@ -13,10 +13,11 @@
 #include "iupac_pattern.h"
 #include "iupac_alphabet.h"
 #include "base_pattern.h"
+#include "helper-inl.h"
 
-size_t* IUPACPattern::iupac_factor = NULL;
-float* IUPACPattern::log_bonferroni = NULL;
-float** IUPACPattern::iupac_profile = NULL;
+size_t* IUPACPattern::iupac_factor = nullptr;
+float* IUPACPattern::log_bonferroni = nullptr;
+float** IUPACPattern::iupac_profile = nullptr;
 
 IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->pattern = iupac_pattern;
@@ -25,8 +26,8 @@ IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->local_n_sites = new size_t[pattern_length];
 
   this->optimization_bg_model_order = 0;
-  this->pwm = NULL;
-  this->comp_pwm = NULL;
+  this->pwm = nullptr;
+  this->comp_pwm = nullptr;
   this->n_sites = 0;
   this->log_pvalue = 0;
   this->zscore = 0;
@@ -53,7 +54,7 @@ IUPACPattern::IUPACPattern(IUPACPattern* ori, float** pwm) {
   }
   IUPACPattern::normalize_pwm(pattern_length, this->pwm);
 
-  this->comp_pwm = NULL;
+  this->comp_pwm = nullptr;
   calculate_comp_pwm();
 
   this->n_sites = ori->n_sites;
@@ -78,28 +79,6 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
   else if(is_comp) {
     shorter_pattern_pwm = shorter_pattern->get_comp_pwm();
   }
-
-//  std::cerr << "\tis_comp: " << is_comp << std::endl;
-//  std::cerr << "\tshift: " << shift << std::endl;
-//
-//  std::cerr << "\t" << shorter_pattern->get_pattern_string() << std::endl;
-//  for(int i = 0; i < shorter_pattern->get_pattern_length(); i++) {
-//    std::cerr << "\t" << std::endl;
-//    for(int a = 0; a < 4; a++) {
-//      std::cerr << shorter_pattern_pwm[i][a] << "\t";
-//    }
-//    std::cerr << std::endl;
-//  }
-//
-//  std::cerr << "\t" << longer_pattern->get_pattern_string() << std::endl;
-//  for(int i = 0; i < longer_pattern->get_pattern_length(); i++) {
-//    std::cerr << "\t" << std::endl;
-//    for(int a = 0; a < 4; a++) {
-//      std::cerr << longer_pattern_pwm[i][a] << "\t";
-//    }
-//    std::cerr << std::endl;
-//  }
-
 
   this->pattern_length = longer_pattern->get_pattern_length() + shorter_pattern->get_pattern_length() - overlap;
 
@@ -174,7 +153,7 @@ IUPACPattern::IUPACPattern(IUPACPattern* longer_pattern, IUPACPattern* shorter_p
   }
 
   IUPACPattern::normalize_pwm(pattern_length, pwm);
-  comp_pwm = NULL;
+  comp_pwm = nullptr;
   this->calculate_comp_pwm();
 
   this->log_pvalue = calculate_merged_pvalue(longer_pattern, shorter_pattern, is_comp, background, shift);
@@ -200,7 +179,6 @@ IUPACPattern::~IUPACPattern(){
     delete[] comp_pwm;
   }
 
-
   delete[] local_n_sites;
 }
 
@@ -213,17 +191,17 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
 
   float bf = log(2.0);
   log_bonferroni = new float[IUPAC_ALPHABET_SIZE];
-  log_bonferroni[A] = log(8);
-  log_bonferroni[C] = log(8);
-  log_bonferroni[G] = log(8);
-  log_bonferroni[T] = log(8);
-  log_bonferroni[S] = log(16);
-  log_bonferroni[W] = log(16);
-  log_bonferroni[R] = log(16);
-  log_bonferroni[Y] = log(16);
-  log_bonferroni[M] = log(24);
-  log_bonferroni[K] = log(24);
-  log_bonferroni[N] = log(32);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::A)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::C)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::G)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::T)] = log(8);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::S)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::W)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::R)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::Y)] = log(16);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::M)] = log(24);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::K)] = log(24);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::N)] = log(32);
 
   initIUPACProfile(0.2, 0.7, bg_model);
 }
@@ -239,7 +217,7 @@ void IUPACPattern::initIUPACProfile(const float c, const float t, float* bg_mode
 
 
   for(int iupac_c = 0; iupac_c < IUPAC_ALPHABET_SIZE; iupac_c++) {
-    std::vector<uint8_t> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
+    std::vector<int> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
     for(int a = 0; a < 4; a++) {
       iupac_profile[iupac_c][a] += c * bg_model[a];
 
@@ -302,18 +280,6 @@ float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACP
 
     return shorter_pattern->get_log_pvalue() + d / d_divisor * longer_pattern->get_log_pvalue();
   }
-}
-
-size_t IUPACPattern::baseToId(const size_t base_pattern,
-                            const size_t pattern_length) {
-  //map pattern to basic pattern in iupac base
-  //TODO: map M and H to C
-  size_t iupac_pattern = 0;
-  for (int p = 0; p < pattern_length; p++) {
-    int c = BasePattern::getNucleotideAtPos(base_pattern, p);
-    iupac_pattern += c * IUPACPattern::iupac_factor[p];
-  }
-  return iupac_pattern;
 }
 
 void IUPACPattern::normalize_pwm(const int pattern_length, float** pwm) {
@@ -384,12 +350,13 @@ void IUPACPattern::set_optimization_bg_model_order(int order) {
   optimization_bg_model_order = order;
 }
 
-void IUPACPattern::calculate_log_pvalue(const int ltot,
+void IUPACPattern::calculate_log_pvalue(BasePattern* base_pattern,
+                                        const int ltot,
                                         float* base_background_prob,
                                         size_t* base_counts) {
   //works just for unmerged iupac patterns; iupac patterns need to have the same same size as the base_patterns
   if(merged == false) {
-    find_base_patterns(pattern, pattern_length, base_patterns);
+    find_base_patterns(base_pattern, pattern, pattern_length, base_patterns);
 
     float sum_backgroud_prob = 0;
     float sum_counts = 0;
@@ -444,9 +411,9 @@ void IUPACPattern::count_sites(size_t* pattern_counter) {
   }
 }
 
-void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
+void IUPACPattern::calculate_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
-  if(pwm == NULL && merged == false) {
+  if(!pwm && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT
@@ -458,7 +425,7 @@ void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counte
     for(auto base : base_patterns) {
       size_t count = pattern_counter[base];
       for(size_t p = 0; p < pattern_length; p++) {
-        int c = BasePattern::getNucleotideAtPos(base, p);
+        int c = base_pattern->getNucleotideAtPos(base, p);
         //TODO: map c to base nucleotides for MH...
         pwm[p][c] += count;
       }
@@ -474,9 +441,9 @@ void IUPACPattern::calculate_pwm(const int pseudo_counts, size_t* pattern_counte
   }
 }
 
-void IUPACPattern::calculate_adv_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model) {
+void IUPACPattern::calculate_adv_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model) {
   //pwm's of merged patterns have to be initialized with the respective constructor
-  if(pwm == NULL && merged == false) {
+  if(pwm == nullptr && merged == false) {
     pwm = new float*[pattern_length];
     for(int p = 0; p < pattern_length; p++) {
       pwm[p] = new float[4]; //base nucleotides ACGT
@@ -493,7 +460,7 @@ void IUPACPattern::calculate_adv_pwm(const int pseudo_counts, size_t* pattern_co
       for(int i = 0; i < 4; i++) {
         size_t ipattern = pattern - c * IUPACPattern::iupac_factor[p] + i * IUPACPattern::iupac_factor[p];
         std::vector<size_t> i_base_patterns;
-        find_base_patterns(ipattern, pattern_length, i_base_patterns);
+        find_base_patterns(base_pattern, ipattern, pattern_length, i_base_patterns);
 
         i_total[i] = pseudo_counts * background_model[i];
         for(auto base : i_base_patterns) {
@@ -556,7 +523,7 @@ std::tuple<float, int, bool> IUPACPattern::calculate_S(IUPACPattern* p1, IUPACPa
 
   std::vector<bool> comp_test;
   comp_test.push_back(false);
-  if(s == BOTH_STRANDS) {
+  if(s == Strand::BOTH_STRANDS) {
     comp_test.push_back(true);
   }
 
@@ -686,17 +653,17 @@ std::vector<size_t>& IUPACPattern::get_base_patterns() {
   return base_patterns;
 }
 
-void IUPACPattern::find_base_patterns(const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns) {
+void IUPACPattern::find_base_patterns(BasePattern* base_pattern, const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns) {
   std::vector<size_t> ids;
   ids.push_back(0);
 
   std::vector<size_t> tmp_ids;
+  size_t* base_factors = base_pattern->getFactors();
 
   for(int p = 0; p < pattern_length; p++) {
     int c = IUPACPattern::getNucleotideAtPos(pattern, p);
 
-    std::vector<uint8_t> representatives = IUPACAlphabet::get_representative_iupac_nucleotides(c);
-    size_t* base_factors = BasePattern::getFactors();
+    std::vector<int> representatives = IUPACAlphabet::get_representative_iupac_nucleotides(c);
 
     for(auto r : representatives) {
       for(auto pat : ids) {

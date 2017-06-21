@@ -10,7 +10,7 @@
 
 #include "shared/SequenceSet.h"
 
-enum Strand {
+enum class Strand {
   PLUS_STRAND, BOTH_STRANDS
 };
 

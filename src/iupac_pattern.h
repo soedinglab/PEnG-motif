@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include "Global.h"
+#include "base_pattern.h"
 
 static const int MIN_MERGE_OVERLAP = 6;
 
@@ -37,6 +38,7 @@ class IUPACPattern {
   static size_t toId(std::string base_pattern, const size_t pattern_length);
   static std::tuple<float, int, bool> calculate_S(IUPACPattern* p1, IUPACPattern* p2, Strand s, float* background);
   static void normalize_pwm(const int pattern_length, float** pwm);
+  static float calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l);
 
   static void initIUPACProfile(const float c, const float t, float* bg_model);
 
@@ -65,19 +67,19 @@ class IUPACPattern {
   void set_optimization_bg_model_order(int order);
 
   void count_sites(size_t* pattern_counter);
-  void calculate_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model);
-  void calculate_adv_pwm(const int pseudo_counts, size_t* pattern_counter, float* background_model);
-  void calculate_log_pvalue(const int ltot,
+  void calculate_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model);
+  void calculate_adv_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model);
+  void calculate_log_pvalue(BasePattern* base_pattern,
+                            const int ltot,
                             float* base_background_prob,
                             size_t* base_counts);
 
   bool operator<(const IUPACPattern& rhs) const;
 
  private:
-  static float calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l);
   static float calculate_d(float** p1_pwm, float** p2_pwm, const int offset1, const int offset2, const int l, const float epsilon = 1E-4);
   static float calculate_d_bg(float** p_pwm, float* background, const int l, const int offset = 0, const float epsilon = 1E-4);
-  static void find_base_patterns(const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
+  static void find_base_patterns(BasePattern* base_pattern, const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
 
   float calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
 

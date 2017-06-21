@@ -29,25 +29,27 @@ int main(int nargs, char **args) {
   #endif
 
   //init peng with base patterns
-  Peng peng(Global::patternLength, Global::strand, Global::bgModelOrder, Global::maxOptBgModelOrder,
+  Peng peng(Global::strand, Global::bgModelOrder, Global::maxOptBgModelOrder,
                 Global::inputSequenceSet, bgModel);
 
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;
-  peng.process(Global::zscoreThreshold, Global::countThreshold, Global::pseudoCounts,
+  peng.process(Global::patternLength, Global::zscoreThreshold, Global::countThreshold, Global::pseudoCounts,
                Global::useEm, Global::emSaturationFactor,
                Global::emMinThreshold, Global::emMaxIterations,
                Global::useMerging, Global::mergeBitfactorThreshold,
                Global::useAdvPWM,
                result);
 
+  peng.filter_redundancy(Global::mergeBitfactorThreshold, result);
+
   //print output
-  if(Global::outputFilename != NULL) {
+  if(Global::outputFilename) {
     peng.printShortMeme(result, Global::outputFilename, bgModel);
   }
 
-  if(Global::jsonFilename != NULL) {
+  if(Global::jsonFilename) {
     peng.printJson(result, Global::jsonFilename, VERSION_NUMBER, bgModel);
   }
 

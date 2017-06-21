@@ -15,24 +15,23 @@
 #include <string>
 
 
-char*	Global::alphabetType = NULL;			              // alphabet type is defaulted to standard which is ACGT
+char*	Global::alphabetType = nullptr;			              // alphabet type is defaulted to standard which is ACGT
 
-char* Global::outputFilename = NULL;                  // filename for IUPAC pattern output in short meme format
-char* Global::jsonFilename = NULL;                    // filename for IUPAC pattern output in json format
+char* Global::outputFilename = nullptr;                  // filename for IUPAC pattern output in short meme format
+char* Global::jsonFilename = nullptr;                    // filename for IUPAC pattern output in json format
 
-char* Global::inputSequenceFilename = NULL;		        // filename with input FASTA sequences
-char* Global::backgroundSequenceFilename = NULL;      // filename with background FASTA sequences
-SequenceSet* Global::inputSequenceSet = NULL;         // input sequence Set
-SequenceSet* Global::backgroundSequenceSet = NULL;    // background sequence Set
-//bool Global::revcomp = false;                         // also search on reverse complement of sequences
+char* Global::inputSequenceFilename = nullptr;		        // filename with input FASTA sequences
+char* Global::backgroundSequenceFilename = nullptr;      // filename with background FASTA sequences
+SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
+SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
 
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
-Strand Global::strand = BOTH_STRANDS;
+Strand Global::strand = Strand::BOTH_STRANDS;
 
 bool Global::useEm = true;
 float Global::emSaturationFactor = 1E4;
 float Global::emMinThreshold = 0.08;
-int Global::emMaxIterations = 100;
+int Global::emMaxIterations = 10;
 
 bool Global::useMerging = true;
 
@@ -62,14 +61,14 @@ void Global::init(int nargs, char* args[]){
 	inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
 	char* currBackgroundSequenceFilename;
-	if(backgroundSequenceFilename != NULL) {
+	if(backgroundSequenceFilename) {
 	  currBackgroundSequenceFilename = backgroundSequenceFilename;
 	}
 	else {
 	  currBackgroundSequenceFilename = inputSequenceFilename;
 	}
 
-  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != BOTH_STRANDS);
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != Strand::BOTH_STRANDS);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -214,10 +213,10 @@ void Global::readArguments(int nargs, char* args[]){
       }
 
       if(!strcmp(args[i], "BOTH")) {
-        strand = BOTH_STRANDS;
+        strand = Strand::BOTH_STRANDS;
       }
       else if(!strcmp(args[i], "PLUS")) {
-        strand = PLUS_STRAND;
+        strand = Strand::PLUS_STRAND;
       }
       else {
         printHelp();

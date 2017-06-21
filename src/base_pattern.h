@@ -10,65 +10,95 @@
 
 #include <cstdlib>
 #include <string>
+#include "shared/SequenceSet.h"
+#include "shared/Alphabet.h"
+#include "shared/BackgroundModel.h"
+#include "Global.h"
 
 
 /**
     BasePattern deals with the encoding of Patterns
     The nucleotide encoding is defined in Alphabet
 
-    The pattern encoding is a "binary" representation:
-    Alphabet: 'other'<->0, A<->1, C<->2, G<->3, T<->4
-    We do not need 'other': A<->0, C<->1, G<->2, T<->3
+    The patterns are encoded in numerical values:
+    (BaMM-)Alphabet: 'other'<->0, A<->1, C<->2, G<->3, T<->4
+    (PEnG-)Alphabet: A<->0, C<->1, G<->2, T<->3
     Alphabet Size a = 4
-    Pattern: ATGC <-> 0*a^0 + 3*a^1 + 2*a^2 + 1*a^3
+    Pattern: "ATGC" <-> id: 0*a^0 + 3*a^1 + 2*a^2 + 1*a^3
 */
 class BasePattern {
  public:
-  /**
-      Inits static variables of BasePattern
-      Needs to be called before BasePattern is used
+  //default de-/constructor
+  BasePattern(const size_t pattern_length, Strand s, const int k, const int max_k,
+              SequenceSet* sequence_set, BackgroundModel* bg);
+  ~BasePattern();
 
-      @param pattern_length length of base patterns
-  */
-  static void init(const size_t pattern_length);
+  //inits factor and pattern_length
+  void init(const size_t pattern_length);
 
-  /**
-      Getter for factors used to encode base pattern ids
-  */
-  static size_t* getFactors();
+  //returns factors
+  size_t* getFactors();
 
-  /**
-      Getter for pattern length
-  */
-  static size_t getPatternLength();
+  //returns pattern_length
+  size_t getPatternLength();
 
-  /**
-      Get string of encoded base pattern id
-      @param pattern_id encoded base pattern id
-      @return string of base pattern
-  */
-  static std::string toString(const size_t pattern_id);
+  //get string to pattern id
+  std::string toString(const size_t pattern_id);
 
-  /**
-      Get id of corresponding pattern on the minus strand
-      @param pattern_id encoded base pattern id (on the plus strand)
-      @return encoded pattern id on the minus strand
-  */
-  static size_t getMinusId(const size_t pattern_id);
+  //get pattern id of reverse complementary pattern
+  size_t getRevCompId(const size_t pattern_id);
 
-  /**
-      get nucleotide id of pattern id at position pos
-      @param pattern encoded base pattern id
-      @param pos position in the pattern
-      @return encoded nucleotide
-  */
-  static int getNucleotideAtPos(const size_t pattern, const size_t pos);
+  //get nucleotide id of pattern at pos
+  int getNucleotideAtPos(const size_t pattern, const size_t pos);
+
+  size_t getNumberPatterns();
+  size_t* getPatternCounter();
+  float* getBackgroundProb(const int order);
+  size_t baseId2IUPACId(const size_t base_pattern);
+  float getLogPval(size_t pattern);
+  size_t getLtot();
+
+  void filter_base_patterns(const float zscore_threshold,
+                                  const size_t count_threshold,
+                                  std::vector<size_t>& selected_patterns);
+
  private:
-  // position specific factors used for encoding base patterns
-  static size_t* factor;
+  // position specific factors used for encoding of base patterns
+  size_t* factor;
 
   // length of pattern
-  static size_t pattern_length;
+  size_t pattern_length;
+
+  BackgroundModel* bg_model;
+  size_t* pattern_counter;
+  float** pattern_bg_probabilities;
+  float* pattern_logp;
+  float* pattern_zscore;
+
+  size_t number_patterns;
+  int max_k;
+  int k;
+  Strand strand;
+  int alphabet_size;
+  size_t ltot;
+
+  void count_patterns(SequenceSet* sequence_set);
+  void count_patterns_minus_strand();
+  size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k);
+  void calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k, float* pattern_bg_probs);
+  void calculate_bg_probability(float* background_model, const int alphabet_size,
+                            const int k, int missing_pattern_length, size_t cur_pattern,
+                            float cur_prob, float* final_probabilities);
+  void calculate_log_pvalues(int ltot);
+  void calculate_zscores(int ltot);
+};
+
+class sort_indices {
+   private:
+     float* mparr;
+   public:
+     sort_indices(float* parr) : mparr(parr) {}
+     bool operator()(const size_t i, const size_t j) const { return mparr[i] > mparr[j]; }
 };
 
 #endif /* SRC_BASE_PATTERN_H_ */

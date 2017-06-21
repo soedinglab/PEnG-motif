@@ -16,7 +16,7 @@ import re
 import numpy as np
 import shutil
 
-RSCRIPT = "plotAUSFC_rank.R"
+RSCRIPT = "plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_rank.R"
 PENG = "peng_motif"
 BAMM = "BaMMmotif"
 
@@ -107,14 +107,15 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     print(" ".join(command))
     return command
 
-
+#--FDR --savePRs -m 10 -k 0 --zoops
 def build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory):
     command = [BAMM, output_directory, os.path.abspath(protected_fasta_file),
-                "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePvalues"]
-    command += ["-K", str(args.bg_model_order)]
+                "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePRs"]
     if args.strand == 'PLUS':
         command += ["--ss"]
     command += ["--zoops"]
+    command += ["-m", str(10)]
+    command += ["-k", str(0)]
 
     print(" ".join(command))
     return command
@@ -142,11 +143,11 @@ def run_peng(args, output_directory):
     subprocess.run(bamm_command_line, check=True)
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
-
     subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)], check=True)
 
     # run R script
     zoops_scores = dict()
+    occs = dict()
     with open(r_output_file) as fh:
         for line in fh:
             if line.startswith("prefix"):
@@ -156,6 +157,7 @@ def run_peng(args, output_directory):
 
             try:
                 zoops_scores[motif_number] = float(zoops_rank_score)
+                occs[motif_number] = float(fract_occ)
             except:
                 zoops_scores[motif_number] = np.nan
 
@@ -167,6 +169,7 @@ def run_peng(args, output_directory):
     for idx, p in enumerate(patterns):
         if idx + 1 in zoops_scores:
             p["zoops_score"] = zoops_scores[idx + 1]
+            print("{} {} {}".format(p["iupac_motif"], p["zoops_score"], occs[idx + 1]))
         else:
             p["zoops_score"] = np.nan
 
