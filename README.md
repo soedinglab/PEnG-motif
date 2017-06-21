@@ -1,13 +1,13 @@
 # PEnG-motif
 
  (C) Johannes Soeding, Markus Meier
- 
-The PEnG-motif an open-source software package for searching IUPAC patterns in a set of FASTA sequences.
+
+PEnG-motif is an open-source software package for searching motifs (position specific weight matrices, PWMs) in a set of DNA sequences.
 
 ## Requirements
 
 To compile from source, you will need:
- * a recent C/C++ compiler
+ * a recent C/C++ compiler (support for C++14 required)
  * [CMake](http://cmake.org/) 2.8.12 or later
 
 ## Installation
@@ -17,19 +17,24 @@ If you want to compile the most recent version, simply clone the git repository.
 
 	git clone git@github.com:soedinglab/PEnG-motif.git
 	cd PEnG-motif
-	git submodule init
-	git submodule update
-
 
 ### Compilation
 With the sourcecode ready, simply run cmake with the default settings and libraries should be auto-detected:
 
 	mkdir build
-	cd build
-	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_BASE_DIR} ..
+	cd buil
+	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${HOME}/opt/PEnG ..
 	make
 	make install
 
+### Environment setup
+Add this to your $HOME/.bashrc
+
+  export PATH=${PATH}:${HOME}/opt/PEnG/bin
+
+Update your Environment
+
+  source $HOME/.bashrc
 
 ## Usage
 For performing a search for common motives in a set of fasta sequences run PEnG-motif with the following command:
@@ -38,6 +43,10 @@ For performing a search for common motives in a set of fasta sequences run PEnG-
 
 You can get a detailed list of options for PEnG-motif by calling peng-motif without arguments.
 
+## Future
+With a future release of BaMMmotif we can rerank the models of PEnG with a proper score.
+For this purpose the python script shoot_peng.py exists.
+
 
 ## License
 
@@ -45,7 +54,7 @@ The PEnG-motif is distributed under the GPL-3.0 License.
 
 ## Notes
 
-We are very grateful for bug reports! 
+We are very grateful for bug reports!
 Please contact us at soeding@mpibpc.mpg.de
 
 ## Links
@@ -54,7 +63,6 @@ Please contact us at soeding@mpibpc.mpg.de
 
 
 ## Acknowledgements
- 
+
 PEnG-motif uses shared code from BaMMmotif.
 Many thanks to the developers of BaMMmotif for their great code!
-

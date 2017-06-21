@@ -1,3 +1,0 @@
-[submodule "lib/bamm-private"]
-	path = lib/bamm-private
-	url = git@github.com:soedinglab/bamm-private.git
