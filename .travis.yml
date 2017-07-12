@@ -1,6 +1,5 @@
 # Ubuntu 14.04 Trusty support
 sudo: required
-language: cpp
 dist: trusty
 
 addons:
@@ -56,3 +55,15 @@ matrix:
             - g++-7
             - mpi-default-dev
       env: CXX=g++-7
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - util-linux
+            - clang-4.0
+            - libc++-dev
+            - mpi-default-dev
+      env: CXX=clang++-4.0 PKG=libc++-dev
