@@ -10,9 +10,6 @@ addons:
 
 #before_install:
 #- git submodule update --init --recursive
-before_install:
-- apt-get update -qq
-
 
 script:
 - mkdir build
