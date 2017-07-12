@@ -1,1 +1,9 @@
 build
+
+
+# eclipse related stuff
+.cproject
+.project
+.settings/
+lib/
+
