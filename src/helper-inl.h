@@ -8,6 +8,8 @@
 #ifndef SRC_HELPER_INL_H_
 #define SRC_HELPER_INL_H_
 
+#include <type_traits>
+
 template <typename E>
 constexpr auto to_underlying(E e) noexcept
 {

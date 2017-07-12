@@ -129,7 +129,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
       change = 0;
       for(int p = 0; p < pattern_length; p++) {
         for(int a = 0; a < 4; a++) {
-          change += abs(new_pwm[p][a] - old_pwm[p][a]);
+          change += std::abs(new_pwm[p][a] - old_pwm[p][a]);
         }
       }
 
