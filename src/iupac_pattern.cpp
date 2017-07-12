@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <limits>
 #include "shared/Alphabet.h"
 #include "iupac_pattern.h"

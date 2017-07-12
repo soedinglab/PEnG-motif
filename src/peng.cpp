@@ -1,10 +1,10 @@
 #include "shared/Sequence.h"
-#include <math.h>
 #include <vector>
 #include <cassert>
 #include <algorithm>
 #include <set>
 #include <iostream>
+#include <cmath>
 #include <fstream>
 #include <limits>
 #include <climits>
