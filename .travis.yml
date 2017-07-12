@@ -1,5 +1,5 @@
 # Ubuntu 14.04 Trusty support
-sudo: false
+sudo: required
 language: cpp
 dist: trusty
 
@@ -11,7 +11,7 @@ addons:
 #before_install:
 #- git submodule update --init --recursive
 before_install:
-- sudo apt-get update -qq
+- apt-get update -qq
 
 
 script:
