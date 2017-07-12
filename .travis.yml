@@ -56,7 +56,7 @@ matrix:
             - mpi-default-dev
       env: CXX=g++-7
     - compiler: clang
-      addons: *clang40
+      addons: &clang40
         apt:
           sources:
             - ubuntu-toolchain-r-test
