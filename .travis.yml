@@ -1,5 +1,6 @@
 # Ubuntu 14.04 Trusty support
-sudo: required
+sudo: false
+language: cpp
 dist: trusty
 
 addons:
@@ -9,6 +10,9 @@ addons:
 
 #before_install:
 #- git submodule update --init --recursive
+before_install:
+- sudo apt-get update -qq
+
 
 script:
 - mkdir build
@@ -56,14 +60,14 @@ matrix:
             - mpi-default-dev
       env: CXX=g++-7
     - compiler: clang
-      addons: &clang40
+      addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
           packages:
             - util-linux
+            - libc++-dev
             - clang-4.0
-            - valgrind
             - mpi-default-dev
-      env: CXX=clang++-4.0 CLANG_VERSION=4.0 CPP=14 ASAN=Off LIBCXX=Off
+      env: CXX=clang++-4.0 CXX_FLAGS="-stdlib=libc++" CLANG_VERSION=4.0 CPP=14 ASAN=Off LIBCXX=Off
