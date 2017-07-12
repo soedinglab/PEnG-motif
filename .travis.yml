@@ -66,4 +66,4 @@ matrix:
             - clang-4.0
             - libc++-dev
             - mpi-default-dev
-      env: CXX=clang++-4.0 PKG=libc++-dev
+      env: CXX=clang++-4.0 CXX_FLAGS="-stdlib=libc++"
