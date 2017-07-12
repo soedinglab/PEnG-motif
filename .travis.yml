@@ -59,15 +59,3 @@ matrix:
             - g++-7
             - mpi-default-dev
       env: CXX=g++-7
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
-          packages:
-            - util-linux
-            - libc++-dev
-            - clang-4.0
-            - mpi-default-dev
-      env: CXX=clang++-4.0 CXX_FLAGS="-stdlib=libc++" CLANG_VERSION=4.0 CPP=14 ASAN=Off LIBCXX=Off
