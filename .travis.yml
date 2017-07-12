@@ -64,6 +64,6 @@ matrix:
           packages:
             - util-linux
             - clang-4.0
-            - libc++-dev
+            - libc++
             - mpi-default-dev
       env: CXX=clang++-4.0 CXX_FLAGS="-stdlib=libc++"
