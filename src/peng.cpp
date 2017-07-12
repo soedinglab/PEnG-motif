@@ -21,8 +21,8 @@
 Peng::Peng(Strand s, const int k, const int max_opt_k,
            SequenceSet* sequence_set, BackgroundModel* bg) {
 
-  int max_base_pattern_length = std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1;
-  int max_iupac_pattern_length = std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1;
+  int max_base_pattern_length = log(SIZE_MAX) / log(Alphabet::getSize()) - 1;
+  int max_iupac_pattern_length = log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1;
 
   this->alphabet_size = Alphabet::getSize();
   this->k = k;
@@ -299,10 +299,10 @@ void Peng::process(const int max_pattern_length, const float zscore_threshold, c
                    const bool adv_pwm,
                    std::vector<IUPACPattern*>& best_iupac_patterns) {
 
-  if(max_pattern_length > std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1 ||
-      max_pattern_length > std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1) {
+  if(max_pattern_length > log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1 ||
+      max_pattern_length > log(SIZE_MAX) / log(Alphabet::getSize()) - 1) {
     std::cerr << "Warning: pattern length too long!" << std::endl;
-    std::cerr << "max pattern length: " << std::max(std::log(SIZE_MAX) / std::log(IUPAC_ALPHABET_SIZE) - 1, std::log(SIZE_MAX) / std::log(Alphabet::getSize()) - 1) << std::endl;
+    std::cerr << "max pattern length: " << std::max(log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1, log(SIZE_MAX) / log(Alphabet::getSize()) - 1) << std::endl;
     exit(1);
   }
 
