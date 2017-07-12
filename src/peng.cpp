@@ -423,8 +423,13 @@ void Peng::optimize_iupac_patterns(BasePattern* base_patterns,
             delete best_mutant;
             found_better_mutant = true;
             best_log_pvalue = mutated_pattern->get_log_pvalue();
+            float exp_count = mutated_pattern->get_bg_p() * ltot;
             best_mutant = mutated_pattern;
-            std::cout << "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << "\t" << best_mutant->get_log_pvalue() << std::endl;
+            std::cout
+				<< "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
+            	<< "\t" << best_mutant->get_log_pvalue() << "\t" << (int) exp_count
+				<< "\t" << best_mutant->get_sites()
+            	<< std::endl;
           }
           else {
             delete mutated_pattern;
