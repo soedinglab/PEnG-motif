@@ -7,6 +7,7 @@
 
 #include "iupac_alphabet.h"
 #include "helper-inl.h"
+#include <stdlib.h>
 
 std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   {to_underlying(IUPAC_Alphabet::A),
