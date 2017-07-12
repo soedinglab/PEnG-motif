@@ -56,52 +56,14 @@ matrix:
             - mpi-default-dev
       env: CXX=g++-7
     - compiler: clang
-      addons:
+      addons: &clang40
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+            - llvm-toolchain-precise
           packages:
-            - clang-3.6
-            - mpi-default-dev
-      env: CXX=clang++-3.6
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-          packages:
-            - clang-3.7
-            - mpi-default-dev
-      env: CXX=clang++-3.7
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-          packages:
-            - clang-3.8
-            - mpi-default-dev
-      env: CXX=clang++-3.8
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.9
-          packages:
-            - clang-3.9
-            - mpi-default-dev
-      env: CXX=clang++-3.9
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
-          packages:
+            - util-linux
             - clang-4.0
+            - valgrind
             - mpi-default-dev
-      env: CXX=clang++-4.0
+      env: CXX=clang++-4.0 CLANG_VERSION=4.0 CPP=14 ASAN=Off LIBCXX=Off
