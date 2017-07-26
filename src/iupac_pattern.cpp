@@ -192,7 +192,6 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
     iupac_factor[i] = pow(IUPAC_ALPHABET_SIZE, i);
   }
 
-  float bf = log(2.0);
   log_bonferroni = new float[IUPAC_ALPHABET_SIZE];
   log_bonferroni[to_underlying(IUPAC_Alphabet::A)] = log(8);
   log_bonferroni[to_underlying(IUPAC_Alphabet::C)] = log(8);
@@ -204,7 +203,7 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
   log_bonferroni[to_underlying(IUPAC_Alphabet::Y)] = log(16);
   log_bonferroni[to_underlying(IUPAC_Alphabet::M)] = log(24);
   log_bonferroni[to_underlying(IUPAC_Alphabet::K)] = log(24);
-  log_bonferroni[to_underlying(IUPAC_Alphabet::N)] = log(32);
+  log_bonferroni[to_underlying(IUPAC_Alphabet::N)] = log(6);
 
   initIUPACProfile(MIXIN_FACTOR, MIXIN_BIAS, bg_model);
 }
