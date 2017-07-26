@@ -40,7 +40,7 @@ class IUPACPattern {
   static void normalize_pwm(const int pattern_length, float** pwm);
   static float calculate_s(float** p1_pwm, float** p2_pwm, float* background, const int offset1, const int offset2, const int l);
 
-  static void initIUPACProfile(const float c, const float t, float* bg_model);
+  static void initIUPACProfile(const float mixing_factor, const float mixin_bias, float* bg_model);
 
   IUPACPattern(size_t iupac_pattern, size_t pattern_length);
   IUPACPattern(IUPACPattern* ori, float** pwm);

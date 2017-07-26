@@ -19,6 +19,9 @@ size_t* IUPACPattern::iupac_factor = nullptr;
 float* IUPACPattern::log_bonferroni = nullptr;
 float** IUPACPattern::iupac_profile = nullptr;
 
+constexpr float MIXIN_FACTOR = 0.2;
+constexpr float MIXIN_BIAS = 0.7;
+
 IUPACPattern::IUPACPattern(size_t iupac_pattern, size_t pattern_length){
   this->pattern = iupac_pattern;
   this->pattern_length = pattern_length;
@@ -203,15 +206,15 @@ void IUPACPattern::init(size_t max_pattern_length, float* bg_model) {
   log_bonferroni[to_underlying(IUPAC_Alphabet::K)] = log(24);
   log_bonferroni[to_underlying(IUPAC_Alphabet::N)] = log(32);
 
-  initIUPACProfile(0.2, 0.7, bg_model);
+  initIUPACProfile(MIXIN_FACTOR, MIXIN_BIAS, bg_model);
 }
 
-void IUPACPattern::initIUPACProfile(const float c, const float t, float* bg_model) {
+void IUPACPattern::initIUPACProfile(const float mixin_factor, const float mixin_bias, float* bg_model) {
   iupac_profile = new float*[IUPAC_ALPHABET_SIZE];
-  for(int c = 0; c < IUPAC_ALPHABET_SIZE; c++) {
-    iupac_profile[c] = new float[4];
+  for(int i = 0; i < IUPAC_ALPHABET_SIZE; i++) {
+    iupac_profile[i] = new float[4];
     for(int a = 0; a < 4; a++) {
-      iupac_profile[c][a] = 0;
+      iupac_profile[i][a] = 0;
     }
   }
 
@@ -219,11 +222,11 @@ void IUPACPattern::initIUPACProfile(const float c, const float t, float* bg_mode
   for(int iupac_c = 0; iupac_c < IUPAC_ALPHABET_SIZE; iupac_c++) {
     std::vector<int> rep = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_c);
     for(int a = 0; a < 4; a++) {
-      iupac_profile[iupac_c][a] += c * bg_model[a];
+      iupac_profile[iupac_c][a] += mixin_factor * bg_model[a];
 
       for(auto r : rep) {
         if(a == r) {
-          iupac_profile[iupac_c][a] += t;
+          iupac_profile[iupac_c][a] += mixin_bias;
           break;
         }
       }
@@ -355,7 +358,7 @@ void IUPACPattern::calculate_log_pvalue(BasePattern* base_pattern,
                                         float* base_background_prob,
                                         size_t* base_counts) {
   //works just for unmerged iupac patterns; iupac patterns need to have the same same size as the base_patterns
-  if(merged == false) {
+  if(!merged) {
     find_base_patterns(base_pattern, pattern, pattern_length, base_patterns);
 
     float sum_backgroud_prob = 0;
