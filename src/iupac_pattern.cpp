@@ -265,7 +265,7 @@ float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACP
     }
     float d_divisor = calculate_d_bg(shorter_pattern_pwm, background, shorter_pattern->get_pattern_length());
 
-    return longer_pattern->get_log_pvalue() + d / d_divisor * shorter_pattern->get_log_pvalue();
+    return longer_pattern->getLogPval() + d / d_divisor * shorter_pattern->getLogPval();
   }
   else {
     float d = 0;
@@ -281,7 +281,7 @@ float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACP
     }
     float d_divisor = calculate_d_bg(longer_pattern_pwm, background, longer_pattern->get_pattern_length());
 
-    return shorter_pattern->get_log_pvalue() + d / d_divisor * longer_pattern->get_log_pvalue();
+    return shorter_pattern->getLogPval() + d / d_divisor * longer_pattern->getLogPval();
   }
 }
 
@@ -588,8 +588,26 @@ void IUPACPattern::update_pwm(float** new_pwm) {
   calculate_comp_pwm();
 }
 
-float IUPACPattern::get_log_pvalue() {
+
+float IUPACPattern::getExpCountFraction(const size_t ltot, const size_t pseudo_expected_pattern_counts) {
+  return (ltot * this->bg_p + pseudo_expected_pattern_counts) / this->n_sites;
+}
+
+float IUPACPattern::getLogPval() {
   return log_pvalue;
+}
+
+float IUPACPattern::getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts) {
+  if(score_type == OPTIMIZATION_SCORE::kLogPval) {
+    return getLogPval();
+  }
+  else if(score_type == OPTIMIZATION_SCORE::kExpCounts) {
+    return getExpCountFraction(ltot, pseudo_expected_pattern_counts);
+  }
+  else {
+    std::cerr << "Error: unknown score type!" << std::endl;
+    exit(1);
+  }
 }
 
 float IUPACPattern::get_bg_p() {
@@ -693,6 +711,6 @@ bool IUPACPattern::operator <(const IUPACPattern &rhs) const {
 }
 
 bool sort_IUPAC_patterns(IUPACPattern* a, IUPACPattern* b) {
-  return a->get_log_pvalue() < b->get_log_pvalue();
+  return a->getLogPval() < b->getLogPval();
 }
 

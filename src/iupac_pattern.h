@@ -16,6 +16,7 @@
 
 static const int MIN_MERGE_OVERLAP = 6;
 
+
 /**
     IUPACPattern captures degenerated (IUPAC) patterns
     The nucleotides are encoded in iupac_alphabet
@@ -51,7 +52,11 @@ class IUPACPattern {
   size_t get_pattern();
   std::string get_pattern_string();
   int get_pattern_length();
-  float get_log_pvalue();
+
+  float getExpCountFraction(const size_t ltot, const size_t pseudo_expected_pattern_counts);
+  float getLogPval();
+  float getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts);
+
   float get_bg_p();
 
   float** get_pwm();

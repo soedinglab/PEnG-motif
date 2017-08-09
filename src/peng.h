@@ -16,9 +16,9 @@ class Peng{
                 SequenceSet* sequence_set, BackgroundModel* bg);
   ~Peng();
   void process(const int pattern_length, const float zscore_threshold, const size_t count_threshold, const int pseudo_counts,
-                     const bool use_em, const float em_saturation_factor, const float min_em_threshold,
-                     const int em_max_iterations, const bool use_merging, const float bit_factor_merge_threshold,
-                     const bool adv_pwm,
+                     const OPTIMIZATION_SCORE opt_score_type, const bool use_em, const float em_saturation_factor,
+                     const float min_em_threshold, const int em_max_iterations, const bool use_merging,
+                     const float bit_factor_merge_threshold, const bool adv_pwm,
                      std::vector<IUPACPattern*>& best_iupac_patterns);
 
   void filter_redundancy(const float merge_bit_factor_threshold, std::vector<IUPACPattern*>& iupac_patterns);
@@ -41,7 +41,8 @@ class Peng{
   Strand strand;
 
 
-  void optimize_iupac_patterns(BasePattern* base_patterns,
+  void optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
+                               BasePattern* base_patterns,
                                std::vector<size_t>& selected_base_patterns,
                                std::vector<IUPACPattern*>& best_iupac_patterns);
 

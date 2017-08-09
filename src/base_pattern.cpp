@@ -90,12 +90,29 @@ size_t BasePattern::baseId2IUPACId(const size_t base_pattern) {
   return iupac_pattern;
 }
 
+float BasePattern::getExpCountFraction(const size_t pattern, const size_t pseudo_expected_pattern_counts) {
+  return (pattern_bg_probabilities[k][pattern] * ltot + pseudo_expected_pattern_counts) / pattern_counter[pattern];
+}
+
 float BasePattern::getLogPval(size_t pattern) {
   return pattern_logp[pattern];
 }
 
 size_t BasePattern::getLtot() {
   return ltot;
+}
+
+float BasePattern::getOptimizationScore(const OPTIMIZATION_SCORE score_type, const size_t pattern, const size_t pseudo_expected_pattern_counts) {
+  if(score_type == OPTIMIZATION_SCORE::kLogPval) {
+    return getLogPval(pattern);
+  }
+  else if(score_type == OPTIMIZATION_SCORE::kExpCounts) {
+    return getExpCountFraction(pattern, pseudo_expected_pattern_counts);
+  }
+  else {
+    std::cerr << "Error: unknown score type!" << std::endl;
+    exit(1);
+  }
 }
 
 BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, const int max_k,
@@ -339,7 +356,6 @@ void BasePattern::count_patterns_minus_strand() {
 
   delete[] rev_pattern_counter;
 }
-
 
 void BasePattern::filter_base_patterns(const float zscore_threshold,
                                        const size_t count_threshold,

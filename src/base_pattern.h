@@ -55,7 +55,9 @@ class BasePattern {
   size_t* getPatternCounter();
   float* getBackgroundProb(const int order);
   size_t baseId2IUPACId(const size_t base_pattern);
+  float getExpCountFraction(const size_t pattern, const size_t pseudo_expected_pattern_counts);
   float getLogPval(size_t pattern);
+  float getOptimizationScore(const OPTIMIZATION_SCORE score_type, const size_t pattern, const size_t pseudo_expected_pattern_counts);
   size_t getLtot();
 
   void filter_base_patterns(const float zscore_threshold,

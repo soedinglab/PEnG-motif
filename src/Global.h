@@ -14,6 +14,10 @@ enum class Strand {
   PLUS_STRAND, BOTH_STRANDS
 };
 
+enum class OPTIMIZATION_SCORE {
+  kLogPval = 0, kExpCounts = 1
+};
+
 const std::string VERSION_NUMBER("1.0.0");
 
 class Global{
@@ -26,6 +30,8 @@ public:
 	static SequenceSet*	inputSequenceSet;				 // positive Sequence Set
 	static SequenceSet* backgroundSequenceSet;   // background Sequence Set
 	static bool revcomp;                         // also search on reverse complement of sequences
+
+	static OPTIMIZATION_SCORE optScoreType;
 
 	static int patternLength;                    // length of pattern to be searched/trained
 	static float zscoreThreshold;

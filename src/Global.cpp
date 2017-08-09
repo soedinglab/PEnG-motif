@@ -25,6 +25,8 @@ char* Global::backgroundSequenceFilename = nullptr;      // filename with backgr
 SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
 
+OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::kLogPval;
+
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
 Strand Global::strand = Strand::BOTH_STRANDS;
 
@@ -105,6 +107,25 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       backgroundSequenceFilename = args[i];
+    }
+    else if (!strcmp(args[i], "--iupac_optimization_score")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following --iupac_optimization_score" << std::endl;
+        exit(4);
+      }
+
+      if(!strcmp(args[i], "LOGPVAL")) {
+        optScoreType = OPTIMIZATION_SCORE::kLogPval;
+      }
+      else if(!strcmp(args[i], "EXPCOUNTS")) {
+        optScoreType = OPTIMIZATION_SCORE::kExpCounts;
+      }
+      else {
+        printHelp();
+        LOG(ERROR) << "Unknown expression following --iupac_optimization_score" << std::endl;
+        exit(4);
+      }
     }
     else if (!strcmp(args[i], "-v")) {
       if (++i>=nargs) {
@@ -272,6 +293,8 @@ void Global::printHelp(){
       "           lower threshold for counts of basic patterns\n");
   printf("\n      --strand, <PULS|BOTH>\n"
       "           select the strands to work on\n");
+  printf("\n      --iupac_optimization_score, <EXPCOUNTS|LOGPVAL>\n"
+      "           select the iupac optimization score\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
       "           bit factor threshold for merging IUPAC patterns\n");
   printf("\n      --no-em\n"

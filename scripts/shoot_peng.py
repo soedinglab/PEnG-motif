@@ -43,6 +43,9 @@ def main():
                         help='order of the background model')
     parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default='BOTH', choices=['PLUS', 'BOTH'],
                         help='select the strand to work on')
+    parser.add_argument('--iupac_optimization_score', metavar='LOGPVAL|EXPCOUNTS',
+                        dest='iupac_optimization_score', type=str, default='LOGPVAL',
+                        choices=['EXPCOUNTS', 'LOGPVAL'], help='select iupac optimization score')
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
     parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
@@ -61,6 +64,7 @@ def main():
                         help='number of pseudo counts for the calculation of the PWM')
     parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
                         help='number of threads to be used for parallelization')
+
 
     args = parser.parse_args()
 
@@ -91,6 +95,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     command += ["--count-threshold", str(args.count_threshold)]
     command += ["--bg-model-order", str(args.bg_model_order)]
     command += ["--strand", args.strand]
+    command += ["--iupac_optimization_score", str(args.iupac_optimization_score)]
     if not args.use_em:
         command += ["--no-em"]
     command += ["-a", str(args.em_saturation_threshold)]
@@ -107,7 +112,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     print(" ".join(command))
     return command
 
-#--FDR --savePRs -m 10 -k 0 --zoops
+# --FDR --savePRs -m 10 -k 0 --zoops
 def build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory):
     command = [BAMM, output_directory, os.path.abspath(protected_fasta_file),
                 "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePRs"]
