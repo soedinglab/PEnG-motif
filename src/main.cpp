@@ -35,14 +35,25 @@ int main(int nargs, char **args) {
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;
-  peng.process(Global::patternLength, Global::zscoreThreshold,
-               Global::countThreshold, Global::pseudoCounts,
-               Global::optScoreType,
-               Global::useEm, Global::emSaturationFactor,
-               Global::emMinThreshold, Global::emMaxIterations,
-               Global::useMerging, Global::mergeBitfactorThreshold,
-               Global::useAdvPWM,
-               result);
+
+  PengParameters params;
+  params.max_pattern_length = Global::patternLength;
+  params.zscore_threshold = Global::zscoreThreshold;
+  params.count_threshold = Global::countThreshold;
+  params.pseudo_counts = Global::pseudoCounts;
+  params.opt_score_type = Global::optScoreType;
+  // em options
+  params.use_em = Global::useEm;
+  params.em_saturation_factor = Global::emSaturationFactor;
+  params.em_min_threshold = Global::emMinThreshold;
+  params.em_max_iterations = Global::emMaxIterations;
+
+  params.use_merging = Global::useMerging;
+  params.bit_factor_merge_threshold = Global::mergeBitfactorThreshold;
+  params.adv_pwm = Global::useAdvPWM;
+  params.enrich_pseudocount_factor = Global::enrich_pseudocount_factor;
+
+  peng.process(params, result);
 
   peng.filter_redundancy(Global::mergeBitfactorThreshold, result);
 

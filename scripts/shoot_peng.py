@@ -26,9 +26,9 @@ def main():
     parser.add_argument(metavar='FASTA_FILE', dest='fasta_file', type=str,
                         help='file with the input fasta sequences')
     parser.add_argument("-o", metavar='FILE', dest='meme_output_file', type=str,
-                        help='best UIPAC motives will be written in FILE in minimal MEME format')
+                        help='best IUPAC motives will be written in FILE in minimal MEME format')
     parser.add_argument("-j", metavar='FILE', dest='json_output_file', type=str,
-                        help='best UIPAC motives will be written in OUTPUT_FILE in JSON format')
+                        help='best IUPAC motives will be written in OUTPUT_FILE in JSON format')
     parser.add_argument("-d", "--output_directory", metavar='DIR', dest='output_directory', type=str,
                         help='directory for the temporary files')
     parser.add_argument('--background-sequences', metavar='FASTA_FILE', dest='background_sequences', type=str,
@@ -46,6 +46,8 @@ def main():
     parser.add_argument('--iupac_optimization_score', metavar='LOGPVAL|EXPCOUNTS',
                         dest='iupac_optimization_score', type=str, default='LOGPVAL',
                         choices=['EXPCOUNTS', 'LOGPVAL'], help='select iupac optimization score')
+    parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005,
+                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts in the EXPCOUNTS optimization")
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
     parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
@@ -96,6 +98,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     command += ["--bg-model-order", str(args.bg_model_order)]
     command += ["--strand", args.strand]
     command += ["--iupac_optimization_score", str(args.iupac_optimization_score)]
+    command += ["--enrich_pseudocount_factor", str(args.enrich_pseudocount_factor)]
     if not args.use_em:
         command += ["--no-em"]
     command += ["-a", str(args.em_saturation_threshold)]

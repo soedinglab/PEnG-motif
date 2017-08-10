@@ -32,6 +32,7 @@ public:
 	static bool revcomp;                         // also search on reverse complement of sequences
 
 	static OPTIMIZATION_SCORE optScoreType;
+	static float enrich_pseudocount_factor;
 
 	static int patternLength;                    // length of pattern to be searched/trained
 	static float zscoreThreshold;

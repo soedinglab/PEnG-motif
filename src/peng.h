@@ -10,16 +10,31 @@
 #include "iupac_pattern.h"
 #include "Global.h"
 
+class PengParameters {
+public:
+	int max_pattern_length;
+	float zscore_threshold;
+	size_t count_threshold;
+	int pseudo_counts;
+	OPTIMIZATION_SCORE opt_score_type;
+	float enrich_pseudocount_factor;
+
+	// EM Parameters
+	bool use_em;
+	float em_saturation_factor;
+	float em_min_threshold;
+	int em_max_iterations;
+	bool use_merging;
+	float bit_factor_merge_threshold;
+	bool adv_pwm;
+};
+
 class Peng{
  public:
   Peng(Strand s, const int k, const int max_opt_k,
                 SequenceSet* sequence_set, BackgroundModel* bg);
   ~Peng();
-  void process(const int pattern_length, const float zscore_threshold, const size_t count_threshold, const int pseudo_counts,
-                     const OPTIMIZATION_SCORE opt_score_type, const bool use_em, const float em_saturation_factor,
-                     const float min_em_threshold, const int em_max_iterations, const bool use_merging,
-                     const float bit_factor_merge_threshold, const bool adv_pwm,
-                     std::vector<IUPACPattern*>& best_iupac_patterns);
+  void process(PengParameters& params, std::vector<IUPACPattern*>& best_iupac_patterns);
 
   void filter_redundancy(const float merge_bit_factor_threshold, std::vector<IUPACPattern*>& iupac_patterns);
 
@@ -44,7 +59,8 @@ class Peng{
   void optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
                                BasePattern* base_patterns,
                                std::vector<size_t>& selected_base_patterns,
-                               std::vector<IUPACPattern*>& best_iupac_patterns);
+                               std::vector<IUPACPattern*>& best_iupac_patterns,
+							   float enrich_pseudocount_factor);
 
   void filter_iupac_patterns(const size_t pattern_length, std::vector<IUPACPattern*>& iupac_patterns);
 

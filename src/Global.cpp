@@ -26,6 +26,7 @@ SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
 
 OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::kLogPval;
+float Global::enrich_pseudocount_factor = 0.005;
 
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
 Strand Global::strand = Strand::BOTH_STRANDS;
@@ -127,6 +128,14 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
     }
+    else if (!strcmp(args[i], "--enrich_pseudocount_factor")) {
+        if (++i>=nargs) {
+          printHelp();
+          LOG(ERROR) << "No expression following --enrich_pseudocount_factor" << std::endl;
+          exit(4);
+        }
+        enrich_pseudocount_factor = std::stof(args[i]);
+      }
     else if (!strcmp(args[i], "-v")) {
       if (++i>=nargs) {
         printHelp();
