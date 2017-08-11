@@ -284,13 +284,13 @@ void Global::printHelp(){
 	printf("\n Usage: peng_motif SEQFILE [options] \n\n");
 	printf("\t SEQFILE: file with sequences in FASTA format. \n");
   printf("\n      -o, <OUTPUT_FILE>\n"
-      "           best UIPAC motives will be written in OUTPUT_FILE\n"
+      "           best IUPAC motives will be written in OUTPUT_FILE\n"
       "           in minimal MEME format\n");
   printf("\n      -j, <OUTPUT_FILE>\n"
-      "           best UIPAC motives will be written in OUTPUT_FILE\n"
+      "           best IUPAC motives will be written in OUTPUT_FILE\n"
       "           in JSON format\n");
   printf("\n      --background-sequences, <FASTA_FILE>\n"
-      "           file with fasta sequences to be used for the"
+      "           file with fasta sequences to be used for the\n"
       "           background model calculation\n");
   printf("\n      -t, <ZSCORE_THRESHOLD>\n"
       "           lower zscore threshold for basic patterns\n");
@@ -300,10 +300,13 @@ void Global::printHelp(){
       "           order of the background model\n");
   printf("\n      --count-threshold, <COUNT_THRESHOLD>\n"
       "           lower threshold for counts of basic patterns\n");
-  printf("\n      --strand, <PULS|BOTH>\n"
+  printf("\n      --strand, <PLUS|BOTH>\n"
       "           select the strands to work on\n");
   printf("\n      --iupac_optimization_score, <EXPCOUNTS|LOGPVAL>\n"
       "           select the iupac optimization score\n");
+  printf("\n      --enrich_pseudocount_factor, <PSEUDO_COUNTS>\n"
+	  "           add (enrich_pseudocount_factor x #seqs) pseudocounts\n"
+	  "           in the EXPCOUNTS optimization\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
       "           bit factor threshold for merging IUPAC patterns\n");
   printf("\n      --no-em\n"
@@ -316,9 +319,9 @@ void Global::printHelp(){
       "           max number of em optimization iterations\n");
   printf("\n      --no-merging\n"
       "           shuts off the merging \n");
-  printf("\n        --use-default-pwm\n"
+  printf("\n      --use-default-pwm\n"
       "           use the default calculation of the pwm\n");
-  printf("\n        --pseudo-counts, <PSEUDO_COUNTS>\n"
+  printf("\n      --pseudo-counts, <PSEUDO_COUNTS>\n"
       "           number of pseudo-counts for optimization\n");
   printf("\n      --threads, <NUMBER_THREADS>\n"
       "           number of threads to be used for parallelization\n");
