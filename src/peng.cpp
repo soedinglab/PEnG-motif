@@ -301,16 +301,22 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
   }
 
   for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
+    std::cout << "[STATUS] Processing kmers of length " << pattern_length << std::endl;
+
+    std::cout << "[STATUS] Finding overrepresented kmers (base patterns)" << std::endl;
     BasePattern* base_pattern = new BasePattern(pattern_length, strand, k, max_k, sequence_set, bg_model);
     size_t* pattern_counter = base_pattern->getPatternCounter();
 
     std::vector<size_t> filtered_base_patterns;
     base_pattern->filter_base_patterns(params.zscore_threshold, params.count_threshold, filtered_base_patterns);
 
+    std::cout << std::endl;
+    std::cout << "[STATUS] Optimizing base patterns" << std::endl << std::endl;
     std::vector<IUPACPattern*> unoptimized_iupac_patterns;
     optimize_iupac_patterns(params.opt_score_type, base_pattern, filtered_base_patterns,
     						unoptimized_iupac_patterns, params.enrich_pseudocount_factor);
-
+    std::cout << std::endl;
+    std::cout << "[STATUS] Filtering degenerated IUPAC patterns" << std::endl;
     filter_iupac_patterns(pattern_length, unoptimized_iupac_patterns);
     for(auto pattern : unoptimized_iupac_patterns) {
       std::cout << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
@@ -452,10 +458,12 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
       best.insert(best_mutant->get_pattern());
       seen.insert(best_mutant->get_pattern());
 
-      std::cout << "optimization: " << base_patterns->toString(pattern) << " -> " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << '\n' << std::endl;
+      std::cout << "optimization: " << base_patterns->toString(pattern) << " -> "
+    		    << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
+      	  	    <<std::endl << std::endl;
     }
     else {
-      std::cout << "optimization: " << base_patterns->toString(pattern) << " removed" << '\t' << std::endl;
+      std::cout << "optimization: " << base_patterns->toString(pattern) << " removed" << '\t' << std::endl << std::endl;
       delete best_mutant;
       best_mutant = nullptr;
     }
