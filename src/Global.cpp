@@ -57,19 +57,19 @@ int Global::verbosity = 2;            	              // verbosity
 int Global::nr_threads = 1;
 
 void Global::init(int nargs, char* args[]){
-	readArguments(nargs, args);
+  readArguments(nargs, args);
 
-	Alphabet::init(alphabetType);
+  Alphabet::init(alphabetType);
 
-	inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
+  inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
-	char* currBackgroundSequenceFilename;
-	if(backgroundSequenceFilename) {
-	  currBackgroundSequenceFilename = backgroundSequenceFilename;
-	}
-	else {
-	  currBackgroundSequenceFilename = inputSequenceFilename;
-	}
+  char* currBackgroundSequenceFilename;
+  if(backgroundSequenceFilename) {
+    currBackgroundSequenceFilename = backgroundSequenceFilename;
+  }
+  else {
+    currBackgroundSequenceFilename = inputSequenceFilename;
+  }
 
   backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != Strand::BOTH_STRANDS);
 }
@@ -84,15 +84,15 @@ void Global::readArguments(int nargs, char* args[]){
     exit(0);
   }
 
-	if( nargs < 2 ) {			// At least input_file is required
-		fprintf( stderr, "Error: Arguments are missing! \n" );
-		printHelp();
-		exit( -1 );
-	}
+  if( nargs < 2 ) {			// At least input_file is required
+    fprintf( stderr, "Error: Arguments are missing! \n" );
+    printHelp();
+    exit( -1 );
+  }
 
-	inputSequenceFilename = args[1];
+  inputSequenceFilename = args[1];
 
-	for (int i = 2; i < nargs; i++) {
+  for (int i = 2; i < nargs; i++) {
     if (!strcmp(args[i], "-w")) {
       if (++i>=nargs) {
         printHelp();
@@ -121,6 +121,9 @@ void Global::readArguments(int nargs, char* args[]){
       }
       else if(!strcmp(args[i], "EXPCOUNTS")) {
         optScoreType = OPTIMIZATION_SCORE::kExpCounts;
+      }
+      else if(!strcmp(args[i], "MUTUAL_INFO")) {
+        optScoreType = OPTIMIZATION_SCORE::MutualInformation;
       }
       else {
         printHelp();
@@ -273,16 +276,16 @@ void Global::readArguments(int nargs, char* args[]){
     else {
       LOG(WARNING) << "Ignoring unknown option " << args[i] << std::endl;
     }
-	}
+  }
 
   alphabetType = new char[9];
   strcpy( alphabetType, "STANDARD");
 }
 
 void Global::printHelp(){
-	printf("\n=================================================================\n");
-	printf("\n Usage: peng_motif SEQFILE [options] \n\n");
-	printf("\t SEQFILE: file with sequences in FASTA format. \n");
+  printf("\n=================================================================\n");
+  printf("\n Usage: peng_motif SEQFILE [options] \n\n");
+  printf("\t SEQFILE: file with sequences in FASTA format. \n");
   printf("\n      -o, <OUTPUT_FILE>\n"
       "           best IUPAC motives will be written in OUTPUT_FILE\n"
       "           in minimal MEME format\n");
@@ -331,19 +334,19 @@ void Global::printHelp(){
       "           print this help \n");
 
 
-	printf("\n=================================================================\n");
+  printf("\n=================================================================\n");
 }
 
 void Global::destruct(){
-	Alphabet::destruct();
-	if( alphabetType )
-	  delete[] alphabetType;
-	if(outputFilename)
-	  delete[] outputFilename;
-	if(inputSequenceSet)
-	  delete inputSequenceSet;
-	if(backgroundSequenceSet)
-	  delete backgroundSequenceSet;
-	if(inputSequenceFilename)
-	  delete[] inputSequenceFilename;
+  Alphabet::destruct();
+  if( alphabetType )
+    delete[] alphabetType;
+  if(outputFilename)
+    delete[] outputFilename;
+  if(inputSequenceSet)
+    delete inputSequenceSet;
+  if(backgroundSequenceSet)
+    delete backgroundSequenceSet;
+  if(inputSequenceFilename)
+    delete[] inputSequenceFilename;
 }

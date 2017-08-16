@@ -28,6 +28,7 @@ Peng::Peng(Strand s, const int k, const int max_opt_k,
   this->k = k;
   this->max_k = std::max(k, max_opt_k);
   this->strand = s;
+  this->n_sequences = sequence_set->getN();
 
   IUPACAlphabet::init(Alphabet::getAlphabet());
 
@@ -426,7 +427,7 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
           //add pattern to currently seen
           current_seen.insert(mutated_pattern->get_pattern());
 
-          float curr_score = mutated_pattern->getOptimizationScore(score_type, ltot, pseudo_expected_pattern_counts);
+          float curr_score = mutated_pattern->getOptimizationScore(score_type, ltot, pseudo_expected_pattern_counts, n_sequences);
           if(curr_score < best_score) {
             delete best_mutant;
             found_better_mutant = true;
@@ -438,7 +439,7 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
 				<< "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
             	<< "\t" << best_mutant->getLogPval() << "\t" << (int) exp_count
 				<< "\t" << best_mutant->get_sites() << "\t" << (int) (enrichment * 100) / 100.0
-            	<< "\t" << (int) (best_score * 100) / 100.0 << std::endl;
+            	<< "\t" << (int) (best_score * 10000) / 10000.0 << std::endl;
           }
           else {
             delete mutated_pattern;

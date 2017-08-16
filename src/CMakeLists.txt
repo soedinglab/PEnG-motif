@@ -25,14 +25,13 @@ set(PENG_SOURCE
 	${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/base_pattern.h
 	${CMAKE_CURRENT_SOURCE_DIR}/helper-inl.h
-)
+		utils.h)
 
 add_library(PENG_OBJECTS OBJECT ${PENG_SOURCE})
 
 # add the executable
 add_executable(peng_motif 
-	main.cpp	$<TARGET_OBJECTS:PENG_OBJECTS>
-)
+	main.cpp	$<TARGET_OBJECTS:PENG_OBJECTS>)
 target_link_libraries (peng_motif LINK_PUBLIC shared)
 
 INSTALL(PROGRAMS 

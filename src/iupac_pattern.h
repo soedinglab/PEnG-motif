@@ -55,7 +55,9 @@ class IUPACPattern {
 
   float getExpCountFraction(const size_t ltot, const size_t pseudo_expected_pattern_counts);
   float getLogPval();
-  float getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts);
+  float getMutualInformationScore(size_t ltot, unsigned int n_sequences);
+  float getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts,
+                             unsigned int n_sequences);
 
   float get_bg_p();
 

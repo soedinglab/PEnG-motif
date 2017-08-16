@@ -82,6 +82,7 @@ class BasePattern {
   int k;
   Strand strand;
   int alphabet_size;
+  size_t n_sequences;
   size_t ltot;
 
   void count_patterns(SequenceSet* sequence_set);
@@ -93,6 +94,7 @@ class BasePattern {
                             float cur_prob, float* final_probabilities);
   void calculate_log_pvalues(int ltot);
   void calculate_zscores(int ltot);
+  float getMutualInformationScore(size_t pattern);
 };
 
 class sort_indices {

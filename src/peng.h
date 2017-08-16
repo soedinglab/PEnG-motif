@@ -53,6 +53,7 @@ class Peng{
   int max_k;
   int k;
   int alphabet_size;
+  size_t n_sequences;
   Strand strand;
 
 
