@@ -305,7 +305,7 @@ void Global::printHelp(){
       "           lower threshold for counts of basic patterns\n");
   printf("\n      --strand, <PLUS|BOTH>\n"
       "           select the strands to work on\n");
-  printf("\n      --iupac_optimization_score, <EXPCOUNTS|LOGPVAL>\n"
+  printf("\n      --iupac_optimization_score, <EXPCOUNTS|LOGPVAL|MUTUAL_INFO>\n"
       "           select the iupac optimization score\n");
   printf("\n      --enrich_pseudocount_factor, <PSEUDO_COUNTS>\n"
 	  "           add (enrich_pseudocount_factor x #seqs) pseudocounts\n"
