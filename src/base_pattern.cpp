@@ -100,10 +100,12 @@ float BasePattern::getMutualInformationScore(const size_t pattern) {
   unsigned int observed_counts = pattern_counter[pattern];
 
   auto MI = calculate_mutual_information_fast;
+  auto H = calculate_entropy;
+
   float score = 0;
-  score += MI(observed_counts, expected_counts, n_sequences, 0.5);
-  score += MI(observed_counts, expected_counts, n_sequences, 0.1);
-  score += MI(observed_counts, expected_counts , n_sequences, 0.01);
+  for(float q: {0.5, 0.1, 0.01}) {
+    score += MI(observed_counts, expected_counts, n_sequences, q) / H(q);
+  }
   return -score;
 }
 
