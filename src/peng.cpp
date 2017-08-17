@@ -291,30 +291,32 @@ void Peng::merge_iupac_patterns(const size_t pattern_length, const float merge_b
   }
 }
 
-void Peng::process(const int max_pattern_length, const float zscore_threshold, const size_t count_threshold,
-                   const int pseudo_counts, const OPTIMIZATION_SCORE opt_score_type, const bool use_em,
-                   const float em_saturation_factor, const float min_em_threshold, const int em_max_iterations,
-                   const bool use_merging, const float bit_factor_merge_threshold,
-                   const bool adv_pwm,
-                   std::vector<IUPACPattern*>& best_iupac_patterns) {
+void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupac_patterns) {
 
-  if(max_pattern_length > log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1 ||
-      max_pattern_length > log(SIZE_MAX) / log(Alphabet::getSize()) - 1) {
+  if(params.max_pattern_length > log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1 ||
+     params.max_pattern_length > log(SIZE_MAX) / log(Alphabet::getSize()) - 1) {
     std::cerr << "Warning: pattern length too long!" << std::endl;
     std::cerr << "max pattern length: " << std::max(log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1, log(SIZE_MAX) / log(Alphabet::getSize()) - 1) << std::endl;
     exit(1);
   }
 
-  for(size_t pattern_length = std::min(6, max_pattern_length); pattern_length <= max_pattern_length; pattern_length += 2) {
+  for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
+    std::cout << "[STATUS] Processing kmers of length " << pattern_length << std::endl;
+
+    std::cout << "[STATUS] Finding overrepresented kmers (base patterns)" << std::endl;
     BasePattern* base_pattern = new BasePattern(pattern_length, strand, k, max_k, sequence_set, bg_model);
     size_t* pattern_counter = base_pattern->getPatternCounter();
 
     std::vector<size_t> filtered_base_patterns;
-    base_pattern->filter_base_patterns(zscore_threshold, count_threshold, filtered_base_patterns);
+    base_pattern->filter_base_patterns(params.zscore_threshold, params.count_threshold, filtered_base_patterns);
 
+    std::cout << std::endl;
+    std::cout << "[STATUS] Optimizing base patterns" << std::endl << std::endl;
     std::vector<IUPACPattern*> unoptimized_iupac_patterns;
-    optimize_iupac_patterns(opt_score_type, base_pattern, filtered_base_patterns, unoptimized_iupac_patterns);
-
+    optimize_iupac_patterns(params.opt_score_type, base_pattern, filtered_base_patterns,
+    						unoptimized_iupac_patterns, params.enrich_pseudocount_factor);
+    std::cout << std::endl;
+    std::cout << "[STATUS] Filtering degenerated IUPAC patterns" << std::endl;
     filter_iupac_patterns(pattern_length, unoptimized_iupac_patterns);
     for(auto pattern : unoptimized_iupac_patterns) {
       std::cout << "selected iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << std::endl;
@@ -325,13 +327,13 @@ void Peng::process(const int max_pattern_length, const float zscore_threshold, c
       IUPACPattern* pattern = unoptimized_iupac_patterns[i];
       pattern->count_sites(pattern_counter);
 
-      if(adv_pwm) {
+      if(params.adv_pwm) {
         std::cout << "adv pwm: ";
-        pattern->calculate_adv_pwm(base_pattern, pseudo_counts, pattern_counter, bg_model->getV()[0]);
+        pattern->calculate_adv_pwm(base_pattern, params.pseudo_counts, pattern_counter, bg_model->getV()[0]);
       }
       else {
         std::cout << "def pwm: ";
-        pattern->calculate_pwm(base_pattern, pseudo_counts, pattern_counter, bg_model->getV()[0]);
+        pattern->calculate_pwm(base_pattern, params.pseudo_counts, pattern_counter, bg_model->getV()[0]);
       }
       std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
     }
@@ -341,15 +343,15 @@ void Peng::process(const int max_pattern_length, const float zscore_threshold, c
       float* pattern_bg_probs = base_pattern->getBackgroundProb(background);
       std::cout << "k: " << background << std::endl;
       std::vector<IUPACPattern*> optimized_patterns;
-      if(use_em) {
+      if(params.use_em) {
         em_optimize_pwms(unoptimized_iupac_patterns, base_pattern,
-                         em_saturation_factor, min_em_threshold, em_max_iterations,
+        				 params.em_saturation_factor, params.em_min_threshold, params.em_max_iterations,
                          pattern_bg_probs, optimized_patterns);
       }
 
-      if(use_merging) {
+      if(params.use_merging) {
         if(pattern_length >= MIN_MERGE_OVERLAP) {
-            merge_iupac_patterns(pattern_length, bit_factor_merge_threshold, bg_model,
+           merge_iupac_patterns(pattern_length, params.bit_factor_merge_threshold, bg_model,
                                  optimized_patterns);
         }
         else {
@@ -371,7 +373,8 @@ void Peng::process(const int max_pattern_length, const float zscore_threshold, c
 void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
                                    BasePattern* base_patterns,
                                    std::vector<size_t>& selected_base_patterns,
-                                   std::vector<IUPACPattern*>& best_iupac_patterns) {
+                                   std::vector<IUPACPattern*>& best_iupac_patterns,
+								   float enrich_pseudocount_factor) {
   std::set<size_t> seen;
   std::set<size_t> best;
 
@@ -381,8 +384,7 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
   size_t* pattern_counter = base_patterns->getPatternCounter();
   float* pattern_bg = base_patterns->getBackgroundProb(this->k);
 
-  float fraction_pseudo_expected_pattern_counts = 0.1;
-  size_t pseudo_expected_pattern_counts = sequence_set->getN() * fraction_pseudo_expected_pattern_counts;
+  size_t pseudo_expected_pattern_counts = sequence_set->getN() * enrich_pseudocount_factor;
 
   for(auto pattern : selected_base_patterns) {
     size_t iupac_pattern = base_patterns->baseId2IUPACId(pattern);
@@ -429,13 +431,14 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
             delete best_mutant;
             found_better_mutant = true;
             best_score = curr_score;
-            float exp_count = mutated_pattern->get_bg_p() * ltot;
-            best_mutant = mutated_pattern;
+            best_mutant = mutated_pattern ;
+            float exp_count = best_mutant->get_bg_p() * ltot;
+            float enrichment = best_mutant->get_sites() / exp_count;
             std::cout
 				<< "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
             	<< "\t" << best_mutant->getLogPval() << "\t" << (int) exp_count
-				<< "\t" << best_mutant->get_sites()
-            	<< std::endl;
+				<< "\t" << best_mutant->get_sites() << "\t" << (int) (enrichment * 100) / 100.0
+            	<< "\t" << (int) (best_score * 100) / 100.0 << std::endl;
           }
           else {
             delete mutated_pattern;
@@ -455,10 +458,12 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
       best.insert(best_mutant->get_pattern());
       seen.insert(best_mutant->get_pattern());
 
-      std::cout << "optimization: " << base_patterns->toString(pattern) << " -> " << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length) << std::endl;
+      std::cout << "optimization: " << base_patterns->toString(pattern) << " -> "
+    		    << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
+      	  	    <<std::endl << std::endl;
     }
     else {
-      std::cout << "optimization: " << base_patterns->toString(pattern) << " removed" << std::endl;
+      std::cout << "optimization: " << base_patterns->toString(pattern) << " removed" << '\t' << std::endl << std::endl;
       delete best_mutant;
       best_mutant = nullptr;
     }
