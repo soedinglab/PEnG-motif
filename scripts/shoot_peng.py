@@ -47,8 +47,9 @@ def main():
                         dest='iupac_optimization_score', type=str, default='LOGPVAL',
                         choices=['EXPCOUNTS', 'LOGPVAL', 'MUTUAL_INFO'],
                         help='select iupac optimization score')
-    parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005,
-                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts in the EXPCOUNTS optimization")
+    parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005, metavar="FLOAT",
+                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts "
+                        "in the EXPCOUNTS optimization")
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
     parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
