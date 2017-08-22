@@ -357,6 +357,8 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
         em_optimize_pwms(unoptimized_iupac_patterns, base_pattern,
         				 params.em_saturation_factor, params.em_min_threshold, params.em_max_iterations,
                          pattern_bg_probs, optimized_patterns);
+      } else {
+        optimized_patterns = std::move(unoptimized_iupac_patterns);
       }
 
       if(params.use_merging) {
@@ -374,6 +376,10 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
         optimized_patterns[i]->set_optimization_bg_model_order(background);
         best_iupac_patterns.push_back(optimized_patterns[i]);
       }
+    }
+
+    for(IUPACPattern* p : unoptimized_iupac_patterns){
+      delete p;
     }
 
     delete base_pattern;
