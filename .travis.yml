@@ -14,7 +14,7 @@ script:
 - mkdir build
 - cd build
 - cmake .. && make
-- ./bin/peng_motif -h
+- ./bin/peng_motif ../data/MafK_100seqs.fasta -w 6
 
 
 matrix:
