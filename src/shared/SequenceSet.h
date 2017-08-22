@@ -22,7 +22,7 @@ public:
 	std::string				getSequenceFilepath();
 	std::string				getIntensityFilepath();
 	std::vector<Sequence*> 	getSequences();
-	int 					getN();
+	size_t 					getN();
 	unsigned int 			getMinL();
 	unsigned int			getMaxL();
 	float* 					getBaseFrequencies();
@@ -36,7 +36,7 @@ private:
 	std::string				intensityFilepath_;	// path to intensity file
 
 	std::vector<Sequence*>	sequences_;			// sequences
-	int 					N_;					// number of sequences
+	size_t 					N_;					// number of sequences
 	unsigned int 			minL_;				// length of the shortest sequence
 	unsigned int 			maxL_;				// length of the longest sequence
 	float*	 				baseFrequencies_;	// kmer frequencies

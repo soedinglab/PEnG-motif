@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <map>
 #include "iupac_pattern.h"
+#include "utils.h"
 #include "base_pattern.h"
 
 void BasePattern::init(size_t pattern_length) {
@@ -94,6 +95,20 @@ float BasePattern::getExpCountFraction(const size_t pattern, const size_t pseudo
   return (pattern_bg_probabilities[k][pattern] * ltot + pseudo_expected_pattern_counts) / pattern_counter[pattern];
 }
 
+float BasePattern::getMutualInformationScore(const size_t pattern) {
+  float expected_counts = pattern_bg_probabilities[k][pattern] * ltot;
+  unsigned int observed_counts = pattern_counter[pattern];
+
+  auto MI = calculate_mutual_information_fast;
+  auto H = calculate_entropy;
+
+  float score = 0;
+  for(float q: {0.5, 0.1, 0.01}) {
+    score += MI(observed_counts, expected_counts, n_sequences, q) / H(q);
+  }
+  return -score;
+}
+
 float BasePattern::getLogPval(size_t pattern) {
   return pattern_logp[pattern];
 }
@@ -108,6 +123,9 @@ float BasePattern::getOptimizationScore(const OPTIMIZATION_SCORE score_type, con
   }
   else if(score_type == OPTIMIZATION_SCORE::kExpCounts) {
     return getExpCountFraction(pattern, pseudo_expected_pattern_counts);
+  }
+  else if(score_type == OPTIMIZATION_SCORE::MutualInformation) {
+    return getMutualInformationScore(pattern);
   }
   else {
     std::cerr << "Error: unknown score type!" << std::endl;
@@ -137,7 +155,7 @@ BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, con
   if(this->strand == Strand::BOTH_STRANDS) {
     count_patterns_minus_strand();
   }
-
+  n_sequences = sequence_set->getN();
   ltot = 0;
   for(size_t i = 0; i < number_patterns; i++) {
     ltot += pattern_counter[i];

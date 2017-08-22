@@ -14,6 +14,7 @@
 #include "iupac_alphabet.h"
 #include "base_pattern.h"
 #include "helper-inl.h"
+#include "utils.h"
 
 size_t* IUPACPattern::iupac_factor = nullptr;
 float* IUPACPattern::log_bonferroni = nullptr;
@@ -592,16 +593,34 @@ float IUPACPattern::getExpCountFraction(const size_t ltot, const size_t pseudo_e
   return (ltot * this->bg_p + pseudo_expected_pattern_counts) / this->n_sites;
 }
 
+float IUPACPattern::getMutualInformationScore(const size_t ltot, unsigned int n_sequences) {
+  float observed_counts = this->n_sites;
+  float expected_counts = ltot * this->bg_p;
+
+  auto MI = calculate_mutual_information_fast;
+  auto H = calculate_entropy;
+
+  float score = 0;
+  for(float q: {0.5, 0.1, 0.01}) {
+    score += MI(observed_counts, expected_counts, n_sequences, q) / H(q);
+  }
+  return -score;
+}
+
 float IUPACPattern::getLogPval() {
   return log_pvalue;
 }
 
-float IUPACPattern::getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts) {
+float IUPACPattern::getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts,
+                                         const unsigned int n_sequences) {
   if(score_type == OPTIMIZATION_SCORE::kLogPval) {
     return getLogPval();
   }
   else if(score_type == OPTIMIZATION_SCORE::kExpCounts) {
     return getExpCountFraction(ltot, pseudo_expected_pattern_counts);
+  }
+  else if(score_type == OPTIMIZATION_SCORE::MutualInformation) {
+    return getMutualInformationScore(ltot, n_sequences);
   }
   else {
     std::cerr << "Error: unknown score type!" << std::endl;

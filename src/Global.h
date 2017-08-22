@@ -15,7 +15,9 @@ enum class Strand {
 };
 
 enum class OPTIMIZATION_SCORE {
-  kLogPval = 0, kExpCounts = 1
+	kLogPval = 0,
+	kExpCounts = 1,
+	MutualInformation
 };
 
 const std::string VERSION_NUMBER("1.0.0");

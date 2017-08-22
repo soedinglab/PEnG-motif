@@ -49,7 +49,7 @@ std::vector<Sequence*> SequenceSet::getSequences(){
 	return sequences_;
 }
 
-int SequenceSet::getN(){
+size_t SequenceSet::getN(){
 	return N_;
 }
 
