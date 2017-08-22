@@ -68,7 +68,8 @@ def main():
                         help='number of pseudo counts for the calculation of the PWM')
     parser.add_argument('--threads', metavar='INT', dest='number_threads', type=float, default=1,
                         help='number of threads to be used for parallelization')
-
+    parser.add_argument('--silent', action='store_true',
+                        help='capture and suppress output on stdout')
 
     args = parser.parse_args()
 
@@ -144,16 +145,21 @@ def run_peng(args, output_directory):
     peng_output_file = os.path.join(output_directory, prefix + ".tmp.out")
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
 
+    if args.silent:
+        stdout=subprocess.PIPE
+    else:
+        stdout=None
+
     # run peng
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
-    peng_ret = subprocess.run(peng_command_line, check=True)
+    peng_ret = subprocess.run(peng_command_line, check=True, stdout=stdout)
 
     # run bamm
     bamm_command_line = build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory)
-    subprocess.run(bamm_command_line, check=True)
+    subprocess.run(bamm_command_line, check=True, stdout=stdout)
 
     r_output_file = os.path.join(output_directory, prefix + ".rank.out")
-    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)], check=True)
+    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)], check=True, stdout=stdout)
 
     # run R script
     zoops_scores = dict()
