@@ -16,10 +16,26 @@ import re
 import numpy as np
 import shutil
 
+
+def check_executable_presence(executable_name):
+    if not shutil.which(executable_name):
+        print('|ERROR| Cannot find %s. Please install it and check your PATH variable.'
+              % executable_name, file=sys.stderr)
+        return False
+    return True
+
+
 RSCRIPT = "plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_rank.R"
 PENG = "peng_motif"
 BAMM = "BaMMmotif"
 
+
+ready = True
+for tool in RSCRIPT, PENG, BAMM:
+    if not check_executable_presence(tool):
+        ready = False
+if not ready:
+    sys.exit(10)
 
 def main():
     parser = argparse.ArgumentParser(description='A wrapper for PEnG that reranks the found motifs')
