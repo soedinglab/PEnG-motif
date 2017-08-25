@@ -162,7 +162,7 @@ def run_peng(args, output_directory):
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
 
     if args.silent:
-        stdout=subprocess.PIPE
+        stdout=subprocess.DEVNULL
     else:
         stdout=None
 
