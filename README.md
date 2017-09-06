@@ -2,7 +2,7 @@
 
  (C) Johannes Soeding, Markus Meier
 
- [ ![Build Status](https://travis-ci.org/soedinglab/PEnG-motif.svg?branch=master)](https://travis-ci.org/soedinglab/PEnG-motif)
+ ![Build Status](https://travis-ci.org/soedinglab/PEnG-motif.svg?branch=master) ![License](https://img.shields.io/github/license/soedinglab/PEnG-motif.svg) ![Issues](https://img.shields.io/github/issues/soedinglab/PEnG-motif.svg)
 
 PEnG-motif is an open-source software package for searching motifs (position specific weight matrices, PWMs) in a set of DNA sequences.
 It is intended to be a fast prefilter for a future release of [BaMMmotif](https://github.com/soedinglab/BaMMmotif).
