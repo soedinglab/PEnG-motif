@@ -11,6 +11,7 @@
 #include <map>
 #include "iupac_pattern.h"
 #include "utils.h"
+#include <memory>
 #include "base_pattern.h"
 
 BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, const int max_k,

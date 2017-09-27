@@ -3,6 +3,7 @@
 
 #include <cstring>	// e.g. std::memcpy
 #include <vector>
+#include <memory>
 
 #include <stdint.h>	// e.g. uint8_t
 #include "Alphabet.h"
