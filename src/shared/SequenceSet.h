@@ -6,8 +6,6 @@
 #include <sstream>	// e.g. std::ostringstream
 #include <vector>
 
-#include <math.h>	// e.g. logf
-
 #include "Alphabet.h"
 #include "Sequence.h"
 #include "utils.h"
@@ -16,7 +14,7 @@ class SequenceSet{
 
 public:
 
-	SequenceSet( std::string sequenceFilepath, bool revcomp = false, std::string intensityFilepath = "" );
+	SequenceSet( std::string sequenceFilepath, bool single_stranded = false, std::string intensityFilepath = "" );
 	~SequenceSet();
 
 	std::string				getSequenceFilepath();

@@ -1,6 +1,6 @@
 #include "SequenceSet.h"
 
-SequenceSet::SequenceSet( std::string sequenceFilepath, bool revcomp, std::string intensityFilepath ){
+SequenceSet::SequenceSet( std::string sequenceFilepath, bool single_stranded, std::string intensityFilepath ){
 
 	if( Alphabet::getSize() == 0 ){
 		std::cerr << "Error: Initialize Alphabet before constructing a SequenceSet" << std::endl;
@@ -21,7 +21,7 @@ SequenceSet::SequenceSet( std::string sequenceFilepath, bool revcomp, std::strin
 
 	baseFrequencies_ = new float[Y_[1]];
 
-	readFASTA( revcomp );
+	readFASTA( single_stranded );
 
 	if( !( intensityFilepath.empty() ) ){
 		intensityFilepath_ = intensityFilepath;

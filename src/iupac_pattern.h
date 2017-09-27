@@ -53,10 +53,10 @@ class IUPACPattern {
   std::string get_pattern_string();
   int get_pattern_length();
 
-  float getExpCountFraction(const size_t ltot, const size_t pseudo_expected_pattern_counts);
+  float getExpCountFraction(const size_t pseudo_expected_pattern_counts);
   float getLogPval();
-  float getMutualInformationScore(size_t ltot, unsigned int n_sequences);
-  float getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t ltot, const size_t pseudo_expected_pattern_counts,
+  float getMutualInformationScore(unsigned int n_sequences);
+  float getOptimizationScore(OPTIMIZATION_SCORE score_type, const size_t pseudo_expected_pattern_counts,
                              unsigned int n_sequences);
 
   float get_bg_p();
@@ -69,24 +69,27 @@ class IUPACPattern {
 
   size_t get_sites();
   size_t* get_local_sites();
+
+  float getExpectedCounts() const;
+
   std::vector<size_t>& get_base_patterns();
   int get_optimization_bg_model_order();
   void set_optimization_bg_model_order(int order);
 
-  void count_sites(size_t* pattern_counter);
   void calculate_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model);
   void calculate_adv_pwm(BasePattern* base_pattern, const int pseudo_counts, size_t* pattern_counter, float* background_model);
-  void calculate_log_pvalue(BasePattern* base_pattern,
-                            const int ltot,
-                            float* base_background_prob,
-                            size_t* base_counts);
+  void aggregate_attributes_from_basepatterns(BasePattern*);
+
 
   bool operator<(const IUPACPattern& rhs) const;
+
+  std::vector<size_t> generate_base_patterns(BasePattern* basepatterns, size_t iupac_pattern);
+
+  static void find_base_patterns(BasePattern* base_pattern, const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
 
  private:
   static float calculate_d(float** p1_pwm, float** p2_pwm, const int offset1, const int offset2, const int l, const float epsilon = 1E-4);
   static float calculate_d_bg(float** p_pwm, float* background, const int l, const int offset = 0, const float epsilon = 1E-4);
-  static void find_base_patterns(BasePattern* base_pattern, const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
 
   float calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACPattern* shorter_pattern, bool is_comp, float* background, const int shift);
 
@@ -98,6 +101,7 @@ class IUPACPattern {
   float log_pvalue;
   float zscore;
   float bg_p;
+  float expected_counts;
   int optimization_bg_model_order;
   size_t n_sites;
   size_t* local_n_sites;

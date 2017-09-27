@@ -52,8 +52,12 @@ class BasePattern {
   int getNucleotideAtPos(const size_t pattern, const size_t pos);
 
   size_t getNumberPatterns();
+  int getBackgroundOrder() const;
+  float* getExpectedCounts() const;
+
   size_t* getPatternCounter();
   float* getBackgroundProb(const int order);
+  float* getBackgroundProb();
   size_t baseId2IUPACId(const size_t base_pattern);
   float getExpCountFraction(const size_t pattern, const size_t pseudo_expected_pattern_counts);
   float getLogPval(size_t pattern);
@@ -64,6 +68,29 @@ class BasePattern {
                                   const size_t count_threshold,
                                   std::vector<size_t>& selected_patterns);
 
+  // helper methods
+  inline size_t add_letter_to_the_right(size_t kmer, size_t position, int letter) {
+    kmer += letter * factor[position];
+    return kmer;
+  }
+
+  inline size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k) {
+
+    /* this method extracts the rightmost (k+1)-mer from a kmer in PEnG representation
+     * and returns its numerical value in BaMM representation
+     *
+     * PEnG: ACGT = 0*1 + 1*4 + 2*16 + 3*64
+     * BaMM: ACGT = 0*64 + 1*16 + 2*4 + 3*1
+    */
+    size_t k_mer_pattern = 0;
+    size_t* base_factors = BasePattern::getFactors();
+    for(int i = curr_pattern_length - k - 1; i < curr_pattern_length; i++) {
+      int c = BasePattern::getNucleotideAtPos(pattern, i);
+      k_mer_pattern += c * base_factors[curr_pattern_length - i - 1];
+    }
+    return k_mer_pattern;
+  }
+
  private:
   // position specific factors used for encoding of base patterns
   size_t* factor;
@@ -71,11 +98,11 @@ class BasePattern {
   // length of pattern
   size_t pattern_length;
 
-  BackgroundModel* bg_model;
   size_t* pattern_counter;
   float** pattern_bg_probabilities;
   float* pattern_logp;
   float* pattern_zscore;
+  float* expected_counts;
 
   size_t number_patterns;
   int max_k;
@@ -86,15 +113,17 @@ class BasePattern {
   size_t ltot;
 
   void count_patterns(SequenceSet* sequence_set);
-  void count_patterns_minus_strand();
-  size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k);
+  void count_patterns_single_strand(SequenceSet* sequence_set);
   void calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k, float* pattern_bg_probs);
   void calculate_bg_probability(float* background_model, const int alphabet_size,
                             const int k, int missing_pattern_length, size_t cur_pattern,
                             float cur_prob, float* final_probabilities);
-  void calculate_log_pvalues(int ltot);
-  void calculate_zscores(int ltot);
+  void calculate_log_pvalues();
+  void calculate_zscores();
+  void calculate_expected_counts();
+  void calculate_expected_counts_single_stranded();
   float getMutualInformationScore(size_t pattern);
+
 };
 
 class sort_indices {

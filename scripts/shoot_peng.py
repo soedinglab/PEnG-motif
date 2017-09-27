@@ -53,7 +53,7 @@ def main():
                         help='select the strand to work on')
     parser.add_argument('--iupac_optimization_score', metavar='LOGPVAL|EXPCOUNTS|MUTUAL_INFO',
                         dest='iupac_optimization_score', type=str, default='LOGPVAL',
-                        choices=['EXPCOUNTS', 'LOGPVAL', 'MUTUAL_INFO'],
+                        choices=['ENRICHMENT', 'LOGPVAL', 'MUTUAL_INFO'],
                         help='select iupac optimization score')
     parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005, metavar="FLOAT",
                         help="add (enrich_pseudocount_factor x #seqs) pseudo counts "

@@ -20,7 +20,6 @@ script:
   - export PATH="$PATH:$PWD/bin"
   - python ../scripts/shoot_peng.py ../data/MafK_100seqs.fasta -w 6 --no-scoring -o test.out
 
-
 matrix:
   include:
     - compiler: gcc

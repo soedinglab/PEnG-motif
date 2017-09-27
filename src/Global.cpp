@@ -61,6 +61,9 @@ void Global::init(int nargs, char* args[]){
 
   Alphabet::init(alphabetType);
 
+  bool is_single_stranded = strand == Strand::PLUS_STRAND;
+
+  // reverse complements are dealt with in peng directly. We read in single stranded sequences either way.
   inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
   char* currBackgroundSequenceFilename;
@@ -71,7 +74,7 @@ void Global::init(int nargs, char* args[]){
     currBackgroundSequenceFilename = inputSequenceFilename;
   }
 
-  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != Strand::BOTH_STRANDS);
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, is_single_stranded);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -119,7 +122,7 @@ void Global::readArguments(int nargs, char* args[]){
       if(!strcmp(args[i], "LOGPVAL")) {
         optScoreType = OPTIMIZATION_SCORE::kLogPval;
       }
-      else if(!strcmp(args[i], "EXPCOUNTS")) {
+      else if(!strcmp(args[i], "ENRICHMENT")) {
         optScoreType = OPTIMIZATION_SCORE::kExpCounts;
       }
       else if(!strcmp(args[i], "MUTUAL_INFO")) {
@@ -305,7 +308,7 @@ void Global::printHelp(){
       "           lower threshold for counts of basic patterns\n");
   printf("\n      --strand, <PLUS|BOTH>\n"
       "           select the strands to work on\n");
-  printf("\n      --iupac_optimization_score, <EXPCOUNTS|LOGPVAL|MUTUAL_INFO>\n"
+  printf("\n      --iupac_optimization_score, <ENRICHMENT|LOGPVAL|MUTUAL_INFO>\n"
       "           select the iupac optimization score\n");
   printf("\n      --enrich_pseudocount_factor, <PSEUDO_COUNTS>\n"
 	  "           add (enrich_pseudocount_factor x #seqs) pseudocounts\n"

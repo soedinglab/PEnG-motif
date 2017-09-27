@@ -21,7 +21,6 @@
 Peng::Peng(Strand s, const int k, const int max_opt_k,
            SequenceSet* sequence_set, BackgroundModel* bg) {
 
-  int max_base_pattern_length = log(SIZE_MAX) / log(Alphabet::getSize()) - 1;
   int max_iupac_pattern_length = log(SIZE_MAX) / log(IUPAC_ALPHABET_SIZE) - 1;
 
   this->alphabet_size = Alphabet::getSize();
@@ -308,7 +307,9 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     exit(1);
   }
 
-  for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
+  // TODO decide which version is best
+  //for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
+  for(size_t pattern_length = params.max_pattern_length ; pattern_length <= params.max_pattern_length; pattern_length += 2) {
     print_status("Processing kmers of length " + std::to_string(pattern_length), false);
     print_status("Finding overrepresented kmers (base patterns)", false);
     BasePattern* base_pattern = new BasePattern(pattern_length, strand, k, max_k, sequence_set, bg_model);
@@ -317,6 +318,10 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     std::vector<size_t> filtered_base_patterns;
     base_pattern->filter_base_patterns(params.zscore_threshold, params.count_threshold, filtered_base_patterns);
 
+    if (filtered_base_patterns.size() == 0) {
+      std::cout << "No overrepresented seed patterns found. Stopping." << std::endl;
+      exit(15);
+    }
 
     print_status("Optimizing base patterns");
     std::cout << std::endl;
@@ -335,7 +340,6 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     #pragma omp parallel for
     for(int i = 0; i < unoptimized_iupac_patterns.size(); i++) {
       IUPACPattern* pattern = unoptimized_iupac_patterns[i];
-      pattern->count_sites(pattern_counter);
 
       if(params.adv_pwm) {
         std::cout << "adv pwm: ";
@@ -396,9 +400,6 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
 
 
   const size_t pattern_length = base_patterns->getPatternLength();
-  size_t ltot = base_patterns->getLtot();
-  size_t* pattern_counter = base_patterns->getPatternCounter();
-  float* pattern_bg = base_patterns->getBackgroundProb(this->k);
 
   size_t pseudo_expected_pattern_counts = sequence_set->getN() * enrich_pseudocount_factor;
 
@@ -409,13 +410,7 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
     float best_score = base_patterns->getOptimizationScore(score_type, pattern, pseudo_expected_pattern_counts);
 
     IUPACPattern* best_mutant = new IUPACPattern(iupac_pattern, pattern_length);
-    best_mutant->calculate_log_pvalue(base_patterns,
-                                      ltot,
-                                      pattern_bg,
-                                      pattern_counter);
-    best_mutant->count_sites(pattern_counter);
-
-//    bool already_seen = false;
+    best_mutant->aggregate_attributes_from_basepatterns(base_patterns);
 
     while(found_better_mutant) {
       found_better_mutant = false;
@@ -431,29 +426,24 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
         for(auto r : IUPACAlphabet::get_similar_iupac_nucleotides(c)) {
           size_t mutated_id = masked_mother + r * IUPACPattern::iupac_factor[p];
           IUPACPattern* mutated_pattern = new IUPACPattern(mutated_id, pattern_length);
-
-          //calculate log_pvalue of mutated pattern
-          mutated_pattern->calculate_log_pvalue(base_patterns,
-                                                ltot,
-                                                pattern_bg,
-                                                pattern_counter);
-          mutated_pattern->count_sites(pattern_counter);
+          mutated_pattern->aggregate_attributes_from_basepatterns(base_patterns);
 
           //add pattern to currently seen
           current_seen.insert(mutated_pattern->get_pattern());
 
-          float curr_score = mutated_pattern->getOptimizationScore(score_type, ltot, pseudo_expected_pattern_counts, n_sequences);
+          float curr_score = mutated_pattern->getOptimizationScore(score_type, pseudo_expected_pattern_counts, n_sequences);
           if(curr_score < best_score) {
             delete best_mutant;
             found_better_mutant = true;
             best_score = curr_score;
-            best_mutant = mutated_pattern ;
-            float exp_count = best_mutant->get_bg_p() * ltot;
+            best_mutant = mutated_pattern;
+            float exp_count = best_mutant->getExpectedCounts();
             float enrichment = best_mutant->get_sites() / exp_count;
             std::cout
-				<< "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
-            	<< "\t" << best_mutant->getLogPval() << "\t" << (int) exp_count
-				<< "\t" << best_mutant->get_sites() << "\t" << (int) (enrichment * 100) / 100.0
+				      << "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
+            	<< "\t" << best_mutant->get_sites()
+              << "\t" <<  exp_count
+			        << "\t" << (int) (enrichment * 100) / 100.0
             	<< "\t" << (int) (best_score * 10000) / 10000.0 << std::endl;
           }
           else {

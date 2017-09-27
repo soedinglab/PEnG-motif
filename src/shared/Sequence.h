@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <stdint.h>	// e.g. uint8_t
-#include <math.h>
 #include "Alphabet.h"
 
 class Sequence{
@@ -18,6 +17,7 @@ public:
 	uint8_t*        getSequence();
 	int    			getL();
 	std::string		getHeader();
+	std::unique_ptr<uint8_t[]> createReverseComplement();
 
 
 	float 	        getIntensity();

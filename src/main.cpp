@@ -19,8 +19,9 @@ int main(int nargs, char **args) {
   Global::init(nargs, args);
 
   //calculate background model
+  int bg_model_order = std::max(Global::bgModelOrder, Global::maxOptBgModelOrder);
   BackgroundModel* bgModel = new BackgroundModel(*Global::backgroundSequenceSet,
-                          Global::bgModelOrder,
+                          bg_model_order,
                           Global::bgModelAlpha,
                           Global::interpolateBG);
 

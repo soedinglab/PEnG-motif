@@ -7,7 +7,7 @@ uint8_t*	Alphabet::baseToCode_;				// convert base to encoding
 char*		Alphabet::codeToBase_;				// convert encoding to base
 uint8_t*	Alphabet::codeToComplementCode_;	// convert encoding to complement encoding
 
-void Alphabet::init( char* alphabetType ){
+void Alphabet::init( const char* alphabetType ){
 
 	if( strcmp( alphabetType, "STANDARD" ) == 0 ){
 		size_ = 4;

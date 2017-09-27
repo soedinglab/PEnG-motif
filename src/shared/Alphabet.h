@@ -13,7 +13,7 @@ class Alphabet{
 
 public:
 
-	static void		init( char* alphabetType );
+	static void		init( const char* alphabetType );
 	static void		destruct();
 	static void     debug();
 
