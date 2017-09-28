@@ -17,6 +17,7 @@ script:
   - mkdir build
   - cd build
   - cmake .. -Dtest=on && make -j 2
+  - make test
   - export PATH="$PATH:$PWD/bin"
   - python ../scripts/shoot_peng.py ../data/MafK_100seqs.fasta -w 6 --no-scoring -o test.out
 
