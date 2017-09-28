@@ -732,6 +732,10 @@ float IUPACPattern::getExpectedCounts() const {
   return expected_counts;
 }
 
+float IUPACPattern::getZscore() const {
+  return zscore;
+}
+
 bool sort_IUPAC_patterns(IUPACPattern* a, IUPACPattern* b) {
   return a->getLogPval() < b->getLogPval();
 }

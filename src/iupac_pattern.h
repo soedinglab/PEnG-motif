@@ -71,6 +71,7 @@ class IUPACPattern {
   size_t* get_local_sites();
 
   float getExpectedCounts() const;
+  float getZscore() const;
 
   std::vector<size_t>& get_base_patterns();
   int get_optimization_bg_model_order();

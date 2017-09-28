@@ -440,11 +440,11 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
             float exp_count = best_mutant->getExpectedCounts();
             float enrichment = best_mutant->get_sites() / exp_count;
             std::cout
-				      << "\t" << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
-            	<< "\t" << best_mutant->get_sites()
-              << "\t" <<  exp_count
-			        << "\t" << (int) (enrichment * 100) / 100.0
-            	<< "\t" << (int) (best_score * 10000) / 10000.0 << std::endl;
+				      << "\t" << std::setw(15) << IUPACPattern::toString(best_mutant->get_pattern(), pattern_length)
+            	<< "\t" << std::setw(10) << best_mutant->get_sites()
+              << "\t" << std::setw(12) << std::setprecision(2) << exp_count
+			        << "\t" << std::setw(5) <<  std::setprecision(2) << enrichment
+            	<< "\t" << std::setw(10) <<  std::setprecision(6) << best_score << std::endl;
           }
           else {
             delete mutated_pattern;
@@ -475,9 +475,19 @@ void Peng::optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
     }
   }
 
+  std::cout
+      << std::setw(15) << "pattern" << "\t"
+      << std::setw(15) << "observed" << "\t"
+      << std::setw(15) << "expected" << "\t"
+      << std::setw(15) << "zscore" << std::endl << std::endl;
+
+  std::cout << std::fixed << std::setprecision(2);
   for(auto pattern : best_iupac_patterns) {
-    std::cout << "iupac pattern: " << IUPACPattern::toString(pattern->get_pattern(), pattern_length) <<
-        "\t" << pattern->get_sites() << "\t" << pattern->getLogPval() << std::endl;
+    std::cout
+        << std::setw(15) << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << "\t"
+        << std::setw(15) << pattern->get_sites() << "\t"
+        << std::setw(15) << pattern->getExpectedCounts() << "\t"
+        << std::setw(15) << pattern->getZscore() << std::endl;
   }
 }
 

@@ -429,10 +429,19 @@ void BasePattern::filter_base_patterns(const float zscore_threshold,
     }
   }
 
-  std::cout << "basepattern" << "\t\t" << "observed" << "\t\t" << "expected" << "\t\t" << "zscore" << std::endl;
+  std::cout
+      << std::setw(15) << "pattern" << "\t"
+      << std::setw(15) << "observed" << "\t"
+      << std::setw(15) << "expected" << "\t"
+      << std::setw(15) << "zscore" << std::endl << std::endl;
+
+  std::cout << std::fixed << std::setprecision(2);
   for(auto pattern : selected_patterns) {
-    std::cout << toString(pattern) << "\t\t" << pattern_counter[pattern] << "\t\t" << expected_counts[pattern]
-              << "\t\t" << pattern_zscore[pattern] << std::endl;
+    std::cout
+        << std::setw(15) << toString(pattern) << "\t"
+        << std::setw(15) << pattern_counter[pattern] << "\t"
+        << std::setw(15) << expected_counts[pattern] << "\t"
+        << std::setw(15) << pattern_zscore[pattern] << std::endl;
   }
 
   delete[] seen_array;
