@@ -82,6 +82,16 @@ namespace {
     for(auto pattern : new_result) {
       ASSERT_TRUE(std::find(old_patterns.begin(), old_patterns.end(), pattern) != old_patterns.end());
     }
+
+    size_t pattern_YCCT = 7 + 1*11 + 1*11*11 + 3*11*11*11;
+    size_t pattern_CCCT = 1 + 1*4 + 1*16 + 3*64;
+    size_t pattern_TCCT = 3 + 1*4 + 1*16 + 3*64;
+
+    auto YCCT_result = iupac->generate_base_patterns(basepattern, pattern_YCCT);
+    ASSERT_EQ(YCCT_result.size(), 2);
+    ASSERT_TRUE(std::find(YCCT_result.begin(), YCCT_result.end(), pattern_CCCT) != YCCT_result.end());
+    ASSERT_TRUE(std::find(YCCT_result.begin(), YCCT_result.end(), pattern_TCCT) != YCCT_result.end());
+
     delete basepattern;
     delete iupac;
   }

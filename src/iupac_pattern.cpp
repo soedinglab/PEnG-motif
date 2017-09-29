@@ -579,6 +579,11 @@ float IUPACPattern::getMutualInformationScore(unsigned int n_sequences) {
   float observed_counts = this->n_sites;
   float expected_counts = this->expected_counts;
 
+  if(observed_counts < expected_counts) {
+    // these are certainly not interesting to us
+    return 0;
+  }
+
   auto MI = calculate_mutual_information_fast;
   auto H = calculate_entropy;
 

@@ -157,6 +157,10 @@ float BasePattern::getMutualInformationScore(const size_t pattern) {
   float expected_counts = this->expected_counts[pattern];
   unsigned int observed_counts = this->pattern_counter[pattern];
 
+  if(observed_counts < expected_counts) {
+    // these are certainly not interesting to us
+    return 0;
+  }
   auto MI = calculate_mutual_information_fast;
   auto H = calculate_entropy;
 
