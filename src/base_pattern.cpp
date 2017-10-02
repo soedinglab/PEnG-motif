@@ -339,6 +339,14 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
     j += pattern_length; // match in a new sequence cannot overlap with match in previous sequence
   }
   delete[] last_match_pos;
+
+  // store a second copy of the counts at the reverse complement id to allow fast lookup
+  for (size_t kmer_id = 0; kmer_id < base_factors[pattern_length]; kmer_id++) {
+    auto rc_kmer_id = BasePattern::getRevCompId(kmer_id);
+    if(kmer_id > BasePattern::getRevCompId(rc_kmer_id)) {
+      pattern_counter[kmer_id] = pattern_counter[rc_kmer_id];
+    }
+  }
 }
 
 void BasePattern::count_patterns_single_strand(SequenceSet* sequence_set) {

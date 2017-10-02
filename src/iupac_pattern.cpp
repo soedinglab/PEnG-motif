@@ -375,23 +375,22 @@ void IUPACPattern::aggregate_attributes_from_basepatterns(BasePattern* base_patt
 
     if(n_sites == 0) {
       log_pvalue = std::numeric_limits<float>::infinity();
-      return;
+    } else {
+      float mu = expected_counts;
+      float frac = 1 - mu / (n_sites + 1);
+
+      float log_pvalue = 0;
+      if(n_sites > mu && n_sites > 5 && zscore > 2) {
+        log_pvalue = n_sites * log(mu/n_sites) + n_sites - mu - 0.5 * log(6.283*n_sites*frac*frac);
+      }
+
+      for(int p = 0; p < pattern_length; p++) {
+        int c = IUPACPattern::getNucleotideAtPos(pattern, p);
+        log_pvalue += log_bonferroni[c];
+      }
+
+      this->log_pvalue = log_pvalue;
     }
-
-    float mu = expected_counts;
-    float frac = 1 - mu / (n_sites + 1);
-
-    float log_pvalue = 0;
-    if(n_sites > mu && n_sites > 5 && zscore > 2) {
-      log_pvalue = n_sites * log(mu/n_sites) + n_sites - mu - 0.5 * log(6.283*n_sites*frac*frac);
-    }
-
-    for(int p = 0; p < pattern_length; p++) {
-      int c = IUPACPattern::getNucleotideAtPos(pattern, p);
-      log_pvalue += log_bonferroni[c];
-    }
-
-    this->log_pvalue = log_pvalue;
   }
 
 }
@@ -444,8 +443,7 @@ void IUPACPattern::calculate_adv_pwm(BasePattern* base_pattern, const int pseudo
 
       for(int i = 0; i < 4; i++) {
         size_t ipattern = pattern - c * IUPACPattern::iupac_factor[p] + i * IUPACPattern::iupac_factor[p];
-        std::vector<size_t> i_base_patterns;
-        find_base_patterns(base_pattern, ipattern, pattern_length, i_base_patterns);
+        auto i_base_patterns = generate_base_patterns(base_pattern, ipattern);
 
         i_total[i] = pseudo_counts * background_model[i];
         for(auto base : i_base_patterns) {
