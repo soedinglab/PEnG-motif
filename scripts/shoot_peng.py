@@ -25,13 +25,12 @@ def check_executable_presence(executable_name):
     return True
 
 
-RSCRIPT = "plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_rank.R"
+RSCRIPT = "evaluateBaMM.R" #"plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_rank.R"
 PENG = "peng_motif"
-BAMM = "BaMMmotif"
-
+FDR = "FDR"
 
 ready = True
-for tool in RSCRIPT, PENG, BAMM:
+for tool in RSCRIPT, PENG, FDR:
     if not check_executable_presence(tool):
         ready = False
 if not ready:
@@ -134,22 +133,22 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     print(" ".join(command))
     return command
 
-# --FDR --savePRs -m 10 -k 0 --zoops
-def build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory):
-    command = [BAMM, output_directory, os.path.abspath(protected_fasta_file),
-                "--PWMFile", os.path.abspath(peng_output_file), "--FDR", "--savePRs"]
+# FDR -m 10 -k 0 --cvFold 1
+def build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory):
+    command = [FDR, output_directory, os.path.abspath(protected_fasta_file),
+                "--PWMFile", os.path.abspath(peng_output_file)]]
     if args.strand == 'PLUS':
         command += ["--ss"]
-    command += ["--zoops"]
     command += ["-m", str(10)]
     command += ["-k", str(0)]
+    command += ["--cvFold", str(1)]
 
     print(" ".join(command))
     return command
 
 
 def run_peng(args, output_directory):
-    # bamm takes the prefix from the input fasta-file
+    # FDR takes the prefix from the input fasta-file
     filename, extension = os.path.splitext(args.fasta_file)
     prefix = os.path.basename(filename)
     whitespace_matcher = re.compile(r'\s+')
@@ -170,26 +169,26 @@ def run_peng(args, output_directory):
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
     peng_ret = subprocess.run(peng_command_line, check=True, stdout=stdout)
 
-    # run bamm
-    bamm_command_line = build_bamm_command(args, protected_fasta_file, peng_output_file, output_directory)
-    subprocess.run(bamm_command_line, check=True, stdout=stdout)
-
-    r_output_file = os.path.join(output_directory, prefix + ".rank.out")
-    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix, os.path.abspath(r_output_file)], check=True, stdout=stdout)
+    # run FDR 
+    fdr_command_line = build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory)
+    subprocess.run(fdr_command_line, check=True, stdout=stdout)
+    r_output_file = os.path.join(output_directory, prefix + ".bmscore")
+    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix ], check=True, stdout=stdout)
 
     # run R script
     zoops_scores = dict()
-    occs = dict()
+#    occs = dict()
     with open(r_output_file) as fh:
         for line in fh:
             if line.startswith("prefix"):
                 continue
-            prefix, motif_number, zoops_rank_score, fract_occ = line.split()
+            prefix, motif_number, zoops_rank_score, auc5_score, auprc_score = line.split()
             motif_number = int(motif_number)
 
             try:
+                # note here ausfc score is used for reranking, instead of fract_occ
                 zoops_scores[motif_number] = float(zoops_rank_score)
-                occs[motif_number] = float(fract_occ)
+#                occs[motif_number] = float(fract_occ)
             except:
                 zoops_scores[motif_number] = np.nan
 
@@ -201,7 +200,7 @@ def run_peng(args, output_directory):
     for idx, p in enumerate(patterns):
         if idx + 1 in zoops_scores:
             p["zoops_score"] = zoops_scores[idx + 1]
-            print("{} {} {}".format(p["iupac_motif"], p["zoops_score"], occs[idx + 1]))
+            print("{} {}".format(p["iupac_motif"], p["zoops_score"]))
         else:
             p["zoops_score"] = np.nan
 
