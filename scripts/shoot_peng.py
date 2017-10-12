@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Created in Feb 2017
 
@@ -35,6 +34,7 @@ for tool in RSCRIPT, PENG, FDR:
         ready = False
 if not ready:
     sys.exit(10)
+
 
 def main():
     parser = argparse.ArgumentParser(description='A wrapper for PEnG that reranks the found motifs')
@@ -133,10 +133,11 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     print(" ".join(command))
     return command
 
+
 # FDR -m 10 -k 0 --cvFold 1
 def build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory):
     command = [FDR, output_directory, os.path.abspath(protected_fasta_file),
-                "--PWMFile", os.path.abspath(peng_output_file)]]
+               "--PWMFile", os.path.abspath(peng_output_file)]
     if args.strand == 'PLUS':
         command += ["--ss"]
     command += ["-m", str(10)]
@@ -161,19 +162,19 @@ def run_peng(args, output_directory):
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
 
     if args.silent:
-        stdout=subprocess.DEVNULL
+        stdout = subprocess.DEVNULL
     else:
-        stdout=None
+        stdout = None
 
     # run peng
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
-    peng_ret = subprocess.run(peng_command_line, check=True, stdout=stdout)
+    subprocess.run(peng_command_line, check=True, stdout=stdout)
 
-    # run FDR 
+    # run FDR
     fdr_command_line = build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory)
     subprocess.run(fdr_command_line, check=True, stdout=stdout)
     r_output_file = os.path.join(output_directory, prefix + ".bmscore")
-    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix ], check=True, stdout=stdout)
+    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
 
     # run R script
     zoops_scores = dict()
@@ -218,7 +219,7 @@ def write_meme(peng_data, peng_output_file):
         print(file=fh)
 
         alphabet_length = peng_data["alphabet_length"]
-        print("ALPHABET= "+peng_data["alphabet"], file=fh)
+        print("ALPHABET= " + peng_data["alphabet"], file=fh)
         print(file=fh)
 
         print("Background letter frequencies", file=fh)
@@ -234,10 +235,15 @@ def write_meme(peng_data, peng_output_file):
 
         for p in patterns:
             print("MOTIF {}".format(p["iupac_motif"]), file=fh)
-            print(("letter-probability matrix: alength= {} w= {} "
-                   "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {}").format(
-                   alphabet_length, p["pattern_length"], p["sites"], p["bg_prob"], p["opt_bg_order"], p["log(Pval)"],
-                   p["zoops_score"]), file=fh)
+            print(
+                ("letter-probability matrix: alength= {} w= {} "
+                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {}")
+                .format(
+                    alphabet_length, p["pattern_length"], p["sites"],
+                    p["bg_prob"], p["opt_bg_order"], p["log(Pval)"],
+                    p["zoops_score"]
+                ), file=fh
+            )
             pwm = p["pwm"]
 
             for line in pwm:

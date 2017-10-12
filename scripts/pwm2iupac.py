@@ -14,6 +14,7 @@ import argparse
 
 IUPAC_ALPHABET_SIZE = 11
 
+
 #an enum to encode the int representation of the iupac nucleotides
 class IUPACNucleotide(IntEnum):
     A = 0
@@ -27,6 +28,7 @@ class IUPACNucleotide(IntEnum):
     M = 8
     K = 9
     N = 10
+
 
 #generates the map for the amiguous iupac nucleotides e.g.: N -> A, C, G, T
 def init_representative_map():
@@ -62,6 +64,7 @@ def init_representative_map():
 
     return representative_iupac_nucleotides
 
+
 #generates a map to translate the int representation of the iupac nucleotides to chars
 def get_iupac_int2char():
     int2char = dict()
@@ -80,6 +83,7 @@ def get_iupac_int2char():
 
     return int2char
 
+
 # returns a sample bg model; mayhaps better to read from an external file?
 def get_bg_model():
     bg_model = np.zeros(4)
@@ -91,6 +95,7 @@ def get_bg_model():
 
     return bg_model
 
+
 # init the profiles for the iupac nucleotides with the given bg_model
 def init_iupac_profiles(representative_iupac_nucleotides, bg_model, c=0.2, t=0.7):
     iupac_profiles = np.zeros((IUPAC_ALPHABET_SIZE, 4), np.float)
@@ -98,7 +103,7 @@ def init_iupac_profiles(representative_iupac_nucleotides, bg_model, c=0.2, t=0.7
     for iupac_c in range(IUPAC_ALPHABET_SIZE):
         rep = representative_iupac_nucleotides[iupac_c]
         for a in range(4):
-            iupac_profiles[iupac_c][a] += c * bg_model[a];
+            iupac_profiles[iupac_c][a] += c * bg_model[a]
 
             for r in rep:
                 if a == r:
@@ -106,12 +111,14 @@ def init_iupac_profiles(representative_iupac_nucleotides, bg_model, c=0.2, t=0.7
 
     return iupac_profiles
 
+
 #calculates the distance between two profiles; based on the Shannon Entropy?
 def calculate_d(profile1, profile2):
     d = 0.0
     for a in range(4):
         d += (profile1[a] - profile2[a]) * (np.log2(profile1[a]) - np.log2(profile2[a]))
     return d
+
 
 #finds for each profile in the pwm the closest iupac profile
 def get_iupac_string(pwm, iupac_profiles, int2char):
@@ -126,12 +133,13 @@ def get_iupac_string(pwm, iupac_profiles, int2char):
             dist = calculate_d(pwm[i], iupac_profiles[m])
 
             if dist < min_dist:
-                min_dist = dist;
-                min_iupac = m;
+                min_dist = dist
+                min_iupac = m
 
         res.append(int2char[min_iupac])
 
     return "".join(res)
+
 
 #read the pwm from an external file
 def read_pwm(filename):
@@ -158,6 +166,7 @@ def read_pwm(filename):
             pwm.append(profile)
     return pwm
 
+
 #THE main ;)
 def main():
     parser = argparse.ArgumentParser(description='Translates a PWM into an IUPAC identifier and prints it')
@@ -178,6 +187,7 @@ def main():
     #actual translation
     result = get_iupac_string(pwm, iupac_profiles, int2char)
     print(result)
+
 
 #if called as a script; calls the main method
 if __name__ == '__main__':

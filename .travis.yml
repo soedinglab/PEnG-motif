@@ -1,20 +1,23 @@
-# Ubuntu 14.04 Trusty support
+language: python
+python:
+    - 3.3
 sudo: required
 dist: trusty
 
+install:
+    - pip install flake8
+
 addons:
   apt:
-    packages:
+    packages: &default_packages
     - cmake
 
-#before_install:
-#- git submodule update --init --recursive
-
 script:
-- mkdir build
-- cd build
-- cmake .. && make
-- ./bin/peng_motif ../data/MafK_100seqs.fasta -w 6
+  - flake8 scripts/*.py
+  - mkdir build
+  - cd build
+  - cmake .. && make
+  - ./bin/peng_motif ../data/MafK_100seqs.fasta -w 6
 
 
 matrix:
@@ -25,6 +28,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - *default_packages
             - g++-4.9
       env: CXX=g++-4.9
     - compiler: gcc
@@ -33,6 +37,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - *default_packages
             - g++-5
       env: CXX=g++-5
     - compiler: gcc
@@ -41,6 +46,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - *default_packages
             - g++-6
       env: CXX=g++-6
     - compiler: gcc
@@ -49,6 +55,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - *default_packages
             - g++-7
       env: CXX=g++-7
 
@@ -59,6 +66,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.6
           packages:
+            - *default_packages
             - clang-3.6
             - util-linux
             - libc++-dev
@@ -70,6 +78,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.7
           packages:
+            - *default_packages
             - clang-3.7
             - util-linux
             - libc++-dev
@@ -81,6 +90,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.8
           packages:
+            - *default_packages
             - clang-3.8
             - util-linux
             - libc++-dev
@@ -92,6 +102,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
           packages:
+            - *default_packages
             - clang-3.9
             - util-linux
             - libc++-dev
@@ -104,6 +115,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
           packages:
+            - *default_packages
             - util-linux
             - clang-4.0
             - libc++-dev
