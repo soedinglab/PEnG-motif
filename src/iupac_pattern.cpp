@@ -448,6 +448,12 @@ void IUPACPattern::calculate_adv_pwm(BasePattern* base_pattern, const int pseudo
         i_total[i] = pseudo_counts * background_model[i];
         for(auto base : i_base_patterns) {
           i_total[i] += pattern_counter[base];
+
+          // pretend that palindromes have been counted twice
+          // this hack prevents underestimating the influence of palindromic base patterns
+          if(base_pattern->getRevCompId(base) == base) {
+            i_total[i] += pattern_counter[base];
+          }
         }
 
         n_total += i_total[i];
@@ -461,6 +467,7 @@ void IUPACPattern::calculate_adv_pwm(BasePattern* base_pattern, const int pseudo
     this->calculate_comp_pwm();
   }
 }
+
 
 float IUPACPattern::calculate_d(float** p1_pwm, float** p2_pwm, const int offset1, const int offset2, const int l, const float epsilon) {
   float d = 0;
