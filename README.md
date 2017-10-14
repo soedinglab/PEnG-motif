@@ -12,9 +12,14 @@ It is intended to be a fast prefilter for a future release of [BaMMmotif](https:
 
 ## Requirements
 
-To compile from source, you will need:
+To compile and run PEnG-motif, you need
  * [CMake](http://cmake.org/) 2.8.12 or later
- * C++ compiler (support for C++14)
+ * a recent C++ compiler (support for C++14)
+
+### Optional requirements for running the scripts
+
+  * python>=3.5
+  * numpy
 
 
 ## Installation
@@ -22,7 +27,7 @@ To compile from source, you will need:
 ### Cloning from GIT
 If you want to compile the most recent version, simply clone the git repository.
 
-	git clone git@github.com:soedinglab/PEnG-motif.git
+	git clone https://github.com/soedinglab/PEnG-motif.git
 	cd PEnG-motif
 
 ### Compilation
@@ -53,28 +58,16 @@ For performing a search for overrepresented motives in a set of DNA sequences ru
   peng_motif -w 10 --pseudo-counts 10 -b 0.4 -a 1E4 -o output.meme input.fasta
 
 You can get a detailed list of options for peng_motif by calling it without arguments.
-This script is a wrapper for PEnG that will rerank the models using binaries and scripts from BaMM.
 
 ## Future
 With a future release of [BaMMmotif](https://github.com/soedinglab/BaMMmotif) we can rerank
 the models of PEnG with a proper score. For this purpose the python script shoot_peng.py
-exists.
+exists. This script is a wrapper for PEnG that will rerank the models using binaries and scripts from BaMM.
 
 
 ## License
 
 The PEnG-motif is distributed under the GPL-3.0 License.
-
-
-## Notes
-
-We are very grateful for bug reports!
-Please contact us at soeding@mpibpc.mpg.de
-
-
-## Links
-
-* [soeding lab](http://www.mpibpc.mpg.de/soeding)
 
 
 ## Acknowledgements
