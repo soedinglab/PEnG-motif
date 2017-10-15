@@ -24,16 +24,9 @@ def check_executable_presence(executable_name):
     return True
 
 
-RSCRIPT = "evaluateBaMM.R" #"plotAUSFC_benchmark_fdrtool.R" #"plotAUSFC_rank.R"
+RSCRIPT = "evaluateBaMM.R"
 PENG = "peng_motif"
 FDR = "FDR"
-
-ready = True
-for tool in RSCRIPT, PENG, FDR:
-    if not check_executable_presence(tool):
-        ready = False
-if not ready:
-    sys.exit(10)
 
 
 def main():
@@ -85,23 +78,36 @@ def main():
                         help='number of threads to be used for parallelization')
     parser.add_argument('--silent', action='store_true',
                         help='capture and suppress output on stdout')
+    parser.add_argument('--no-scoring', action='store_true', dest='no_scoring',
+                        help='skip the calculation of the pwm performance score')
 
     args = parser.parse_args()
 
     if args.meme_output_file is None and args.json_output_file is None:
         print("Warning: you did not define an output file (options -o or -j). Stopping here.", file=sys.stderr)
-        sys.exit(0)
+        sys.exit(1)
+
+    required_tools = [PENG]
+    if not args.no_scoring:
+        required_tools += [RSCRIPT, FDR]
+
+    ready = True
+    for tool in required_tools:
+        if not check_executable_presence(tool):
+            ready = False
+    if not ready:
+        sys.exit(10)
 
     output_directory = args.output_directory
     if args.output_directory is None:
         # work in tmp directory
         with tempfile.TemporaryDirectory() as output_directory:
-            run_peng(args, output_directory)
+            run_peng(args, output_directory, not args.no_scoring)
     else:
         if not os.path.exists(output_directory):
             # make user defined directory if not exist
             os.makedirs(output_directory)
-        run_peng(args, output_directory)
+        run_peng(args, output_directory, not args.no_scoring)
 
 
 def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file):
@@ -148,7 +154,7 @@ def build_fdr_command(args, protected_fasta_file, peng_output_file, output_direc
     return command
 
 
-def run_peng(args, output_directory):
+def run_peng(args, output_directory, run_scoring):
     # FDR takes the prefix from the input fasta-file
     filename, extension = os.path.splitext(args.fasta_file)
     prefix = os.path.basename(filename)
@@ -170,42 +176,45 @@ def run_peng(args, output_directory):
     peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
     subprocess.run(peng_command_line, check=True, stdout=stdout)
 
-    # run FDR
-    fdr_command_line = build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory)
-    subprocess.run(fdr_command_line, check=True, stdout=stdout)
-    r_output_file = os.path.join(output_directory, prefix + ".bmscore")
-    subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
-
-    # run R script
-    zoops_scores = dict()
-#    occs = dict()
-    with open(r_output_file) as fh:
-        for line in fh:
-            if line.startswith("prefix"):
-                continue
-            prefix, motif_number, zoops_rank_score, auc5_score, auprc_score = line.split()
-            motif_number = int(motif_number)
-
-            try:
-                # note here ausfc score is used for reranking, instead of fract_occ
-                zoops_scores[motif_number] = float(zoops_rank_score)
-#                occs[motif_number] = float(fract_occ)
-            except:
-                zoops_scores[motif_number] = np.nan
-
     with open(peng_json_file) as fh:
         peng_data = json.load(fh)
 
-    # update information
-    patterns = peng_data["patterns"]
-    for idx, p in enumerate(patterns):
-        if idx + 1 in zoops_scores:
-            p["zoops_score"] = zoops_scores[idx + 1]
-            print("{} {}".format(p["iupac_motif"], p["zoops_score"]))
-        else:
-            p["zoops_score"] = np.nan
+    if run_scoring:
+        # run FDR
+        fdr_command_line = build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory)
+        subprocess.run(fdr_command_line, check=True, stdout=stdout)
+        r_output_file = os.path.join(output_directory, prefix + ".bmscore")
+        subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
 
-    peng_data["patterns"] = sorted(peng_data["patterns"], key=lambda k: k['zoops_score'], reverse=True)
+        # run R script
+        zoops_scores = dict()
+        with open(r_output_file) as fh:
+            for line in fh:
+                if line.startswith("prefix"):
+                    continue
+                prefix, motif_number, zoops_rank_score, auc5_score, auprc_score, *_ = line.split()
+                motif_number = int(motif_number)
+
+                try:
+                    # note here ausfc score is used for reranking, instead of fract_occ
+                    zoops_scores[motif_number] = float(zoops_rank_score)
+                except:
+                    zoops_scores[motif_number] = np.nan
+
+        # update information
+        patterns = peng_data["patterns"]
+        for idx, p in enumerate(patterns):
+            if idx + 1 in zoops_scores:
+                p["zoops_score"] = zoops_scores[idx + 1]
+                print("{} {}".format(p["iupac_motif"], p["zoops_score"]))
+            else:
+                p["zoops_score"] = np.nan
+
+        peng_data["patterns"] = sorted(peng_data["patterns"], key=lambda k: k['zoops_score'], reverse=True)
+    else:
+        patterns = peng_data["patterns"]
+        for p in patterns:
+            p["zoops_score"] = float('nan')
 
     if args.meme_output_file:
         write_meme(peng_data, args.meme_output_file)
