@@ -79,7 +79,7 @@ def main():
     parser.add_argument('--silent', action='store_true',
                         help='capture and suppress output on stdout')
     parser.add_argument('--no-scoring', action='store_true', dest='no_scoring',
-                        help='skip the calculation of the zoops score')
+                        help='skip the calculation of the pwm performance score')
 
     args = parser.parse_args()
 
@@ -214,7 +214,7 @@ def run_peng(args, output_directory, run_scoring):
     else:
         patterns = peng_data["patterns"]
         for p in patterns:
-            p["zoops_score"] = "?"
+            p["zoops_score"] = float('nan')
 
     if args.meme_output_file:
         write_meme(peng_data, args.meme_output_file)
