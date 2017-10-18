@@ -330,12 +330,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 								encoding[i] = Alphabet::getCode( sequence[i] );
 
 								if( encoding[i] == 0 ){
-
-									std::cerr << "Warning: The FASTA file contains an undefined base: " <<
-											sequence[i] << " at sequence " << header << std::endl;
-
 									continue; // exclude undefined base from base counts
-
 								}
 								baseCounts[encoding[i]-1]++; // count base
 							}

@@ -315,19 +315,21 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     BasePattern* base_pattern = new BasePattern(pattern_length, strand, k, max_k, sequence_set, bg_model);
     size_t* pattern_counter = base_pattern->getPatternCounter();
 
-    std::vector<size_t> filtered_base_patterns;
-    base_pattern->filter_base_patterns(params.zscore_threshold, params.count_threshold, filtered_base_patterns);
+    auto selected_base_patterns = base_pattern->select_base_patterns(params.zscore_threshold, params.count_threshold,
+                                                                     strand == Strand::PLUS_STRAND, Global::filter_neighbors);
 
-    if (filtered_base_patterns.size() == 0) {
+    if (selected_base_patterns.size() == 0) {
       std::cout << "No overrepresented seed patterns found. Stopping." << std::endl;
       exit(15);
     }
+
+    base_pattern->print_patterns(selected_base_patterns);
 
     print_status("Optimizing base patterns");
     std::cout << std::endl;
 
     std::vector<IUPACPattern*> unoptimized_iupac_patterns;
-    optimize_iupac_patterns(params.opt_score_type, base_pattern, filtered_base_patterns,
+    optimize_iupac_patterns(params.opt_score_type, base_pattern, selected_base_patterns,
     						unoptimized_iupac_patterns, params.enrich_pseudocount_factor);
     std::cout << std::endl;
     print_status("Filtering degenerated IUPAC patterns");

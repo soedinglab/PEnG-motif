@@ -396,10 +396,12 @@ void BasePattern::count_patterns_single_strand(SequenceSet* sequence_set) {
   delete[] last_match_pos;
 }
 
-void BasePattern::filter_base_patterns(const float zscore_threshold,
+std::vector<size_t> BasePattern::select_base_patterns(const float zscore_threshold,
                                        const size_t count_threshold,
-                                       std::vector<size_t>& selected_patterns) {
+                                       bool single_stranded,
+                                       bool filter_neighbors) {
 
+  std::vector<size_t> selected_patterns;
   bool* seen_array = new bool[number_patterns];
   for(size_t i = 0; i < number_patterns; i++) {
     seen_array[i] = false;
@@ -414,33 +416,61 @@ void BasePattern::filter_base_patterns(const float zscore_threshold,
 
   for(size_t i = 0; i < number_patterns; i++) {
     size_t pattern = sorted_array[i];
-    if(pattern_zscore[pattern] < zscore_threshold) {
+    if (pattern_zscore[pattern] < zscore_threshold) {
       break;
     }
-    if(pattern_counter[pattern] < count_threshold) {
+    if (pattern_counter[pattern] < count_threshold) {
       continue;
     }
 
-    size_t rev_pattern = BasePattern::getRevCompId(pattern);
-    if(not seen_array[pattern] and not seen_array[rev_pattern]) {
-      selected_patterns.push_back(pattern);
-      seen_array[pattern] = true;
+    if (single_stranded) {
+      if (not seen_array[pattern]) {
+        selected_patterns.push_back(pattern);
+        seen_array[pattern] = true;
 
-      //iterate over neighbours and set to seen
-      for(size_t p = 0; p < pattern_length; p++) {
-        //mask nucleotide at position p of pattern
-        int c = BasePattern::getNucleotideAtPos(pattern, p);
-        size_t masked_neighbour = pattern - c * base_factors[p];
+        if (filter_neighbors) {
+          for (size_t p = 0; p < pattern_length; p++) {
+            //mask nucleotide at position p of pattern
+            int c = BasePattern::getNucleotideAtPos(pattern, p);
+            size_t masked_neighbour = pattern - c * base_factors[p];
 
-        //iterate over all possible nucleotides at position p
-        for(int c = 0; c < alphabet_size; c++) {
-          size_t neighbour = masked_neighbour + c * base_factors[p];
-          seen_array[neighbour] = true;
+            //iterate over all possible nucleotides at position p
+            for (int c = 0; c < alphabet_size; c++) {
+              size_t neighbour = masked_neighbour + c * base_factors[p];
+              seen_array[neighbour] = true;
+            }
+          }
+        }
+      }
+    } else {
+      size_t rev_pattern = BasePattern::getRevCompId(pattern);
+      if (not seen_array[pattern] and not seen_array[rev_pattern]) {
+        selected_patterns.push_back(pattern);
+        seen_array[pattern] = true;
+
+        if (filter_neighbors) {
+          //iterate over neighbours and set to seen
+          for (size_t p = 0; p < pattern_length; p++) {
+            //mask nucleotide at position p of pattern
+            int c = BasePattern::getNucleotideAtPos(pattern, p);
+            size_t masked_neighbour = pattern - c * base_factors[p];
+
+            //iterate over all possible nucleotides at position p
+            for (int c = 0; c < alphabet_size; c++) {
+              size_t neighbour = masked_neighbour + c * base_factors[p];
+              seen_array[neighbour] = true;
+            }
+          }
         }
       }
     }
   }
+    delete[] seen_array;
+    delete[] sorted_array;
+    return selected_patterns;
+}
 
+void BasePattern::print_patterns(std::vector<size_t> patterns) {
   std::cout
       << std::setw(15) << "pattern" << "\t"
       << std::setw(15) << "observed" << "\t"
@@ -448,17 +478,15 @@ void BasePattern::filter_base_patterns(const float zscore_threshold,
       << std::setw(15) << "zscore" << std::endl << std::endl;
 
   std::cout << std::fixed << std::setprecision(2);
-  for(auto pattern : selected_patterns) {
+  for(auto pattern : patterns) {
     std::cout
         << std::setw(15) << toString(pattern) << "\t"
         << std::setw(15) << pattern_counter[pattern] << "\t"
         << std::setw(15) << expected_counts[pattern] << "\t"
         << std::setw(15) << pattern_zscore[pattern] << std::endl;
   }
-
-  delete[] seen_array;
-  delete[] sorted_array;
 }
+
 
 float* BasePattern::getExpectedCounts() const {
   return expected_counts;

@@ -64,9 +64,12 @@ class BasePattern {
   float getOptimizationScore(const OPTIMIZATION_SCORE score_type, const size_t pattern, const size_t pseudo_expected_pattern_counts);
   size_t getLtot();
 
-  void filter_base_patterns(const float zscore_threshold,
+  std::vector<size_t> select_base_patterns(const float zscore_threshold,
                                   const size_t count_threshold,
-                                  std::vector<size_t>& selected_patterns);
+                                  bool single_stranded,
+                                  bool filter_neighbors);
+
+  void print_patterns(std::vector<size_t> patterns);
 
   // helper methods
   inline size_t add_letter_to_the_right(size_t kmer, size_t position, int letter) {

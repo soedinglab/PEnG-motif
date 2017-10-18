@@ -56,6 +56,8 @@ std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // backgrou
 int Global::verbosity = 2;            	              // verbosity
 int Global::nr_threads = 1;
 
+bool Global::filter_neighbors = true;
+
 void Global::init(int nargs, char* args[]){
   readArguments(nargs, args);
 
