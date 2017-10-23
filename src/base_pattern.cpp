@@ -479,7 +479,7 @@ void BasePattern::print_patterns(std::vector<size_t> patterns) {
   std::cout
       << std::setw(15) << "pattern" << "\t"
       << std::setw(15) << "observed" << "\t"
-      << std::setw(15) << "expected" << "\t"
+      << std::setw(15) << "enrichment" << "\t"
       << std::setw(15) << "zscore" << std::endl << std::endl;
 
   std::cout << std::fixed << std::setprecision(2);
@@ -487,7 +487,7 @@ void BasePattern::print_patterns(std::vector<size_t> patterns) {
     std::cout
         << std::setw(15) << toString(pattern) << "\t"
         << std::setw(15) << pattern_counter[pattern] << "\t"
-        << std::setw(15) << expected_counts[pattern] << "\t"
+        << std::setw(15) << (pattern_counter[pattern] / expected_counts[pattern]) << "\t"
         << std::setw(15) << pattern_zscore[pattern] << std::endl;
   }
 }
