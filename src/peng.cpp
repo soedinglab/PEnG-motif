@@ -312,7 +312,9 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
   //for(size_t pattern_length = params.max_pattern_length ; pattern_length <= params.max_pattern_length; pattern_length += 2) {
     print_status("Processing kmers of length " + std::to_string(pattern_length), false);
     print_status("Finding overrepresented kmers (base patterns)", false);
-    BasePattern* base_pattern = new BasePattern(pattern_length, strand, k, max_k, sequence_set, bg_model);
+    int current_k = std::min(static_cast<int>(pattern_length) - 1, k);
+    int current_k_max = std::min(static_cast<int>(pattern_length) - 1,  max_k);
+    BasePattern* base_pattern = new BasePattern(pattern_length, strand, current_k, current_k_max, sequence_set, bg_model);
     size_t* pattern_counter = base_pattern->getPatternCounter();
 
     auto selected_base_patterns = base_pattern->select_base_patterns(params.zscore_threshold, params.count_threshold,

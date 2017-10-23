@@ -257,7 +257,12 @@ void BasePattern::calculate_bg_probabilities(BackgroundModel* model, const int a
     for(int k_prime = 0; k_prime <= k; k_prime++) {
       joint_prob *= model->getV()[k_prime][get_bg_id(pattern, k_prime+1, k_prime)];
     }
-    calculate_bg_probability(background_model, alphabet_size, k, pattern_length - k - 1, pattern, joint_prob, pattern_bg_probs);
+    int remaining_shifts = pattern_length - k - 1;
+    if(remaining_shifts > 0)  {
+      calculate_bg_probability(background_model, alphabet_size, k, remaining_shifts, pattern, joint_prob, pattern_bg_probs);
+    } else {
+      pattern_bg_probs[pattern] = joint_prob;
+    }
   }
 }
 
