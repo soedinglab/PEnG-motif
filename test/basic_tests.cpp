@@ -3,10 +3,35 @@
 //
 
 #include "gtest/gtest.h"
-#include <math.h>
+#include "../src/shared/Alphabet.h"
+#include "../src/shared/SequenceSet.h"
 
 namespace {
-  TEST(BasicTests, logf_safety) {
-  ASSERT_FLOAT_EQ(sqrt(1024.0f), sqrt(1024.0));
+  class BasicTests : public ::testing::Test {
+  protected:
+
+    BasicTests() {
+      std::string alphabet_string = "STANDARD";
+      Alphabet::init(alphabet_string.c_str());
+      std::string default_sequences_fasta = "test/test_data/default_sequence_set.fa";
+
+      std::string empty_string = "";
+      default_sequence_set = new SequenceSet{default_sequences_fasta.c_str(), true, empty_string.c_str()};
+    }
+
+    virtual ~BasicTests() {
+      delete default_sequence_set;
+    }
+
+    virtual void SetUp() {}
+
+    virtual void TearDown() {}
+
+    SequenceSet* default_sequence_set;
+    const unsigned NUMBER_OF_SEQUENCES = 3;
+  };
+
+  TEST_F(BasicTests, check_read_sequences) {
+    ASSERT_EQ(default_sequence_set->getN(), NUMBER_OF_SEQUENCES);
   }
 }

@@ -22,6 +22,7 @@ namespace {
 
     virtual ~BasePatternTest() {
       delete default_sequence_set;
+      delete default_background_model;
     }
 
     virtual void SetUp() {}
@@ -43,6 +44,24 @@ namespace {
 
     size_t exp_CTGA = basepattern->add_letter_to_the_right(pattern_CTG, 3, 0);
     ASSERT_EQ(exp_CTGA, pattern_CTGA);
+    delete basepattern;
+  }
+
+  TEST_F(BasePatternTest, check_reverse_complement) {
+  BasePattern* basepattern = new BasePattern{4, Strand::BOTH_STRANDS, 2, 2, default_sequence_set, default_background_model};
+  size_t pattern_CTGA = 1 + 3*4 + 2*16 + 0*64;
+  size_t pattern_TCAG = 3 + 1*4 + 0*16 + 2*64;
+  auto revcmpl = basepattern->getRevCompId(pattern_CTGA);
+  ASSERT_EQ(revcmpl, pattern_TCAG);
+  delete basepattern;
+  }
+
+  TEST_F(BasePatternTest, check_fast_reverse_complement) {
+    BasePattern* basepattern = new BasePattern{4, Strand::BOTH_STRANDS, 2, 2, default_sequence_set, default_background_model};
+    size_t pattern_CTGA = 1 + 3*4 + 2*16 + 0*64;
+    size_t pattern_TCAG = 3 + 1*4 + 0*16 + 2*64;
+    auto revcmpl = basepattern->getFastRevCompId(pattern_CTGA);
+    ASSERT_EQ(revcmpl, pattern_TCAG);
     delete basepattern;
   }
 
