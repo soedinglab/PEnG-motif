@@ -29,6 +29,7 @@ public:
 	float bit_factor_merge_threshold;
 	bool adv_pwm;
 	unsigned minimum_processed_motifs;
+  bool filter_neighbors;
 };
 
 class Peng{

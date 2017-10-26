@@ -54,6 +54,7 @@ int main(int nargs, char **args) {
   params.adv_pwm = Global::useAdvPWM;
   params.enrich_pseudocount_factor = Global::enrich_pseudocount_factor;
   params.minimum_processed_motifs = Global::minimum_processed_motifs;
+  params.filter_neighbors = Global::filter_neighbors;
 
   peng.process(params, result);
 

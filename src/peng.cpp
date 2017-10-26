@@ -330,7 +330,7 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     size_t* pattern_counter = base_pattern->getPatternCounter();
 
     auto selected_base_patterns = base_pattern->select_base_patterns(params.zscore_threshold, params.count_threshold,
-                                                                     strand == Strand::PLUS_STRAND, Global::filter_neighbors);
+                                                                     strand == Strand::PLUS_STRAND, params.filter_neighbors);
 
     if (selected_base_patterns.size() == 0) {
       std::cout << "No overrepresented seed patterns found. Stopping." << std::endl;
