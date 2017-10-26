@@ -78,8 +78,12 @@ def main():
                         help='number of threads to be used for parallelization')
     parser.add_argument('--silent', action='store_true',
                         help='capture and suppress output on stdout')
-    parser.add_argument('--no-scoring', action='store_true', dest='no_scoring',
+    parser.add_argument('--no-scoring', action='store_true',
                         help='skip the calculation of the pwm performance score')
+    parser.add_argument('--no-neighbor-filtering', action='store_true',
+                        help='do not filter similar base patterns before running the optimization')
+    parser.add_argument('--minimum-processed-patterns', type=int, default=25,
+                        help='minimum number of iupac patterns that are selected for em optimization')
 
     args = parser.parse_args()
 
@@ -135,9 +139,12 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     command += ["-b", str(args.bit_factor_threshold)]
     command += ["--pseudo-counts", str(args.pseudo_counts)]
     command += ["--threads", str(args.number_threads)]
+    command += ['--minimum-processed-patterns', args.minimum_processed_patterns]
+    if args.no_neighbor_filtering:
+        command.append('--no-neighbor-filtering')
 
-    print(" ".join(command))
-    return command
+    print(" ".join(str(c) for c in command))
+    return [str(c) for c in command]
 
 
 # FDR -m 10 -k 0 --cvFold 1
