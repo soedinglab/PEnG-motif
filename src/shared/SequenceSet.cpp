@@ -361,7 +361,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 					if( line.find( ' ' ) != std::string::npos ){
 						// space character in sequence
 						std::cerr << "Error: FASTA sequence contains space character: " << sequenceFilepath_ << std::endl;
-						exit( -1 );
+						exit(1);
 					} else{
 						sequence += line;
 					}
@@ -369,7 +369,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 				} else{
 
 					std::cerr << "Error: Wrong FASTA format: " << sequenceFilepath_ << std::endl;
-					exit( -1 );
+					exit(1);
 				}
 			}
 		}
@@ -424,7 +424,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 	} else{
 
 		std::cerr << "Error: Cannot open FASTA file: " << sequenceFilepath_ << std::endl;
-		exit( -1 );
+		exit(1);
 	}
 
 	N_ = N;
@@ -449,5 +449,5 @@ int SequenceSet::readFASTA( bool revcomp ){
 int SequenceSet::readIntensities(){
 
 	std::cerr << "Error: SequenceSet::readIntensities() is not implemented so far." << std::endl;
-	exit( -1 );
+	exit(1);
 }

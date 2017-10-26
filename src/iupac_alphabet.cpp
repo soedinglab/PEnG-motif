@@ -12,7 +12,6 @@
 std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   {to_underlying(IUPAC_Alphabet::A),
     {
-        to_underlying(IUPAC_Alphabet::A),
         to_underlying(IUPAC_Alphabet::W),
         to_underlying(IUPAC_Alphabet::R),
         to_underlying(IUPAC_Alphabet::M),
@@ -21,7 +20,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::C),
       {
-          to_underlying(IUPAC_Alphabet::C),
           to_underlying(IUPAC_Alphabet::S),
           to_underlying(IUPAC_Alphabet::Y),
           to_underlying(IUPAC_Alphabet::M),
@@ -30,7 +28,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::G),
       {
-          to_underlying(IUPAC_Alphabet::G),
           to_underlying(IUPAC_Alphabet::S),
           to_underlying(IUPAC_Alphabet::R),
           to_underlying(IUPAC_Alphabet::K),
@@ -39,7 +36,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::T),
       {
-          to_underlying(IUPAC_Alphabet::T),
           to_underlying(IUPAC_Alphabet::W),
           to_underlying(IUPAC_Alphabet::Y),
           to_underlying(IUPAC_Alphabet::K),
@@ -48,7 +44,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::S),
       {
-          to_underlying(IUPAC_Alphabet::S),
           to_underlying(IUPAC_Alphabet::C),
           to_underlying(IUPAC_Alphabet::G),
           to_underlying(IUPAC_Alphabet::R),
@@ -60,7 +55,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::W),
       {
-          to_underlying(IUPAC_Alphabet::W),
           to_underlying(IUPAC_Alphabet::A),
           to_underlying(IUPAC_Alphabet::T),
           to_underlying(IUPAC_Alphabet::R),
@@ -72,7 +66,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::R),
       {
-          to_underlying(IUPAC_Alphabet::R),
           to_underlying(IUPAC_Alphabet::A),
           to_underlying(IUPAC_Alphabet::G),
           to_underlying(IUPAC_Alphabet::S),
@@ -84,7 +77,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::Y),
       {
-          to_underlying(IUPAC_Alphabet::Y),
           to_underlying(IUPAC_Alphabet::C),
           to_underlying(IUPAC_Alphabet::T),
           to_underlying(IUPAC_Alphabet::S),
@@ -96,7 +88,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::M),
       {
-          to_underlying(IUPAC_Alphabet::M),
           to_underlying(IUPAC_Alphabet::A),
           to_underlying(IUPAC_Alphabet::C),
           to_underlying(IUPAC_Alphabet::S),
@@ -108,7 +99,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::K),
       {
-          to_underlying(IUPAC_Alphabet::K),
           to_underlying(IUPAC_Alphabet::G),
           to_underlying(IUPAC_Alphabet::T),
           to_underlying(IUPAC_Alphabet::S),
@@ -120,7 +110,6 @@ std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
   },
   {to_underlying(IUPAC_Alphabet::N),
       {
-          to_underlying(IUPAC_Alphabet::N),
           to_underlying(IUPAC_Alphabet::A),
           to_underlying(IUPAC_Alphabet::C),
           to_underlying(IUPAC_Alphabet::G),

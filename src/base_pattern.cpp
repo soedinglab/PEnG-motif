@@ -21,6 +21,7 @@ BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, con
   strand = s;
 
   this->init(pattern_length);
+  init_half_reverse_complements();
 
   //init counter for patterns
   number_patterns = pow(Alphabet::getSize(), pattern_length);
@@ -41,6 +42,9 @@ BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, con
     this->pattern_bg_probabilities[background] = new float[number_patterns];
     calculate_bg_probabilities(bg, alphabet_size, background, pattern_bg_probabilities[background]);
   }
+  if(strand == Strand::BOTH_STRANDS){
+    aggregate_double_strand_background();
+  }
 
   expected_counts = new float[number_patterns];
   ltot = 0;
@@ -51,7 +55,6 @@ BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, con
     count_patterns_single_strand(sequence_set);
     calculate_expected_counts_single_stranded();
   }
-
   calculate_log_pvalues();
   calculate_zscores();
 }
@@ -67,9 +70,27 @@ BasePattern::~BasePattern() {
   delete[] pattern_logp;
   delete[] pattern_zscore;
   delete[] expected_counts;
+  delete[] half_revcomp;
   //do not delete bg_model
 }
 
+void BasePattern::init_half_reverse_complements() {
+  size_t half_pattern_length = pattern_length / 2;
+  half_revcomp = new unsigned[factor[half_pattern_length]];
+
+  for(unsigned pattern_id = 0; pattern_id < factor[half_pattern_length]; pattern_id++) {
+    unsigned rev_pattern_id = 0;
+    for(int p = 0; p < half_pattern_length; p++) {
+      int c = BasePattern::getNucleotideAtPos(pattern_id, p);
+      //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
+      //-1; to get back to our encoding (without 'other')
+      //reverse pattern order factor[pattern_length - 1 - p]
+      //reverse nucleotides Alphabet::getComplementCode
+      rev_pattern_id += (Alphabet::getComplementCode(c + 1) - 1) * factor[half_pattern_length - 1 - p];
+    }
+    half_revcomp[pattern_id] = rev_pattern_id;
+  }
+}
 void BasePattern::init(size_t pattern_length) {
   BasePattern::pattern_length = pattern_length;
 
@@ -106,6 +127,16 @@ size_t BasePattern::getRevCompId(const size_t pattern_id) {
   }
 
   return rev_pattern_id;
+}
+
+
+size_t BasePattern::getFastRevCompId(const size_t pattern_id) {
+  size_t half_pattern_length = pattern_length / 2;
+  size_t first_half = pattern_id % factor[half_pattern_length];
+  size_t second_half = pattern_id / factor[half_pattern_length];
+  size_t rev_comp = half_revcomp[second_half];
+  rev_comp += half_revcomp[first_half] * factor[half_pattern_length];
+  return rev_comp;
 }
 
 int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos) {
@@ -232,7 +263,7 @@ void BasePattern::calculate_zscores() {
 void BasePattern::calculate_expected_counts() {
   #pragma omp parallel for schedule(static)
   for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
-    if(pattern == BasePattern::getRevCompId(pattern)) {
+    if(pattern == BasePattern::getFastRevCompId(pattern)) {
       expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * ltot;
     } else {
       expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * 2 * ltot;
@@ -245,6 +276,24 @@ void BasePattern::calculate_expected_counts_single_stranded() {
   for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
       expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * ltot;
   }
+}
+
+
+void BasePattern::aggregate_double_strand_background() {
+  #pragma omp parallel for schedule(static)
+  for(int k = 0; k < std::max(this->k, max_k); k++) {
+    for(size_t pattern = 0; pattern < number_patterns; pattern++) {
+      size_t reverse_compl = getFastRevCompId(pattern);
+      if(pattern < reverse_compl) {
+        pattern_bg_probabilities[k][pattern] += pattern_bg_probabilities[k][reverse_compl];
+      } else if(pattern > reverse_compl) {
+        pattern_bg_probabilities[k][pattern] = pattern_bg_probabilities[k][reverse_compl];
+      } else {
+        // these are palindromes - no aggregation required here
+      }
+    }
+  }
+
 }
 
 void BasePattern::calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k, float* pattern_bg_probs) {
@@ -313,7 +362,7 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
         id += base_factors[p] * (seq[i] - 1); // -1 since the alphabet starts at 1
       }
       if (p < pattern_length) continue; // for loop was terminated because seq[i] == 0 or i == length => go to next i
-      idrev = BasePattern::getRevCompId(id);
+      idrev = BasePattern::getFastRevCompId(id);
       // At this position, i points to character directly right of current pattern id => L - 1 - i in rev complement seq
       irev = length - 1 - i; // next character **left** of current pattern idrev in rev complement sequence
 
@@ -347,8 +396,8 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
 
   // store a second copy of the counts at the reverse complement id to allow fast lookup
   for (size_t kmer_id = 0; kmer_id < base_factors[pattern_length]; kmer_id++) {
-    auto rc_kmer_id = BasePattern::getRevCompId(kmer_id);
-    if(kmer_id > BasePattern::getRevCompId(rc_kmer_id)) {
+    auto rc_kmer_id = BasePattern::getFastRevCompId(kmer_id);
+    if(kmer_id > BasePattern::getFastRevCompId(rc_kmer_id)) {
       pattern_counter[kmer_id] = pattern_counter[rc_kmer_id];
     }
   }
@@ -448,7 +497,7 @@ std::vector<size_t> BasePattern::select_base_patterns(const float zscore_thresho
         }
       }
     } else {
-      size_t rev_pattern = BasePattern::getRevCompId(pattern);
+      size_t rev_pattern = BasePattern::getFastRevCompId(pattern);
       if (not seen_array[pattern] and not seen_array[rev_pattern]) {
         selected_patterns.push_back(pattern);
         seen_array[pattern] = true;
@@ -492,9 +541,24 @@ void BasePattern::print_patterns(std::vector<size_t> patterns) {
   }
 }
 
+std::vector<size_t> BasePattern::generate_double_stranded_em_optimization_patterns() {
+  std::vector<size_t> patterns{};
+  for(size_t pattern = 0; pattern < number_patterns; pattern++) {
+    size_t reverse_compl = getFastRevCompId(pattern);
+    if(pattern <= reverse_compl) {
+      patterns.push_back(pattern);
+    }
+  }
+  return patterns;
+}
+
 
 float* BasePattern::getExpectedCounts() const {
   return expected_counts;
+}
+
+Strand BasePattern::getStrand() const {
+  return strand;
 }
 
 

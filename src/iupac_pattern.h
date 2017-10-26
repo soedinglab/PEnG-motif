@@ -12,7 +12,9 @@
 #include <string>
 #include <vector>
 #include "Global.h"
-#include "base_pattern.h"
+
+
+class BasePattern;
 
 static const int MIN_MERGE_OVERLAP = 6;
 
@@ -85,6 +87,10 @@ class IUPACPattern {
   bool operator<(const IUPACPattern& rhs) const;
 
   std::vector<size_t> generate_base_patterns(BasePattern* basepatterns, size_t iupac_pattern);
+
+  unsigned long count_combined_occurences(BasePattern*, size_t iupac_pattern);
+  std::vector<size_t> basepatterns_from_iupac_single_stranded(BasePattern*, size_t iupac_pattern);
+  std::vector<size_t> basepatterns_from_iupac_double_stranded(BasePattern*, size_t iupac_pattern);
 
   static void find_base_patterns(BasePattern* base_pattern, const size_t pattern, const size_t pattern_length, std::vector<size_t>& base_patterns);
 

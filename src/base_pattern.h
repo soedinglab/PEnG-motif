@@ -13,6 +13,7 @@
 #include "shared/SequenceSet.h"
 #include "shared/Alphabet.h"
 #include "shared/BackgroundModel.h"
+#include "iupac_pattern.h"
 #include "Global.h"
 
 
@@ -27,6 +28,9 @@
     Pattern: "ATGC" <-> id: 0*a^0 + 3*a^1 + 2*a^2 + 1*a^3
 */
 class BasePattern {
+
+  friend class IUPACPattern;
+
  public:
   //default de-/constructor
   BasePattern(const size_t pattern_length, Strand s, const int k, const int max_k,
@@ -47,6 +51,7 @@ class BasePattern {
 
   //get pattern id of reverse complementary pattern
   size_t getRevCompId(const size_t pattern_id);
+  size_t getFastRevCompId(const size_t pattern_id);
 
   //get nucleotide id of pattern at pos
   int getNucleotideAtPos(const size_t pattern, const size_t pos);
@@ -68,6 +73,8 @@ class BasePattern {
                                   const size_t count_threshold,
                                   bool single_stranded,
                                   bool filter_neighbors);
+
+  std::vector<size_t> generate_double_stranded_em_optimization_patterns();
 
   void print_patterns(std::vector<size_t> patterns);
 
@@ -107,13 +114,22 @@ class BasePattern {
   float* pattern_zscore;
   float* expected_counts;
 
+  unsigned* half_revcomp;
+
   size_t number_patterns;
   int max_k;
   int k;
+public:
+  Strand getStrand() const;
+
+private:
   Strand strand;
   int alphabet_size;
   size_t n_sequences;
   size_t ltot;
+
+  void init_half_reverse_complements();
+  void aggregate_double_strand_background();
 
   void count_patterns(SequenceSet* sequence_set);
   void count_patterns_single_strand(SequenceSet* sequence_set);

@@ -31,7 +31,7 @@ namespace {
     const unsigned NUMBER_OF_SEQUENCES = 3;
   };
 
-  TEST_F(BasicTests, check_read_sequences) {
-    ASSERT_EQ(default_sequence_set->getN(), NUMBER_OF_SEQUENCES);
-  }
+  //TEST_F(BasicTests, check_read_sequences) {
+  //  ASSERT_EQ(default_sequence_set->getN(), NUMBER_OF_SEQUENCES);
+  //}
 }

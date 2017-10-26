@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <limits>
+#include <assert.h>
 #include "shared/Alphabet.h"
 #include "iupac_pattern.h"
 #include "iupac_alphabet.h"
@@ -344,26 +345,119 @@ void IUPACPattern::set_optimization_bg_model_order(int order) {
   optimization_bg_model_order = order;
 }
 
-void IUPACPattern::aggregate_attributes_from_basepatterns(BasePattern* base_pattern) {
+std::vector<size_t> IUPACPattern::basepatterns_from_iupac_double_stranded(BasePattern* base_patterns, size_t iupac_pattern) {
+  std::vector<size_t> result;
+  size_t required_size = 1;
+  for(size_t pos = 0; pos < base_patterns->getPatternLength(); pos++) {
+    auto iupac_letter = IUPACPattern::getNucleotideAtPos(iupac_pattern, pos);
+    auto letters = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_letter);
+    required_size *= letters.size();
+  }
+  result.reserve(required_size);
+
+  std::vector<size_t> kmer_stack{};
+  std::vector<int> size_stack{};
+
+  kmer_stack.push_back(0);
+  size_stack.push_back(0);
+  while(kmer_stack.size() > 0) {
+    auto kmer = kmer_stack.back();
+    kmer_stack.pop_back();
+    auto pos = size_stack.back();
+    size_stack.pop_back();
+
+    while(pos < static_cast<int>(pattern_length)) {
+      int next_iupac_letter = IUPACPattern::getNucleotideAtPos(iupac_pattern, pos);
+      auto letters = IUPACAlphabet::get_representative_iupac_nucleotides(next_iupac_letter);
+      if (letters.size() > 1) {
+        for(auto it = letters.begin() + 1; it != letters.end(); ++it) {
+          kmer_stack.push_back(base_patterns->add_letter_to_the_right(kmer, pos, *it));
+          size_stack.push_back(pos + 1);
+        }
+      }
+      kmer = base_patterns->add_letter_to_the_right(kmer, pos, letters[0]);
+      pos++;
+    }
+    result.push_back(std::min(base_patterns->getFastRevCompId(kmer), kmer));
+  }
+  assert(required_size == result.size());
+  std::sort(result.begin(), result.end());
+  return result;
+}
+
+std::vector<size_t> IUPACPattern::basepatterns_from_iupac_single_stranded(BasePattern* base_patterns, size_t iupac_pattern){
+  std::vector<size_t> result;
+  size_t required_size = 1;
+  for(size_t pos = 0; pos < base_patterns->getPatternLength(); pos++) {
+    auto iupac_letter = IUPACPattern::getNucleotideAtPos(iupac_pattern, pos);
+    auto letters = IUPACAlphabet::get_representative_iupac_nucleotides(iupac_letter);
+    required_size *= letters.size();
+  }
+  result.reserve(required_size);
+
+  std::vector<size_t> kmer_stack{};
+  std::vector<int> size_stack{};
+
+  kmer_stack.push_back(0);
+  size_stack.push_back(0);
+  while(kmer_stack.size() > 0) {
+    auto kmer = kmer_stack.back();
+    kmer_stack.pop_back();
+    auto pos = size_stack.back();
+    size_stack.pop_back();
+
+    while(pos < static_cast<int>(pattern_length)) {
+      int next_iupac_letter = IUPACPattern::getNucleotideAtPos(iupac_pattern, pos);
+      auto letters = IUPACAlphabet::get_representative_iupac_nucleotides(next_iupac_letter);
+      if (letters.size() > 1) {
+        for(auto it = letters.begin() + 1; it != letters.end(); ++it) {
+          kmer_stack.push_back(base_patterns->add_letter_to_the_right(kmer, pos, *it));
+          size_stack.push_back(pos + 1);
+        }
+      }
+      kmer = base_patterns->add_letter_to_the_right(kmer, pos, letters[0]);
+      pos++;
+    }
+    result.push_back(kmer);
+  }
+  assert(required_size == result.size());
+  return result;
+}
+
+void IUPACPattern::aggregate_attributes_from_basepatterns(BasePattern* base_patterns) {
 
   if(!merged) {
-    base_patterns = generate_base_patterns(base_pattern, pattern);
-    //works just for unmerged iupac patterns; iupac patterns need to have the same same size as the base_patterns
-    int bg_order = base_pattern->getBackgroundOrder();
-    float* base_background_prob = base_pattern->getBackgroundProb(bg_order);
-    size_t* base_pattern_counts = base_pattern->getPatternCounter();
-    float* base_pattern_exp = base_pattern->getExpectedCounts();
 
-    // aggregate over base patterns
-    float sum_backgroud_prob = 0;
-    int sum_counts = 0;
-    float sum_expected = 0;
-    for (auto p: this->base_patterns) {
-      sum_backgroud_prob += base_background_prob[p];
-      sum_counts += base_pattern_counts[p];
-      sum_expected += base_pattern_exp[p];
+    // reserve the required space to avoid memory reallocation
+    std::vector<size_t> underlying_patterns;
+    if(base_patterns->strand == Strand::PLUS_STRAND) {
+      underlying_patterns = basepatterns_from_iupac_single_stranded(base_patterns, pattern);
+    } else {
+      underlying_patterns = basepatterns_from_iupac_double_stranded(base_patterns, pattern);
+    }
+    // once we counted a pattern, we must not count its reverse complement
+    // this is done by deleting duplicates from the vector
+    int bg_order = base_patterns->getBackgroundOrder();
+    float* base_background_prob = base_patterns->getBackgroundProb(bg_order);
+    size_t* base_pattern_counts = base_patterns->getPatternCounter();
+    float* base_pattern_exp = base_patterns->getExpectedCounts();
+
+    auto last_pattern = underlying_patterns.at(0);
+    float sum_backgroud_prob =  base_background_prob[last_pattern];
+    unsigned long sum_counts = base_pattern_counts[last_pattern];
+    float sum_expected = base_pattern_exp[last_pattern];
+
+    for(auto it = underlying_patterns.begin() + 1; it != underlying_patterns.end(); ++it) {
+      auto this_pattern = *it;
+      if(last_pattern != this_pattern) {
+        sum_backgroud_prob += base_background_prob[this_pattern];
+        sum_counts += base_pattern_counts[this_pattern];
+        sum_expected += base_pattern_exp[this_pattern];
+      }
+      last_pattern = this_pattern;
     }
 
+    assert(sum_backgroud_prob >= 0 and sum_backgroud_prob <= 1);
     this->bg_p = sum_backgroud_prob;
     this->expected_counts = sum_expected;
     this->zscore = (sum_counts - sum_expected) / sqrt(sum_expected);
@@ -443,19 +537,9 @@ void IUPACPattern::calculate_adv_pwm(BasePattern* base_pattern, const int pseudo
 
       for(int i = 0; i < 4; i++) {
         size_t ipattern = pattern - c * IUPACPattern::iupac_factor[p] + i * IUPACPattern::iupac_factor[p];
-        auto i_base_patterns = generate_base_patterns(base_pattern, ipattern);
 
         i_total[i] = pseudo_counts * background_model[i];
-        for(auto base : i_base_patterns) {
-          i_total[i] += pattern_counter[base];
-
-          // pretend that palindromes have been counted twice
-          // this hack prevents underestimating the influence of palindromic base patterns
-          if(base_pattern->getRevCompId(base) == base) {
-            i_total[i] += pattern_counter[base];
-          }
-        }
-
+        i_total[i] += count_combined_occurences(base_pattern, ipattern);
         n_total += i_total[i];
       }
 
@@ -732,6 +816,41 @@ std::vector<size_t> IUPACPattern::generate_base_patterns(BasePattern* basepatter
     result.push_back(kmer);
   }
   return result;
+}
+
+unsigned long IUPACPattern::count_combined_occurences(BasePattern* base_patterns, size_t iupac_pattern) {
+
+  std::vector<size_t> underlying_patterns;
+  unsigned long total_counts;
+  if(base_patterns->strand == Strand::PLUS_STRAND) {
+    underlying_patterns = basepatterns_from_iupac_single_stranded(base_patterns, iupac_pattern);
+    total_counts = 0;
+    for(auto pattern : underlying_patterns) {
+        total_counts += base_patterns->pattern_counter[pattern];
+    }
+  } else {
+    underlying_patterns = basepatterns_from_iupac_double_stranded(base_patterns, iupac_pattern);
+
+    // once we counted a pattern, we must not count its reverse complement
+    // this is done by deleting duplicates from the vector
+
+    auto last_pattern = underlying_patterns.at(0);
+    total_counts = base_patterns->pattern_counter[last_pattern];
+    for (auto it = underlying_patterns.begin() + 1; it != underlying_patterns.end(); ++it) {
+      auto this_pattern = *it;
+      if (last_pattern != this_pattern) {
+        // due to the way the advanced pwm are calculated, we have to weight palindromic base pattern
+        // counts twice as much as non-palindromic base patterns
+        if (this_pattern == base_patterns->getFastRevCompId(this_pattern)) {
+          total_counts += 2 * base_patterns->pattern_counter[this_pattern];
+        } else {
+          total_counts += base_patterns->pattern_counter[this_pattern];
+        }
+      }
+      last_pattern = this_pattern;
+    }
+  }
+  return total_counts;
 }
 
 bool IUPACPattern::operator <(const IUPACPattern &rhs) const {

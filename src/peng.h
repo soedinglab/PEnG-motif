@@ -6,6 +6,7 @@
 #include "shared/BackgroundModel.h"
 #include <set>
 #include <array>
+#include <vector>
 #include <tuple>
 #include "iupac_pattern.h"
 #include "Global.h"
@@ -27,6 +28,7 @@ public:
 	bool use_merging;
 	float bit_factor_merge_threshold;
 	bool adv_pwm;
+	unsigned minimum_processed_motifs;
 };
 
 class Peng{
@@ -55,6 +57,7 @@ class Peng{
   int alphabet_size;
   size_t n_sequences;
   Strand strand;
+	std::vector<size_t> all_em_optimization_patterns;
 
 
   void optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,
@@ -63,7 +66,7 @@ class Peng{
                                std::vector<IUPACPattern*>& best_iupac_patterns,
 							   float enrich_pseudocount_factor);
 
-  void filter_iupac_patterns(const size_t pattern_length, std::vector<IUPACPattern*>& iupac_patterns);
+  void filter_iupac_patterns(const size_t pattern_length, unsigned minimum_retained_motifs, std::vector<IUPACPattern*>& iupac_patterns);
 
   void merge_iupac_patterns(const size_t pattern_length, const float bit_factor_merge_threshold,
                             BackgroundModel* bg, std::vector<IUPACPattern*>& iupac_patterns);
