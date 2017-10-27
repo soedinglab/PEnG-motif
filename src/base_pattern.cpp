@@ -19,6 +19,7 @@ BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, con
   this->pattern_length = pattern_length;
   alphabet_size = Alphabet::getSize();
   strand = s;
+  background_model = bg;
 
   this->init(pattern_length);
   init_half_reverse_complements();
@@ -46,15 +47,17 @@ BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, con
     aggregate_double_strand_background();
   }
 
-  expected_counts = new float[number_patterns];
-  ltot = 0;
   if(this->strand == Strand::BOTH_STRANDS) {
     count_patterns(sequence_set);
-    calculate_expected_counts();
   } else {
     count_patterns_single_strand(sequence_set);
-    calculate_expected_counts_single_stranded();
   }
+  expected_counts = new float[number_patterns];
+  calculate_expected_counts();
+
+  //if(this->strand == Strand::PLUS_STRAND) {
+  //  correct_counts();
+  //}
   calculate_log_pvalues();
   calculate_zscores();
 }
@@ -263,25 +266,14 @@ void BasePattern::calculate_zscores() {
 void BasePattern::calculate_expected_counts() {
   #pragma omp parallel for schedule(static)
   for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
-    if(pattern == BasePattern::getFastRevCompId(pattern)) {
-      expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * ltot;
-    } else {
-      expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * 2 * ltot;
-    }
-  }
-}
-
-void BasePattern::calculate_expected_counts_single_stranded() {
-  #pragma omp parallel for schedule(static)
-  for(size_t pattern = 0; pattern < this->number_patterns; pattern++) {
-      expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * ltot;
+    expected_counts[pattern] = pattern_bg_probabilities[k][pattern] * ltot;
   }
 }
 
 
 void BasePattern::aggregate_double_strand_background() {
   #pragma omp parallel for schedule(static)
-  for(int k = 0; k < std::max(this->k, max_k); k++) {
+  for(int k = 0; k <= std::max(this->k, max_k); k++) {
     for(size_t pattern = 0; pattern < number_patterns; pattern++) {
       size_t reverse_compl = getFastRevCompId(pattern);
       if(pattern < reverse_compl) {
@@ -308,7 +300,8 @@ void BasePattern::calculate_bg_probabilities(BackgroundModel* model, const int a
     }
     int remaining_shifts = pattern_length - k - 1;
     if(remaining_shifts > 0)  {
-      calculate_bg_probability(background_model, alphabet_size, k, remaining_shifts, pattern, joint_prob, pattern_bg_probs);
+      calculate_bg_probability(background_model, alphabet_size, k, remaining_shifts, pattern, joint_prob,
+                               pattern_bg_probs, pattern_length);
     } else {
       pattern_bg_probs[pattern] = joint_prob;
     }
@@ -318,7 +311,8 @@ void BasePattern::calculate_bg_probabilities(BackgroundModel* model, const int a
 void BasePattern::calculate_bg_probability(float* background_model, const int alphabet_size,
                                          const int k,
                                          int remaining_shifts, size_t pattern,
-                                         float cur_prob, float* final_probabilities) {
+                                         float cur_prob, float* final_probabilities, size_t pattern_length) {
+
   remaining_shifts--;
   size_t* base_factors = BasePattern::getFactors();
   for(int c = 0; c < Alphabet::getSize(); c++) {
@@ -331,7 +325,7 @@ void BasePattern::calculate_bg_probability(float* background_model, const int al
     }
     else{
       calculate_bg_probability(background_model, alphabet_size, k, remaining_shifts,
-                           extended_pattern, extended_pattern_prob, final_probabilities);
+                           extended_pattern, extended_pattern_prob, final_probabilities, pattern_length);
     }
   }
 }
@@ -341,6 +335,7 @@ void BasePattern::calculate_bg_probability(float* background_model, const int al
 //shift over characters not in the alphabet (seq[i] == 0)
 
 void BasePattern::count_patterns(SequenceSet* sequence_set) {
+  ltot = 0;
   std::vector<Sequence*> sequences = sequence_set->getSequences();
   size_t* base_factors = BasePattern::getFactors();
   unsigned int* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
@@ -404,6 +399,7 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
 }
 
 void BasePattern::count_patterns_single_strand(SequenceSet* sequence_set) {
+  ltot = 0;
   std::vector<Sequence*> sequences = sequence_set->getSequences();
   size_t* base_factors = BasePattern::getFactors();
   unsigned int* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
@@ -552,6 +548,64 @@ std::vector<size_t> BasePattern::generate_double_stranded_em_optimization_patter
   return patterns;
 }
 
+auto BasePattern::generate_pattern_corrections(unsigned order, bool* already_corrected_patterns, float* bg_probs) {
+  std::vector<size_t> patterns;
+  std::vector<float> factors;
+  for(size_t sub_pattern = 0; sub_pattern < factor[order]; sub_pattern++) {
+    size_t final_pattern = sub_pattern;
+    int n_shifts = pattern_length / order - 1;
+    for(int i = 0; i  < n_shifts; i++) {
+      final_pattern = sub_pattern + final_pattern * factor[order];
+    }
+    if(!already_corrected_patterns[final_pattern]) {
+      patterns.push_back(final_pattern);
+      size_t context = final_pattern / factor[pattern_length - k];
+      size_t bg_query_pattern = context + sub_pattern * factor[k];
+      factors.push_back(bg_probs[bg_query_pattern]);
+      already_corrected_patterns[final_pattern] = true;
+    }
+  }
+  return std::make_pair(std::move(patterns), std::move(factors));
+}
+
+void BasePattern::correct_counts() {
+  bool* already_corrected_patterns = new bool[number_patterns]{false};
+  for(int order = 1; order <= pattern_length / 2; order++) {
+    if(pattern_length % order == 0) {
+      std::unique_ptr<float[]> bg_probs = generate_correction_bg_probs(order, background_model);
+      auto result = generate_pattern_corrections(order, already_corrected_patterns, bg_probs.get());
+      auto patterns = result.first;
+      auto correction_terms = result.second;
+      for(size_t i = 0; i < patterns.size(); i++) {
+        auto pattern = patterns[i];
+        auto correction_term = correction_terms[i];
+        pattern_counter[pattern] += expected_counts[pattern] * correction_term;
+      }
+    }
+  }
+  delete[] already_corrected_patterns;
+}
+
+std::unique_ptr<float[]> BasePattern::generate_correction_bg_probs(int order, BackgroundModel* bg_model) {
+  // calculate the conditional probabilities of p(context|x), where the length of x is stored in order
+  size_t kmer_length = k + order;
+  std::unique_ptr<float[]> bg_probs = std::unique_ptr<float[]>{new float[factor[kmer_length]]};
+  float* background_model = bg_model->getV()[k];
+
+  size_t nr_initial_mers = pow(alphabet_size, k+1);
+  #pragma omp parallel for schedule(dynamic, 1)
+  for(size_t pattern = 0; pattern < nr_initial_mers; pattern++) {
+    float initial_prob = background_model[get_bg_id(pattern, k+1)];
+    int remaining_shifts = kmer_length - k - 1;
+    if(remaining_shifts > 0)  {
+      calculate_bg_probability(background_model, alphabet_size, k, remaining_shifts, pattern, initial_prob,
+                               bg_probs.get(), kmer_length);
+    } else {
+      bg_probs[pattern] = initial_prob;
+    }
+  }
+  return bg_probs;
+}
 
 float* BasePattern::getExpectedCounts() const {
   return expected_counts;

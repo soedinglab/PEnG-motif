@@ -75,6 +75,8 @@ class BasePattern {
                                   bool filter_neighbors);
 
   std::vector<size_t> generate_double_stranded_em_optimization_patterns();
+  std::unique_ptr<float[]> generate_correction_bg_probs(int order, BackgroundModel* model);
+  auto generate_pattern_corrections(unsigned order, bool* seen_patterns, float* bg_probs);
 
   void print_patterns(std::vector<size_t> patterns);
 
@@ -84,7 +86,7 @@ class BasePattern {
     return kmer;
   }
 
-  inline size_t get_bg_id(const size_t pattern, const int curr_pattern_length, const int k) {
+  inline size_t get_bg_id(const size_t pattern, const int pattern_length, const int k) {
 
     /* this method extracts the rightmost (k+1)-mer from a kmer in PEnG representation
      * and returns its numerical value in BaMM representation
@@ -94,11 +96,15 @@ class BasePattern {
     */
     size_t k_mer_pattern = 0;
     size_t* base_factors = BasePattern::getFactors();
-    for(int i = curr_pattern_length - k - 1; i < curr_pattern_length; i++) {
+    for(int i = pattern_length - k - 1; i < pattern_length; i++) {
       int c = BasePattern::getNucleotideAtPos(pattern, i);
-      k_mer_pattern += c * base_factors[curr_pattern_length - i - 1];
+      k_mer_pattern += c * base_factors[pattern_length - i - 1];
     }
     return k_mer_pattern;
+  }
+
+  inline size_t get_bg_id(const size_t pattern, const int pattern_length) {
+    return get_bg_id(pattern, pattern_length, pattern_length - 1);
   }
 
  private:
@@ -113,6 +119,7 @@ class BasePattern {
   float* pattern_logp;
   float* pattern_zscore;
   float* expected_counts;
+  BackgroundModel* background_model;
 
   unsigned* half_revcomp;
 
@@ -136,12 +143,13 @@ private:
   void calculate_bg_probabilities(BackgroundModel* model, const int alphabet_size, const int k, float* pattern_bg_probs);
   void calculate_bg_probability(float* background_model, const int alphabet_size,
                             const int k, int missing_pattern_length, size_t cur_pattern,
-                            float cur_prob, float* final_probabilities);
+                            float cur_prob, float* final_probabilities, size_t pattern_length);
   void calculate_log_pvalues();
   void calculate_zscores();
   void calculate_expected_counts();
   void calculate_expected_counts_single_stranded();
   float getMutualInformationScore(size_t pattern);
+  void correct_counts();
 
 };
 

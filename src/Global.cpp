@@ -64,8 +64,6 @@ void Global::init(int nargs, char* args[]){
 
   Alphabet::init(alphabetType);
 
-  bool is_single_stranded = strand == Strand::PLUS_STRAND;
-
   // reverse complements are dealt with in peng directly. We read in single stranded sequences either way.
   inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
@@ -77,7 +75,7 @@ void Global::init(int nargs, char* args[]){
     currBackgroundSequenceFilename = inputSequenceFilename;
   }
 
-  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, is_single_stranded);
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, true);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -106,6 +104,10 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       patternLength = std::stoi(args[i]);
+      if(patternLength % 2 == 1) {
+        LOG(ERROR) << "Due to optimizations the pattern length has to be a multiple of 2" << std::endl;
+        exit(4);
+      }
     }
     else if (!strcmp(args[i], "--background-sequences")) {
       if (++i>=nargs) {

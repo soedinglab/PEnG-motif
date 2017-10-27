@@ -177,8 +177,11 @@ def run_peng(args, output_directory, run_scoring):
         stdout = None
 
     # run peng
-    peng_command_line = build_peng_command(args, args.fasta_file, peng_output_file, peng_json_file)
-    subprocess.run(peng_command_line, check=True, stdout=stdout)
+    peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
+    result = subprocess.run(peng_command_line, stdout=stdout)
+
+    if result.returncode != 0:
+        sys.exit(result.returncode)
 
     with open(peng_json_file) as fh:
         peng_data = json.load(fh)
