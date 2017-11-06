@@ -289,31 +289,14 @@ float IUPACPattern::calculate_merged_pvalue(IUPACPattern* longer_pattern, IUPACP
 }
 
 void IUPACPattern::normalize_pwm(const int pattern_length, float** pwm) {
-  const float rounding_threshold = 0.0001;
   //normalize new pwm
   for(int p = 0; p < pattern_length; p++) {
     //normalize between 0 and one -- especially necessary for em optimization
     float sum = 0;
-    for(int a = 0; a < 4; a++) {
+    for (int a = 0; a < 4; a++) {
       sum += pwm[p][a];
     }
-    for(int a = 0; a < 4; a++) {
-      pwm[p][a] /= sum;
-    }
-
-    //get rid of too small values
-    for(int a = 0; a < 4; a++) {
-      if(pwm[p][a] < rounding_threshold) {
-        pwm[p][a] = 0.0;
-      }
-    }
-
-    //re-normalize again
-    sum = 0;
-    for(int a = 0; a < 4; a++) {
-      sum += pwm[p][a];
-    }
-    for(int a = 0; a < 4; a++) {
+    for (int a = 0; a < 4; a++) {
       pwm[p][a] /= sum;
     }
   }

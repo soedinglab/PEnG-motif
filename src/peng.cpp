@@ -12,6 +12,7 @@
 #include "base_pattern.h"
 #include "peng.h"
 #include "helper-inl.h"
+#include "utils.h"
 
 #ifdef OPENMP
   #include <omp.h>
@@ -117,21 +118,11 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
       calculate_prob_odds(pattern_length, 0, 1.0, 0, old_pwm, bg_probabilities, base_patterns->getFactors(), prob_odds);
 
       //calculate new pwm
-      if(base_patterns->getStrand() == Strand::PLUS_STRAND) {
-        for (size_t pattern = 0; pattern < number_patterns; pattern++) {
-          for (int p = 0; p < pattern_length; p++) {
-            int a = base_patterns->getNucleotideAtPos(pattern, p);
-            new_pwm[p][a] +=
-                pattern_counter[pattern] * saturation_factor / (1 + saturation_factor / prob_odds[pattern]);
-          }
-        }
-      } else {
-        for (auto pattern: all_em_optimization_patterns) {
-          for (int p = 0; p < pattern_length; p++) {
-            int a = base_patterns->getNucleotideAtPos(pattern, p);
-            new_pwm[p][a] +=
-                pattern_counter[pattern] * saturation_factor / (1 + saturation_factor / prob_odds[pattern]);
-          }
+      for (size_t pattern = 0; pattern < number_patterns; pattern++) {
+        for (int p = 0; p < pattern_length; p++) {
+          int a = base_patterns->getNucleotideAtPos(pattern, p);
+          new_pwm[p][a] +=
+              pattern_counter[pattern] * saturation_factor / (1 + saturation_factor / prob_odds[pattern]);
         }
       }
 
@@ -146,7 +137,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
       }
 
       //switch old new
-      float** switcher = 0;
+      float** switcher = nullptr;
       switcher = old_pwm;
       old_pwm = new_pwm;
       new_pwm = switcher;
@@ -577,6 +568,8 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                                    const std::string output_filename,
                                    BackgroundModel* bg_model) {
 
+  const unsigned PRECISION = 8;
+
   std::sort(best_iupac_patterns.begin(), best_iupac_patterns.end(), sort_IUPAC_patterns);
 
   std::ofstream myfile (output_filename);
@@ -611,12 +604,13 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
           " log(Pval)= " << pattern->getLogPval()<< std::endl;
 
       float** pwm = pattern->get_pwm();
+      Utils::no_zero_pwm(pwm, pattern->get_pattern_length(), 4, PRECISION);
       for(size_t w = 0; w < pattern->get_pattern_length(); w++) {
         for(size_t a = 0; a < 4; a++) {
           if(a != 0) {
             myfile << " ";
           }
-          myfile << std::fixed << std::setprecision(4) << pwm[w][a];
+          myfile << std::fixed << std::setprecision(PRECISION) << pwm[w][a];
         }
         myfile << std::endl;
       }
@@ -627,11 +621,14 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
   else std::cerr << "Unable to open output file (" << output_filename << ")!";
 }
 
+
+
+
 void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
                                    const std::string output_filename,
                                    const std::string version_number,
                                    BackgroundModel* bg_model) {
-
+  const unsigned PRECISION = 8;
   std::sort(best_iupac_patterns.begin(), best_iupac_patterns.end(), sort_IUPAC_patterns);
 
   std::ofstream myfile (output_filename);
@@ -663,10 +660,11 @@ void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,
       myfile << "\t\t\t\"opt_bg_order\" : " << pattern->get_optimization_bg_model_order() << "," << std::endl;
       myfile << "\t\t\t\"pwm\" : [" << std::endl;
       float** pwm = pattern->get_pwm();
+      Utils::no_zero_pwm(pwm, pattern->get_pattern_length(), 4, PRECISION);
       for(size_t w = 0; w < pattern->get_pattern_length(); w++) {
         myfile << "\t\t\t\t\t[";
         for(size_t a = 0; a < 4; a++) {
-          myfile << std::fixed << std::setprecision(4) << pwm[w][a];
+          myfile << std::fixed << std::setprecision(PRECISION) << pwm[w][a];
           if(a != 3) {
             myfile << ", ";
           }

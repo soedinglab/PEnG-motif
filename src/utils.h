@@ -36,4 +36,17 @@ inline float calculate_mutual_information_fast(float pattern_observed, float pat
   return - q * H(p_obs) - (1-q) * H(p_exp) + H(p);
 }
 
+namespace Utils {
+  inline void no_zero_pwm(float** raw_pwm, unsigned rows, unsigned cols, unsigned precision) {
+    float delta = std::pow(10, -static_cast<int>(precision));
+    float epsilon = delta / (1 - 4*delta);
+    for(int i = 0; i < rows; i++) {
+      for(int j = 0; j < cols; j++) {
+        raw_pwm[i][j] += epsilon;
+      }
+    }
+    IUPACPattern::normalize_pwm(rows, raw_pwm);
+  }
+}
+
 #endif //PENG_MOTIF_UTILS_H
