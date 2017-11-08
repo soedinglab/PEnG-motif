@@ -267,7 +267,7 @@ def write_meme(peng_data, peng_output_file):
             pwm = p["pwm"]
 
             for line in pwm:
-                print(" ".join(['{:.4f}'.format(x) for x in line]), file=fh)
+                print(" ".join(['{:.8f}'.format(x) for x in line]), file=fh)
             print(file=fh)
 
 
