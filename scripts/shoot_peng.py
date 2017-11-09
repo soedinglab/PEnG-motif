@@ -161,9 +161,6 @@ def run_peng(args, output_directory, run_scoring):
     whitespace_matcher = re.compile(r'\s+')
     prefix = re.sub(whitespace_matcher, '_', prefix)
 
-    protected_fasta_file = os.path.join(output_directory, prefix + ".fasta")
-    shutil.copyfile(args.fasta_file, protected_fasta_file)
-
     peng_output_file = os.path.join(output_directory, prefix + ".tmp.out")
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
 
@@ -173,7 +170,7 @@ def run_peng(args, output_directory, run_scoring):
         stdout = None
 
     # run peng
-    peng_command_line = build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_file)
+    peng_command_line = build_peng_command(args, args.fasta_file, peng_output_file, peng_json_file)
     subprocess.run(peng_command_line, check=True, stdout=stdout)
 
     with open(peng_json_file) as fh:
@@ -181,7 +178,7 @@ def run_peng(args, output_directory, run_scoring):
 
     if run_scoring:
         # run FDR
-        fdr_command_line = build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory)
+        fdr_command_line = build_fdr_command(args, args.fasta_file, peng_output_file, output_directory)
         subprocess.run(fdr_command_line, check=True, stdout=stdout)
         r_output_file = os.path.join(output_directory, prefix + ".bmscore")
         subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
@@ -192,13 +189,17 @@ def run_peng(args, output_directory, run_scoring):
             for line in fh:
                 if line.startswith("prefix"):
                     continue
-                prefix, motif_number, zoops_rank_score, auc5_score, auprc_score, *_ = line.split()
-                motif_number = int(motif_number)
+                try:
+                    prefix, motif_number, zoops_rank_score, auc5_score, auprc_score, *_ = line.split()
+                    motif_number = int(motif_number)
+                except ValueError:
+                    # either header or weird line. skipping.
+                    continue
 
                 try:
                     # note here ausfc score is used for reranking, instead of fract_occ
                     zoops_scores[motif_number] = float(zoops_rank_score)
-                except:
+                except ValueError:
                     zoops_scores[motif_number] = np.nan
 
         # update information
