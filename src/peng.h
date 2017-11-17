@@ -58,7 +58,6 @@ class Peng{
   int alphabet_size;
   size_t n_sequences;
   Strand strand;
-	std::vector<size_t> all_em_optimization_patterns;
 
 
   void optimize_iupac_patterns(OPTIMIZATION_SCORE score_type,

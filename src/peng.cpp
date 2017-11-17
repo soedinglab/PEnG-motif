@@ -360,9 +360,6 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
 
     print_status("Optimizing expectation-maximization / merging patterns");
     // precompute all patterns the em has to run over for speed
-    if(strand == Strand::BOTH_STRANDS) {
-      all_em_optimization_patterns = base_pattern->generate_double_stranded_em_optimization_patterns();
-    }
     for(int background = 0; background <= this->max_k; background++) {
       float* pattern_bg_probs = base_pattern->getBackgroundProb(background);
       std::cout << std::endl << "background order: " << background << std::endl;
