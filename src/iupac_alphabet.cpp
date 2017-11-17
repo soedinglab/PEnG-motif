@@ -14,7 +14,7 @@ int* IUPACAlphabet::char_2_base;
 std::vector<int>IUPACAlphabet::similar_iupac_nucleotides[];
 std::vector<int>IUPACAlphabet::representative_iupac_nucleotides[];
 
-void IUPACAlphabet::init(char* alphabet) {
+void IUPACAlphabet::init(const char* alphabet) {
 
 
   base_2_char = (char *) calloc(128, sizeof(char));
@@ -183,10 +183,6 @@ void IUPACAlphabet::init(char* alphabet) {
 
 std::vector<int> IUPACAlphabet::get_similar_iupac_nucleotides(int c) {
   return similar_iupac_nucleotides[c];
-}
-
-std::vector<int> IUPACAlphabet::get_representative_iupac_nucleotides(int c) {
-  return representative_iupac_nucleotides[c];
 }
 
 char IUPACAlphabet::getBase(int c) {

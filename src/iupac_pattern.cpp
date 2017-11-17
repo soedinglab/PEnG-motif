@@ -486,7 +486,7 @@ void IUPACPattern::calculate_pwm(BasePattern* base_pattern, const int pseudo_cou
     for(auto base : base_patterns) {
       size_t count = pattern_counter[base];
       for(size_t p = 0; p < pattern_length; p++) {
-        int c = base_pattern->getNucleotideAtPos(base, p);
+        int c = base_pattern->getFastNucleotideAtPos(base, p);
         //TODO: map c to base nucleotides for MH...
         pwm[p][c] += count;
       }

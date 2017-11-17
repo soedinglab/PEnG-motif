@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "../src/base_pattern.h"
 #include "../src/iupac_pattern.h"
+#include "../src/iupac_alphabet.h"
 
 
 namespace {
@@ -14,6 +15,7 @@ namespace {
     BasePatternTest() {
       std::string alphabet_string = "STANDARD";
       Alphabet::init(alphabet_string.c_str());
+      IUPACAlphabet::init(alphabet_string.c_str());
       std::string default_sequences_fasta = "test/test_data/default_sequence_set.fa";
       std::string empty_string = "";
       default_sequence_set = new SequenceSet{default_sequences_fasta.c_str(), true, empty_string.c_str()};
@@ -113,5 +115,18 @@ namespace {
 
     delete basepattern;
     delete iupac;
+  }
+
+  TEST_F(BasePatternTest, test_nucleotide_at) {
+    size_t pattern_length = 4;
+    BasePattern* basepattern = new BasePattern{pattern_length, Strand::BOTH_STRANDS, 2, 2, default_sequence_set, default_background_model};
+    size_t pattern_CTAA =  1*1 + 3*4 + 0*16 + 0*64;
+
+    ASSERT_EQ(basepattern->getNucleotideAtPos(pattern_CTAA, 0), 1);
+    ASSERT_EQ(basepattern->getNucleotideAtPos(pattern_CTAA, 3), 0);
+
+    ASSERT_EQ(basepattern->getFastNucleotideAtPos(pattern_CTAA, 0), 1);
+    ASSERT_EQ(basepattern->getFastNucleotideAtPos(pattern_CTAA, 3), 0);
+
   }
 }

@@ -120,7 +120,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
       //calculate new pwm
       for (size_t pattern = 0; pattern < number_patterns; pattern++) {
         for (int p = 0; p < pattern_length; p++) {
-          int a = base_patterns->getNucleotideAtPos(pattern, p);
+          int a = base_patterns->getFastNucleotideAtPos(pattern, p);
           new_pwm[p][a] +=
               pattern_counter[pattern] * saturation_factor / (1 + saturation_factor / prob_odds[pattern]);
         }

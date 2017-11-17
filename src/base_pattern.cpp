@@ -84,7 +84,7 @@ void BasePattern::init_half_reverse_complements() {
   for(unsigned pattern_id = 0; pattern_id < factor[half_pattern_length]; pattern_id++) {
     unsigned rev_pattern_id = 0;
     for(int p = 0; p < half_pattern_length; p++) {
-      int c = BasePattern::getNucleotideAtPos(pattern_id, p);
+      int c = BasePattern::getFastNucleotideAtPos(pattern_id, p);
       //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
       //-1; to get back to our encoding (without 'other')
       //reverse pattern order factor[pattern_length - 1 - p]
@@ -108,7 +108,7 @@ void BasePattern::init(size_t pattern_length) {
 std::string BasePattern::toString(size_t pattern_id) {
   std::string out = "";
   for(size_t p = 0; p < pattern_length; p++) {
-    int c = BasePattern::getNucleotideAtPos(pattern_id, p);
+    int c = BasePattern::getFastNucleotideAtPos(pattern_id, p);
     //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
     out += Alphabet::getBase(c + 1);
   }
@@ -120,7 +120,7 @@ size_t BasePattern::getRevCompId(const size_t pattern_id) {
 
   //calculate id of pattern on the minus strand
   for(int p = 0; p < pattern_length; p++) {
-    int c = BasePattern::getNucleotideAtPos(pattern_id, p);
+    int c = BasePattern::getFastNucleotideAtPos(pattern_id, p);
 
     //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
     //-1; to get back to our encoding (without 'other')
@@ -140,13 +140,6 @@ size_t BasePattern::getFastRevCompId(const size_t pattern_id) {
   size_t rev_comp = half_revcomp[second_half];
   rev_comp += half_revcomp[first_half] * factor[half_pattern_length];
   return rev_comp;
-}
-
-int BasePattern::getNucleotideAtPos(const size_t pattern, const size_t pos) {
-  //id: a0*|a|^0 + a1*|a|^1 + a2*|a|^2 + a3*|a|^3
-  // a2 = floor((id % |a|^3) / |a|^2)
-  size_t residue = (pattern % factor[pos + 1]);
-  return int(residue / factor[pos]);
 }
 
 size_t* BasePattern::getFactors() {
@@ -177,7 +170,7 @@ size_t BasePattern::baseId2IUPACId(const size_t base_pattern) {
   //map pattern to basic pattern in iupac base
   size_t iupac_pattern = 0;
   for (int p = 0; p < pattern_length; p++) {
-    int c = getNucleotideAtPos(base_pattern, p);
+    int c = getFastNucleotideAtPos(base_pattern, p);
     iupac_pattern += c * IUPACPattern::iupac_factor[p];
   }
   return iupac_pattern;
@@ -481,7 +474,7 @@ std::vector<size_t> BasePattern::select_base_patterns(const float zscore_thresho
         if (filter_neighbors) {
           for (size_t p = 0; p < pattern_length; p++) {
             //mask nucleotide at position p of pattern
-            int c = BasePattern::getNucleotideAtPos(pattern, p);
+            int c = BasePattern::getFastNucleotideAtPos(pattern, p);
             size_t masked_neighbour = pattern - c * base_factors[p];
 
             //iterate over all possible nucleotides at position p
@@ -502,7 +495,7 @@ std::vector<size_t> BasePattern::select_base_patterns(const float zscore_thresho
           //iterate over neighbours and set to seen
           for (size_t p = 0; p < pattern_length; p++) {
             //mask nucleotide at position p of pattern
-            int c = BasePattern::getNucleotideAtPos(pattern, p);
+            int c = BasePattern::getFastNucleotideAtPos(pattern, p);
             size_t masked_neighbour = pattern - c * base_factors[p];
 
             //iterate over all possible nucleotides at position p

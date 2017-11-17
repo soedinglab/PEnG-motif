@@ -54,7 +54,6 @@ class BasePattern {
   size_t getFastRevCompId(const size_t pattern_id);
 
   //get nucleotide id of pattern at pos
-  int getNucleotideAtPos(const size_t pattern, const size_t pos);
 
   size_t getNumberPatterns();
   int getBackgroundOrder() const;
@@ -128,6 +127,17 @@ class BasePattern {
   int k;
 public:
   Strand getStrand() const;
+  inline int getNucleotideAtPos(const size_t pattern, const size_t pos) {
+    //id: a0*|a|^0 + a1*|a|^1 + a2*|a|^2 + a3*|a|^3
+    // a2 = floor((id % |a|^3) / |a|^2)
+    size_t residue = (pattern % factor[pos + 1]);
+    return int(residue / factor[pos]);
+  }
+
+  inline int getFastNucleotideAtPos(const size_t pattern, const size_t pos) {
+    size_t left_trimmed = pattern / factor[pos];
+    return static_cast<int>(left_trimmed % alphabet_size);
+  }
 
 private:
   Strand strand;
