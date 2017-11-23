@@ -51,8 +51,8 @@ def main():
                         help='order of the background model')
     parser.add_argument('--strand', metavar='PLUS|BOTH', dest='strand', type=str, default='BOTH', choices=['PLUS', 'BOTH'],
                         help='select the strand to work on')
-    parser.add_argument('--iupac_optimization_score', metavar='LOGPVAL|EXPCOUNTS|MUTUAL_INFO',
-                        dest='iupac_optimization_score', type=str, default='LOGPVAL',
+    parser.add_argument('--optimization_score', metavar='LOGPVAL|EXPCOUNTS|MUTUAL_INFO',
+                        dest='optimization_score', type=str, default='MUTUAL_INFO',
                         choices=['ENRICHMENT', 'LOGPVAL', 'MUTUAL_INFO'],
                         help='select iupac optimization score')
     parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005, metavar="FLOAT",
@@ -125,7 +125,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     command += ["--count-threshold", str(args.count_threshold)]
     command += ["--bg-model-order", str(args.bg_model_order)]
     command += ["--strand", args.strand]
-    command += ["--iupac_optimization_score", str(args.iupac_optimization_score)]
+    command += ["--optimization_score", str(args.optimization_score)]
     command += ["--enrich_pseudocount_factor", str(args.enrich_pseudocount_factor)]
     if not args.use_em:
         command += ["--no-em"]

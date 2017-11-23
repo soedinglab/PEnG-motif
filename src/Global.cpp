@@ -117,10 +117,10 @@ void Global::readArguments(int nargs, char* args[]){
       }
       backgroundSequenceFilename = args[i];
     }
-    else if (!strcmp(args[i], "--iupac_optimization_score")) {
+    else if (!strcmp(args[i], "--optimization_score")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following --iupac_optimization_score" << std::endl;
+        LOG(ERROR) << "No expression following --optimization_score" << std::endl;
         exit(4);
       }
 
@@ -135,7 +135,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       else {
         printHelp();
-        LOG(ERROR) << "Unknown expression following --iupac_optimization_score" << std::endl;
+        LOG(ERROR) << "Unknown expression following --optimization_score" << std::endl;
         exit(4);
       }
     }
@@ -324,7 +324,7 @@ void Global::printHelp(){
       "           lower threshold for counts of basic patterns\n");
   printf("\n      --strand, <PLUS|BOTH>\n"
       "           select the strands to work on\n");
-  printf("\n      --iupac_optimization_score, <ENRICHMENT|LOGPVAL|MUTUAL_INFO>\n"
+  printf("\n      --optimization_score, <ENRICHMENT|LOGPVAL|MUTUAL_INFO>\n"
       "           select the iupac optimization score\n");
   printf("\n      --enrich_pseudocount_factor, <PSEUDO_COUNTS>\n"
 	    "           add (enrich_pseudocount_factor x #seqs) pseudocounts\n"
