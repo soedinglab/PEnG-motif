@@ -25,7 +25,7 @@ char* Global::backgroundSequenceFilename = nullptr;      // filename with backgr
 SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
 
-OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::kLogPval;
+OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::MutualInformation;
 float Global::enrich_pseudocount_factor = 0.005;
 
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
