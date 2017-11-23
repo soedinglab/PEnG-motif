@@ -66,6 +66,9 @@ public:
 	static void init( int nargs, char* args[] );
 	static void destruct();
 
+	static bool filter_neighbors;
+	static unsigned minimum_processed_motifs;
+
 private:
 	static void readArguments( int nargs, char* args[] );
 	static void printHelp();

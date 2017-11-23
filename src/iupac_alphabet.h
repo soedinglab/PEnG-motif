@@ -20,13 +20,15 @@ class IUPACAlphabet {
   static char* base_2_char;
   static int* char_2_base;
 
-  static std::map<int, std::vector<int>> similar_iupac_nucleotides;
-  static std::map<int, std::vector<int>> representative_iupac_nucleotides;
+  static std::vector<int> similar_iupac_nucleotides[IUPAC_ALPHABET_SIZE];
+  static std::vector<int> representative_iupac_nucleotides[IUPAC_ALPHABET_SIZE];
 
  public:
-  static void init(char* alphabet);
+  static void init(const char* alphabet);
   static std::vector<int> get_similar_iupac_nucleotides(int c);
-  static std::vector<int> get_representative_iupac_nucleotides(int c);
+  inline static std::vector<int> get_representative_iupac_nucleotides(int c) {
+    return representative_iupac_nucleotides[c];
+  }
   static char getBase(int c);
   static int getCode(char c);
   static size_t getAlphabetSize();

@@ -1,6 +1,6 @@
 #include "SequenceSet.h"
 
-SequenceSet::SequenceSet( std::string sequenceFilepath, bool revcomp, std::string intensityFilepath ){
+SequenceSet::SequenceSet( std::string sequenceFilepath, bool single_stranded, std::string intensityFilepath ){
 
 	if( Alphabet::getSize() == 0 ){
 		std::cerr << "Error: Initialize Alphabet before constructing a SequenceSet" << std::endl;
@@ -21,7 +21,7 @@ SequenceSet::SequenceSet( std::string sequenceFilepath, bool revcomp, std::strin
 
 	baseFrequencies_ = new float[Y_[1]];
 
-	readFASTA( revcomp );
+	readFASTA( single_stranded );
 
 	if( !( intensityFilepath.empty() ) ){
 		intensityFilepath_ = intensityFilepath;
@@ -330,12 +330,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 								encoding[i] = Alphabet::getCode( sequence[i] );
 
 								if( encoding[i] == 0 ){
-
-									std::cerr << "Warning: The FASTA file contains an undefined base: " <<
-											sequence[i] << " at sequence " << header << std::endl;
-
 									continue; // exclude undefined base from base counts
-
 								}
 								baseCounts[encoding[i]-1]++; // count base
 							}
@@ -366,7 +361,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 					if( line.find( ' ' ) != std::string::npos ){
 						// space character in sequence
 						std::cerr << "Error: FASTA sequence contains space character: " << sequenceFilepath_ << std::endl;
-						exit( -1 );
+						exit(1);
 					} else{
 						sequence += line;
 					}
@@ -374,7 +369,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 				} else{
 
 					std::cerr << "Error: Wrong FASTA format: " << sequenceFilepath_ << std::endl;
-					exit( -1 );
+					exit(1);
 				}
 			}
 		}
@@ -429,7 +424,7 @@ int SequenceSet::readFASTA( bool revcomp ){
 	} else{
 
 		std::cerr << "Error: Cannot open FASTA file: " << sequenceFilepath_ << std::endl;
-		exit( -1 );
+		exit(1);
 	}
 
 	N_ = N;
@@ -454,5 +449,5 @@ int SequenceSet::readFASTA( bool revcomp ){
 int SequenceSet::readIntensities(){
 
 	std::cerr << "Error: SequenceSet::readIntensities() is not implemented so far." << std::endl;
-	exit( -1 );
+	exit(1);
 }

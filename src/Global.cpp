@@ -25,7 +25,7 @@ char* Global::backgroundSequenceFilename = nullptr;      // filename with backgr
 SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
 SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
 
-OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::kLogPval;
+OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::MutualInformation;
 float Global::enrich_pseudocount_factor = 0.005;
 
 int Global::patternLength = 10;                        // length of patterns to be trained/searched
@@ -56,11 +56,15 @@ std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // backgrou
 int Global::verbosity = 2;            	              // verbosity
 int Global::nr_threads = 1;
 
+bool Global::filter_neighbors = true;
+unsigned Global::minimum_processed_motifs = 25;
+
 void Global::init(int nargs, char* args[]){
   readArguments(nargs, args);
 
   Alphabet::init(alphabetType);
 
+  // reverse complements are dealt with in peng directly. We read in single stranded sequences either way.
   inputSequenceSet = new SequenceSet(inputSequenceFilename, true);
 
   char* currBackgroundSequenceFilename;
@@ -71,7 +75,7 @@ void Global::init(int nargs, char* args[]){
     currBackgroundSequenceFilename = inputSequenceFilename;
   }
 
-  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, strand != Strand::BOTH_STRANDS);
+  backgroundSequenceSet = new SequenceSet(currBackgroundSequenceFilename, true);
 }
 
 void Global::readArguments(int nargs, char* args[]){
@@ -100,6 +104,10 @@ void Global::readArguments(int nargs, char* args[]){
         exit(4);
       }
       patternLength = std::stoi(args[i]);
+      if(patternLength % 2 == 1) {
+        LOG(ERROR) << "Due to optimizations the pattern length has to be a multiple of 2" << std::endl;
+        exit(4);
+      }
     }
     else if (!strcmp(args[i], "--background-sequences")) {
       if (++i>=nargs) {
@@ -109,17 +117,17 @@ void Global::readArguments(int nargs, char* args[]){
       }
       backgroundSequenceFilename = args[i];
     }
-    else if (!strcmp(args[i], "--iupac_optimization_score")) {
+    else if (!strcmp(args[i], "--optimization_score")) {
       if (++i>=nargs) {
         printHelp();
-        LOG(ERROR) << "No expression following --iupac_optimization_score" << std::endl;
+        LOG(ERROR) << "No expression following --optimization_score" << std::endl;
         exit(4);
       }
 
       if(!strcmp(args[i], "LOGPVAL")) {
         optScoreType = OPTIMIZATION_SCORE::kLogPval;
       }
-      else if(!strcmp(args[i], "EXPCOUNTS")) {
+      else if(!strcmp(args[i], "ENRICHMENT")) {
         optScoreType = OPTIMIZATION_SCORE::kExpCounts;
       }
       else if(!strcmp(args[i], "MUTUAL_INFO")) {
@@ -127,7 +135,7 @@ void Global::readArguments(int nargs, char* args[]){
       }
       else {
         printHelp();
-        LOG(ERROR) << "Unknown expression following --iupac_optimization_score" << std::endl;
+        LOG(ERROR) << "Unknown expression following --optimization_score" << std::endl;
         exit(4);
       }
     }
@@ -265,6 +273,17 @@ void Global::readArguments(int nargs, char* args[]){
       }
       bgModelOrder = std::stoi(args[i]);
     }
+    else if (!strcmp(args[i], "--no-neighbor-filtering")) {
+      filter_neighbors = false;
+    }
+    else if (!strcmp(args[i], "--minimum-processed-patterns")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following --minimum-processed-patterns" << std::endl;
+        exit(4);
+      }
+      minimum_processed_motifs = std::stoi(args[i]);
+    }
     else if (!strcmp(args[i], "--version")) {
       std::cout << "peng_motif " << VERSION_NUMBER << std::endl;;
       exit(0);
@@ -305,11 +324,11 @@ void Global::printHelp(){
       "           lower threshold for counts of basic patterns\n");
   printf("\n      --strand, <PLUS|BOTH>\n"
       "           select the strands to work on\n");
-  printf("\n      --iupac_optimization_score, <EXPCOUNTS|LOGPVAL|MUTUAL_INFO>\n"
+  printf("\n      --optimization_score, <ENRICHMENT|LOGPVAL|MUTUAL_INFO>\n"
       "           select the iupac optimization score\n");
   printf("\n      --enrich_pseudocount_factor, <PSEUDO_COUNTS>\n"
-	  "           add (enrich_pseudocount_factor x #seqs) pseudocounts\n"
-	  "           in the EXPCOUNTS optimization\n");
+	    "           add (enrich_pseudocount_factor x #seqs) pseudocounts\n"
+	    "           in the EXPCOUNTS optimization\n");
   printf("\n      -b, <BIT_FACTOR_THRESHOLD>\n"
       "           bit factor threshold for merging IUPAC patterns\n");
   printf("\n      --no-em\n"
@@ -328,6 +347,10 @@ void Global::printHelp(){
       "           number of pseudo-counts for optimization\n");
   printf("\n      --threads, <NUMBER_THREADS>\n"
       "           number of threads to be used for parallelization\n");
+  printf("\n      --no-neighbor-filtering\n"
+      "           do not filter similar base patterns before running the optimization\n");
+  printf("\n      --minimum-processed-patterns <NUMBER_PATTERNS>\n"
+      "           minimum number of iupac patterns that are selected for em optimization\n");
   printf("\n      --version\n"
       "           print the version number\n");
   printf("\n      -h\n"

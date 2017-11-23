@@ -42,6 +42,15 @@ Sequence::~Sequence(){
 	free( kmer_ );
 }
 
+std::unique_ptr<uint8_t[]> Sequence::createReverseComplement() {
+	size_t seqLength = L_;
+	std::unique_ptr<uint8_t[]> revcmp{new uint8_t[seqLength]};
+	for(int i = 0; i < seqLength; i++) {
+		revcmp[i] = (Alphabet::getSize() + 1 - sequence_[seqLength - 1 - i]) % 5;
+	}
+	return revcmp;
+}
+
 uint8_t* Sequence::getSequence(){
 	return sequence_;
 }

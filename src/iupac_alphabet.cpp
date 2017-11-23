@@ -9,206 +9,15 @@
 #include "helper-inl.h"
 #include <stdlib.h>
 
-std::map<int, std::vector<int>> IUPACAlphabet::similar_iupac_nucleotides {
-  {to_underlying(IUPAC_Alphabet::A),
-    {
-        to_underlying(IUPAC_Alphabet::A),
-        to_underlying(IUPAC_Alphabet::W),
-        to_underlying(IUPAC_Alphabet::R),
-        to_underlying(IUPAC_Alphabet::M),
-        to_underlying(IUPAC_Alphabet::N)
-    }
-  },
-  {to_underlying(IUPAC_Alphabet::C),
-      {
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::G),
-      {
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::T),
-      {
-          to_underlying(IUPAC_Alphabet::T),
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::S),
-      {
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::W),
-      {
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::T),
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::R),
-      {
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::Y),
-      {
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::T),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::M),
-      {
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::K),
-      {
-          to_underlying(IUPAC_Alphabet::K),
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::T),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::N)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::N),
-      {
-          to_underlying(IUPAC_Alphabet::N),
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::T),
-          to_underlying(IUPAC_Alphabet::S),
-          to_underlying(IUPAC_Alphabet::W),
-          to_underlying(IUPAC_Alphabet::R),
-          to_underlying(IUPAC_Alphabet::Y),
-          to_underlying(IUPAC_Alphabet::M),
-          to_underlying(IUPAC_Alphabet::K),
-      }
-  }
-};
-
-std::map<int, std::vector<int>> IUPACAlphabet::representative_iupac_nucleotides {
-  {to_underlying(IUPAC_Alphabet::A),
-    {
-        to_underlying(IUPAC_Alphabet::A)
-    }
-  },
-  {to_underlying(IUPAC_Alphabet::C),
-      {
-          to_underlying(IUPAC_Alphabet::C)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::G),
-      {
-          to_underlying(IUPAC_Alphabet::G)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::T),
-      {
-          to_underlying(IUPAC_Alphabet::T)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::S),
-      {
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::G)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::W),
-      {
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::T)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::R),
-      {
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::G)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::Y),
-      {
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::T)
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::M),
-      {
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::C),
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::K),
-      {
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::T),
-      }
-  },
-  {to_underlying(IUPAC_Alphabet::N),
-      {
-          to_underlying(IUPAC_Alphabet::A),
-          to_underlying(IUPAC_Alphabet::C),
-          to_underlying(IUPAC_Alphabet::G),
-          to_underlying(IUPAC_Alphabet::T),
-      }
-  }
-};
-
 char* IUPACAlphabet::base_2_char;
 int* IUPACAlphabet::char_2_base;
+std::vector<int>IUPACAlphabet::similar_iupac_nucleotides[];
+std::vector<int>IUPACAlphabet::representative_iupac_nucleotides[];
 
-void IUPACAlphabet::init(char* alphabet) {
+void IUPACAlphabet::init(const char* alphabet) {
 
 
-  base_2_char = ( char* )calloc( 128, sizeof( char ) );
+  base_2_char = (char *) calloc(128, sizeof(char));
   base_2_char[to_underlying(IUPAC_Alphabet::A)] = 'A';
   base_2_char[to_underlying(IUPAC_Alphabet::C)] = 'C';
   base_2_char[to_underlying(IUPAC_Alphabet::G)] = 'G';
@@ -221,7 +30,7 @@ void IUPACAlphabet::init(char* alphabet) {
   base_2_char[to_underlying(IUPAC_Alphabet::K)] = 'K';
   base_2_char[to_underlying(IUPAC_Alphabet::N)] = 'N';
 
-  char_2_base = ( int* )calloc( 128, sizeof( int ) );
+  char_2_base = (int *) calloc(128, sizeof(int));
   char_2_base['A'] = to_underlying(IUPAC_Alphabet::A);
   char_2_base['C'] = to_underlying(IUPAC_Alphabet::C);
   char_2_base['G'] = to_underlying(IUPAC_Alphabet::G);
@@ -233,14 +42,147 @@ void IUPACAlphabet::init(char* alphabet) {
   char_2_base['M'] = to_underlying(IUPAC_Alphabet::M);
   char_2_base['K'] = to_underlying(IUPAC_Alphabet::K);
   char_2_base['N'] = to_underlying(IUPAC_Alphabet::N);
+
+
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::A)] = {
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::N),
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::C)] = {
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::N),
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::G)] = {
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::K),
+    to_underlying(IUPAC_Alphabet::N),
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::T)] = {
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::K),
+    to_underlying(IUPAC_Alphabet::N),
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::S)] = {
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::G),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::K),
+    to_underlying(IUPAC_Alphabet::N)
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::W)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::T),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::K),
+    to_underlying(IUPAC_Alphabet::N)
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::R)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::G),
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::K),
+    to_underlying(IUPAC_Alphabet::N)
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::Y)] = {
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::T),
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::K),
+    to_underlying(IUPAC_Alphabet::N)
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::M)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::N),
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::K)] = {
+    to_underlying(IUPAC_Alphabet::G),
+    to_underlying(IUPAC_Alphabet::T),
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::N),
+  };
+  similar_iupac_nucleotides[to_underlying(IUPAC_Alphabet::N)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::G),
+    to_underlying(IUPAC_Alphabet::T),
+    to_underlying(IUPAC_Alphabet::S),
+    to_underlying(IUPAC_Alphabet::W),
+    to_underlying(IUPAC_Alphabet::R),
+    to_underlying(IUPAC_Alphabet::Y),
+    to_underlying(IUPAC_Alphabet::M),
+    to_underlying(IUPAC_Alphabet::K),
+  };
+
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::A)] = {
+    to_underlying(IUPAC_Alphabet::A),
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::C)] = {
+    to_underlying(IUPAC_Alphabet::C)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::G)] = {
+    to_underlying(IUPAC_Alphabet::G)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::T)] = {
+    to_underlying(IUPAC_Alphabet::T)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::S)] = {
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::G)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::W)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::T)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::R)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::G)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::Y)] = {
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::T)
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::M)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::C),
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::K)] = {
+        to_underlying(IUPAC_Alphabet::G),
+        to_underlying(IUPAC_Alphabet::T),
+  };
+  representative_iupac_nucleotides[to_underlying(IUPAC_Alphabet::N)] = {
+    to_underlying(IUPAC_Alphabet::A),
+    to_underlying(IUPAC_Alphabet::C),
+    to_underlying(IUPAC_Alphabet::G),
+    to_underlying(IUPAC_Alphabet::T),
+
+  };
 }
+
 
 std::vector<int> IUPACAlphabet::get_similar_iupac_nucleotides(int c) {
   return similar_iupac_nucleotides[c];
-}
-
-std::vector<int> IUPACAlphabet::get_representative_iupac_nucleotides(int c) {
-  return representative_iupac_nucleotides[c];
 }
 
 char IUPACAlphabet::getBase(int c) {
@@ -252,6 +194,6 @@ int IUPACAlphabet::getCode(char c) {
 }
 
 size_t IUPACAlphabet::getAlphabetSize() {
-  return representative_iupac_nucleotides.size();
+  return IUPAC_ALPHABET_SIZE;
 }
 

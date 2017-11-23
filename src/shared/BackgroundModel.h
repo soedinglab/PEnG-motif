@@ -9,7 +9,7 @@
 #include <vector>
 #include <sys/stat.h>
 
-#include <math.h>	// e.g. logf
+#include <cmath>	// e.g. logf
 
 #include "Alphabet.h"
 #include "SequenceSet.h"

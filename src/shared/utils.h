@@ -6,6 +6,7 @@
 #include <numeric>		// e.g. std::numeric
 #include <vector>
 #include <memory>
+#include <cmath>
 
 #include <sys/stat.h>	// e.g. stat
 
