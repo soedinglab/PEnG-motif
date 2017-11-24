@@ -66,7 +66,7 @@ For a list of all available options, please see the output of `peng_motif -h`.
 
 ## Interpreting the output
 
-The PEnG-motif algorithm runs several phases, understanding the output printed to the console
+The PEnG-motif algorithm runs several phases; understanding the output printed to the console
 can be important when interpreting the results.
 
 ### Phase 1: Counting base patterns
@@ -81,10 +81,10 @@ pattern	       observed	     enrichment	         zscore
  GCCACC	           2456	           1.68	          26.08
  ```
 
- For each pattern that passes a predefined z-score threshold, the number of occurences, the enrichment over the expected number of sequences and the calculated z-score are reported.
+ For each pattern that passes a predefined z-score threshold, the number of occurences, the enrichment of observed occurences over the expected and the calculated z-score are reported.
 
  ### Phase 2: Optimizing the base patterns
- In the second phase the selected base patterns from phase 1 are iteratively optimized by degenerating single nucleotide if the degenerated pattern achieves a higher score. By default we optimize a function based on [mutual information](https://en.wikipedia.org/wiki/Mutual_information) of observation and expectation.
+ In the second phase the selected base patterns from phase 1 are iteratively optimized by degenerating single nucleotides if the degenerated pattern achieves a higher score. By default we optimize a function based on [mutual information](https://en.wikipedia.org/wiki/Mutual_information) of observation and expectation.
 
  ```
  CACTAG	       890	 2.40	 -0.036173
@@ -92,11 +92,11 @@ pattern	       observed	     enrichment	         zscore
 optimization: CACTAG -> CWCTAG
 ```
 For each iteration the current IUPAC pattern, the number of observed counts, the enrichment over the expected counts and the optimization score are printed.
-Once the optimization runs into a local optimum, the original base pattern and its optimal IUPAC pattern is reported.
+Once the optimization runs into a local optimum, the original base pattern and its optimal IUPAC pattern are reported.
 
 If the optimization runs into a pattern that has already been seen in a previous optimization, the optimization stops and the base pattern is removed.
 
-At the end of the optimization phase, all IUPAC pattern, their occurrences, enrichment over the expected counts, and the calculated z-scores are reported.
+At the end of the optimization phase, all IUPAC patterns, their occurrences, enrichment over the expected counts, and the calculated z-scores are reported.
 
 ```
 pattern	       observed	     enrichment	         zscore
@@ -110,11 +110,11 @@ pattern	       observed	     enrichment	         zscore
 In phase 3, only the best scoring IUPAC PWMs are retained and are converted to PWMs.
 
 ### Phase 4: EM-optimization and merging
-In the final phase, an expectation-maximization algorithm sharpens the PWMs. PWMs that have strong detectable overlaps are merged to form longer PWMs. The so optimized PWM is written to the output file in [meme format](http://meme-suite.org/doc/meme-format.html).
+In the final phase, an expectation-maximization algorithm sharpens the PWMs. PWMs that have strong detectable overlaps are merged to form longer PWMs. The so optimized PWMs are written to the output file in [meme format](http://meme-suite.org/doc/meme-format.html).
 
 ## Tips and tricks
 
-* PEnG-motif has many parameters that can be set to tune the results. The default parameters are suitable for most DNA binding factors. For RNA binding factors, a pattern length of 8 or 6 often yields better results.
+* PEnG-motif has many parameters that can be set to tune the results. The default parameters are suitable for most DNA binding factors. For RNA binding factors with short motifs a pattern length of 6 or 8 often yields better results.
 * If your sequences are strand specific, pass the option `--strand PLUS` to avoid mixing the counts of reverse complemented base patterns.
 * The memory requirement and runtime scales exponentially with the pattern length. It is *not* recommended to run with base pattern lengths larger than 12.
 
