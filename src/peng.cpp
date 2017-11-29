@@ -145,7 +145,12 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
 
     IUPACPattern* optimized_pattern = new IUPACPattern(best_iupac_patterns[i], old_pwm);
     optimized_iupac_patterns.push_back(optimized_pattern);
-    std::cout << "em: " << IUPACPattern::toString(ori_pattern, pattern_length) << " -> " << optimized_pattern->get_pattern_string() << std::endl;
+    auto avg_info_content =  calculate_pwm_info(optimized_pattern->get_pwm(), pattern_length, alphabet_size)/ pattern_length;
+    std::cout << "em: "
+              << IUPACPattern::toString(ori_pattern, pattern_length)
+              << " -> " << optimized_pattern->get_pattern_string()
+              << "   [ avg. info: " << std::setprecision(2) << avg_info_content << " ]"
+              << std::endl;
   }
 
   //de-allocate pwm's
@@ -355,7 +360,14 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
         std::cout << "def pwm: ";
         pattern->calculate_pwm(base_pattern, params.pseudo_counts, pattern_counter, bg_model->getV()[0]);
       }
-      std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
+      auto pwm = pattern->get_pwm();
+      float avg_info_content = calculate_pwm_info(pwm, pattern_length, alphabet_size) / pattern_length;
+
+      std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length)
+                << " -> "
+                << pattern->get_pattern_string()
+                << "   [ avg. info: " << std::setprecision(2) << avg_info_content << " ]"
+                << std::endl;
     }
 
     print_status("Optimizing expectation-maximization / merging patterns");
