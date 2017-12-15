@@ -102,7 +102,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
     int iteration_counter = 0;
 
     while(true) {
-      if(change <= min_em_threshold || iteration_counter == max_iterations) {
+      if(change <= min_em_threshold || iteration_counter >= max_iterations) {
         break;
       }
 
@@ -316,8 +316,8 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
   }
 
   // TODO decide which version is best
-  for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
-  //for(size_t pattern_length = params.max_pattern_length ; pattern_length <= params.max_pattern_length; pattern_length += 2) {
+  //for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
+  for(size_t pattern_length = params.max_pattern_length ; pattern_length <= params.max_pattern_length; pattern_length += 2) {
     print_status("Processing kmers of length " + std::to_string(pattern_length), false);
     print_status("Finding overrepresented kmers (base patterns)", false);
     int current_k = std::min(static_cast<int>(pattern_length) - 1, k);
@@ -371,8 +371,8 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     }
 
     print_status("Optimizing expectation-maximization / merging patterns");
-    // precompute all patterns the em has to run over for speed
-    for(int background = 0; background <= this->max_k; background++) {
+
+    for(int background = this->max_k; background <= this->max_k; background++) {
       float* pattern_bg_probs = base_pattern->getBackgroundProb(background);
       std::cout << std::endl << "background order: " << background << std::endl;
       std::vector<IUPACPattern*> optimized_patterns;
@@ -629,8 +629,6 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
   }
   else std::cerr << "Unable to open output file (" << output_filename << ")!";
 }
-
-
 
 
 void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,

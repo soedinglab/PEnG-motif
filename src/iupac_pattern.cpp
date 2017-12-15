@@ -822,13 +822,7 @@ unsigned long IUPACPattern::count_combined_occurences(BasePattern* base_patterns
     for (auto it = underlying_patterns.begin() + 1; it != underlying_patterns.end(); ++it) {
       auto this_pattern = *it;
       if (last_pattern != this_pattern) {
-        // due to the way the advanced pwm are calculated, we have to weight palindromic base pattern
-        // counts twice as much as non-palindromic base patterns
-        if (this_pattern == base_patterns->getFastRevCompId(this_pattern)) {
-          total_counts += 2 * base_patterns->pattern_counter[this_pattern];
-        } else {
-          total_counts += base_patterns->pattern_counter[this_pattern];
-        }
+        total_counts += base_patterns->pattern_counter[this_pattern];
       }
       last_pattern = this_pattern;
     }
@@ -851,4 +845,3 @@ float IUPACPattern::getZscore() const {
 bool sort_IUPAC_patterns(IUPACPattern* a, IUPACPattern* b) {
   return a->getLogPval() < b->getLogPval();
 }
-
