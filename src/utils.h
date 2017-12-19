@@ -49,4 +49,17 @@ namespace Utils {
   }
 }
 
+inline float calculate_pwm_info(float** pwm, unsigned length, unsigned n_states) {
+  float total_info = 0;
+  for(int pos = 0; pos < length; pos++) {
+    for(int state = 0; state < n_states; state++) {
+      float p = pwm[pos][state];
+      if(p != 0) {
+        total_info += p * log2(p);
+      }
+    }
+  }
+  return total_info + length * log2(n_states);
+}
+
 #endif //PENG_MOTIF_UTILS_H

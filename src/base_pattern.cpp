@@ -385,7 +385,7 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
   // store a second copy of the counts at the reverse complement id to allow fast lookup
   for (size_t kmer_id = 0; kmer_id < base_factors[pattern_length]; kmer_id++) {
     auto rc_kmer_id = BasePattern::getFastRevCompId(kmer_id);
-    if(kmer_id > BasePattern::getFastRevCompId(rc_kmer_id)) {
+    if(kmer_id > rc_kmer_id) {
       pattern_counter[kmer_id] = pattern_counter[rc_kmer_id];
     }
   }

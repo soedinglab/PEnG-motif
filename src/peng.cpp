@@ -102,7 +102,7 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
     int iteration_counter = 0;
 
     while(true) {
-      if(change <= min_em_threshold || iteration_counter == max_iterations) {
+      if(change <= min_em_threshold || iteration_counter >= max_iterations) {
         break;
       }
 
@@ -145,7 +145,12 @@ void Peng::em_optimize_pwms(std::vector<IUPACPattern*>& best_iupac_patterns,
 
     IUPACPattern* optimized_pattern = new IUPACPattern(best_iupac_patterns[i], old_pwm);
     optimized_iupac_patterns.push_back(optimized_pattern);
-    std::cout << "em: " << IUPACPattern::toString(ori_pattern, pattern_length) << " -> " << optimized_pattern->get_pattern_string() << std::endl;
+    auto avg_info_content =  calculate_pwm_info(optimized_pattern->get_pwm(), pattern_length, alphabet_size)/ pattern_length;
+    std::cout << "em: "
+              << IUPACPattern::toString(ori_pattern, pattern_length)
+              << " -> " << optimized_pattern->get_pattern_string()
+              << "   [ avg. info: " << std::setprecision(2) << avg_info_content << " ]"
+              << std::endl;
   }
 
   //de-allocate pwm's
@@ -311,8 +316,8 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
   }
 
   // TODO decide which version is best
-  for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
-  //for(size_t pattern_length = params.max_pattern_length ; pattern_length <= params.max_pattern_length; pattern_length += 2) {
+  //for(size_t pattern_length = std::min(6, params.max_pattern_length); pattern_length <= params.max_pattern_length; pattern_length += 2) {
+  for(size_t pattern_length = params.max_pattern_length ; pattern_length <= params.max_pattern_length; pattern_length += 2) {
     print_status("Processing kmers of length " + std::to_string(pattern_length), false);
     print_status("Finding overrepresented kmers (base patterns)", false);
     int current_k = std::min(static_cast<int>(pattern_length) - 1, k);
@@ -355,12 +360,19 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
         std::cout << "def pwm: ";
         pattern->calculate_pwm(base_pattern, params.pseudo_counts, pattern_counter, bg_model->getV()[0]);
       }
-      std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length) << " -> " << pattern->get_pattern_string() << std::endl;
+      auto pwm = pattern->get_pwm();
+      float avg_info_content = calculate_pwm_info(pwm, pattern_length, alphabet_size) / pattern_length;
+
+      std::cout << IUPACPattern::toString(pattern->get_pattern(), pattern_length)
+                << " -> "
+                << pattern->get_pattern_string()
+                << "   [ avg. info: " << std::setprecision(2) << avg_info_content << " ]"
+                << std::endl;
     }
 
     print_status("Optimizing expectation-maximization / merging patterns");
-    // precompute all patterns the em has to run over for speed
-    for(int background = 0; background <= this->max_k; background++) {
+
+    for(int background = this->max_k; background <= this->max_k; background++) {
       float* pattern_bg_probs = base_pattern->getBackgroundProb(background);
       std::cout << std::endl << "background order: " << background << std::endl;
       std::vector<IUPACPattern*> optimized_patterns;
@@ -617,8 +629,6 @@ void Peng::printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
   }
   else std::cerr << "Unable to open output file (" << output_filename << ")!";
 }
-
-
 
 
 void Peng::printJson(std::vector<IUPACPattern*>& best_iupac_patterns,

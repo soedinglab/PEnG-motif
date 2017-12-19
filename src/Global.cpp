@@ -57,7 +57,7 @@ int Global::verbosity = 2;            	              // verbosity
 int Global::nr_threads = 1;
 
 bool Global::filter_neighbors = true;
-unsigned Global::minimum_processed_motifs = 25;
+unsigned Global::minimum_processed_motifs = 0;
 
 void Global::init(int nargs, char* args[]){
   readArguments(nargs, args);
