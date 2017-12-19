@@ -7,6 +7,7 @@
  [![Issues](https://img.shields.io/github/issues/soedinglab/PEnG-motif.svg)](https://github.com/soedinglab/PEnG-motif/issues)
 
 PEnG-motif is an open-source software package for searching motifs (position specific weight matrices, PWMs) in a set of DNA sequences.
+As the core algorithm operates on kmers, the runtime is practically independent of the number and size of the input sequences. This makes PEnG-motif suitable for de-novo motif discovery on large sequence sets.
 
 ## Requirements
 
