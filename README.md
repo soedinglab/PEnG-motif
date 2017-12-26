@@ -7,55 +7,51 @@
  [![Issues](https://img.shields.io/github/issues/soedinglab/PEnG-motif.svg)](https://github.com/soedinglab/PEnG-motif/issues)
 
 PEnG-motif is an open-source software package for searching motifs (position specific weight matrices, PWMs) in a set of DNA sequences.
+
 As the core algorithm operates on kmers, the runtime is practically independent of the number and size of the input sequences. This makes PEnG-motif suitable for de-novo motif discovery on large sequence sets.
 
-## Requirements
+## Installation on macOS
+
+The easiest way to get PEnG-motif on your mac is by downloading our precompiled binaries. If you choose that way, please download `peng_motif_macOS.zip` from our latest  [release](https://github.com/soedinglab/PEnG-motif/releases).
+
+After unzipping you will find a new binary `peng_motif` which you can call from command line by the full path to the binary `./peng_motif`, or directly by typing `peng_motif`, if you moved it to a location in your shell path.
+
+## Installation on linux
+
+### Requirements
 
 To compile and run PEnG-motif, you need
  * [CMake](http://cmake.org/) 2.8.12 or later
  * a recent C++ compiler (support for C++14)
 
-### Optional requirements for running the scripts
+### Installation procedure
+Download the source code archive from our latest  [release](https://github.com/soedinglab/PEnG-motif/releases).
 
+Unzip the source code, and navigate into the freshly unzipped folder in your terminal.
+
+This code will compile and install PEnG-motif
+
+```bash
+INSTALL_DIR=/path/to/an/installation/directory/of/your/choice
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+make && make install
+```
+
+You may want to add the path of `$INSTALL_DIR/bin` to your shell PATH, to simplify usage.
+
+### Optional requirements for running the scripts
+The repository also contains helper scripts - if you want to use them, you also need:
   * python>=3.5
   * numpy
   * [BaMMmotif2](https://github.com/soedinglab/BaMMmotif2)
 
 
-## Installation
-
-### Cloning from GIT
-If you want to compile the most recent version, simply clone the git repository.
-
-	git clone https://github.com/soedinglab/PEnG-motif.git
-	cd PEnG-motif
-
-### Compilation
-With the source code ready, simply run cmake with the default settings and libraries should be auto-detected:
-
-	mkdir build
-	cd build
-
-Adjust ${HOME}/opt/PEnG if you want to change the installation directory
-
-	cmake -DCMAKE_INSTALL_PREFIX=${HOME}/opt/PEnG ..
-	make
-	make install
-
-### Environment setup
-Add this line to your $HOME/.bashrc (or .zshrc...) to add peng_motif to your PATH:
-
-	export PATH=${PATH}:${HOME}/opt/PEnG/bin
-
-Update your environment:
-
-	source $HOME/.bashrc
-
-
-## Usage
+## Using PEnG-motif
 PEnG-motif finds enriched sequences in a fasta file and writes the motifs to an output file in meme format.
 
-The simplest invocation is:
+If the parent directory of of `peng_motif` is in your shell path, the simplest way to use PEng-motif is:
 
 ```bash
 
@@ -64,11 +60,11 @@ The simplest invocation is:
 
 For a list of all available options, please see the output of `peng_motif -h`.
 
+If you didn't put PEnG-motif in your shell path, you have to enter the full path to the peng binary, e.g. `/path/to/peng/peng_motif -h`.
 
 ## Interpreting the output
 
-The PEnG-motif algorithm runs several phases; understanding the output printed to the console
-can be important when interpreting the results.
+The PEnG-motif algorithm runs several phases; understanding the output printed to the console will help interpreting the final results.
 
 ### Phase 1: Counting base patterns
 In the first phase, the occurrences of all 4^(pattern_length) kmers are counted. The expected number
