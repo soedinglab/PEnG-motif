@@ -120,6 +120,16 @@ The `shoot_peng.py` python script can be used to annotate motifs according how w
 
 Benchmarking requires [BaMMmotif2](https://github.com/soedinglab/BaMMmotif2).
 
+## Docker image
+PEnG-motif is included in our bamm-suite docker image `soedinglab/bamm-suite`.
+
+After navigating into the directory with your fasta sequences use:
+
+```
+docker pull soedinglab/bamm-suite
+docker run -v $UID:$GID -v $PWD/data soedinglab/bamm-suite peng_motif <fastafile.fa> <other options>
+
+```
 
 ## License
 
