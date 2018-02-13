@@ -78,6 +78,8 @@ def main():
                         help='number of threads to be used for parallelization')
     parser.add_argument('--silent', action='store_true',
                         help='capture and suppress output on stdout')
+    parser.add_argument('--stdout_output_file',
+                        help='write peng_motif output to file instead of stdout')
     parser.add_argument('--no-scoring', action='store_true',
                         help='skip the calculation of the pwm performance score')
     parser.add_argument('--no-neighbor-filtering', action='store_true',
@@ -171,13 +173,16 @@ def run_peng(args, output_directory, run_scoring):
     peng_output_file = os.path.join(output_directory, prefix + ".tmp.out")
     peng_json_file = os.path.join(output_directory, prefix + ".tmp.json")
 
-    if args.silent:
+    # run peng
+    peng_command_line = build_peng_command(args, args.fasta_file, peng_output_file, peng_json_file)
+
+    if args.stdout_output_file:
+        stdout = open(args.stdout_output_file, 'w')
+    elif args.silent:
         stdout = subprocess.DEVNULL
     else:
         stdout = None
 
-    # run peng
-    peng_command_line = build_peng_command(args, args.fasta_file, peng_output_file, peng_json_file)
     result = subprocess.run(peng_command_line, stdout=stdout)
 
     if result.returncode != 0:
@@ -231,6 +236,9 @@ def run_peng(args, output_directory, run_scoring):
         write_meme(peng_data, args.meme_output_file)
     if args.json_output_file:
         write_json(peng_data, args.json_output_file)
+
+    if args.stdout_output_file:
+        stdout.close()
 
 
 def write_meme(peng_data, peng_output_file):
