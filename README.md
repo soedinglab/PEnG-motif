@@ -14,17 +14,18 @@ As the core algorithm operates on kmers, the runtime is practically independent 
 
 ## Installation on macOS
 
-The easiest way to get PEnG-motif on your mac is by downloading our precompiled binaries. If you choose that way, please download `peng_motif_macOS.zip` from our latest  [release](https://github.com/soedinglab/PEnG-motif/releases).
+The easiest way to get PEnG-motif on your mac is by downloading our precompiled binaries. If you choose that way, please download `peng_motif_macOS.zip` from our latest [release](https://github.com/soedinglab/PEnG-motif/releases) and unpack it.
 
 After unzipping you will find a new binary `peng_motif` which you can call from command line by the full path to the binary `./peng_motif`, or directly by typing `peng_motif`, if you moved it to a location in your shell path.
 
 ## Installation on linux
 
-### Requirements
+The easiest way to get PEnG-motif on your 64bit linux computer is by downloading our precompiled binaries. If you choose that way, please download `peng_motif_linux_amd64.zip` from our latest [release](https://github.com/soedinglab/PEnG-motif/releases) and unpack it.
 
-To compile and run PEnG-motif, you need
+### Requirements for compiling from the scratch
+
  * [CMake](http://cmake.org/) 2.8.12 or later
- * a recent C++ compiler (support for C++14)
+ * gcc >=5.2 | gcc =4.9 (when manually setting CXXFLAG flag -std=c++1y)
 
 ### Installation procedure
 Download the source code archive from our latest  [release](https://github.com/soedinglab/PEnG-motif/releases).
