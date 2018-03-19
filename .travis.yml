@@ -11,6 +11,7 @@ addons:
   apt:
     packages: &default_packages
     - cmake
+    - zip
 
 script:
   - flake8 scripts/*.py
