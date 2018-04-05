@@ -55,6 +55,7 @@ int main(int nargs, char **args) {
   params.enrich_pseudocount_factor = Global::enrich_pseudocount_factor;
   params.minimum_processed_motifs = Global::minimum_processed_motifs;
   params.filter_neighbors = Global::filter_neighbors;
+  params.max_optimized_patterns = Global::maximum_optimized_patterns;
 
   peng.process(params, result);
 

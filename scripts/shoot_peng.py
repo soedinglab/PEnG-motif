@@ -86,6 +86,8 @@ def main():
                         help='do not filter similar base patterns before running the optimization')
     parser.add_argument('--minimum-processed-patterns', type=int, default=25,
                         help='minimum number of iupac patterns that are selected for em optimization')
+    parser.add_argument('--maximum-optimized-patterns', type=int, default=50,
+                        help='maximum number of iupac patterns that are selected for pattern optimization')
 
     args = parser.parse_args()
 
@@ -142,6 +144,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     command += ["--pseudo-counts", str(args.pseudo_counts)]
     command += ["--threads", str(args.number_threads)]
     command += ['--minimum-processed-patterns', args.minimum_processed_patterns]
+    command += ['--max-optimized-patterns', args.maximum_optimized_patterns]
     if args.no_neighbor_filtering:
         command.append('--no-neighbor-filtering')
 
@@ -199,17 +202,20 @@ def run_peng(args, output_directory, run_scoring):
         subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
 
         # run R script
-        zoops_scores = dict()
+        zoops_scores = {}
+        occur = {}
         with open(r_output_file) as fh:
             for line in fh:
                 if line.startswith("prefix"):
                     continue
                 try:
-                    prefix, motif_number, zoops_rank_score, auc5_score, auprc_score, *_ = line.split()
+                    prefix, motif_number, zoops_rank_score, auc5_score, auprc_score, q, *_ = line.split()
                     motif_number = int(motif_number)
                 except ValueError:
                     # either header or weird line. skipping.
                     continue
+
+                occur[motif_number] = float(q)
 
                 try:
                     # note here ausfc score is used for reranking, instead of fract_occ
@@ -219,9 +225,10 @@ def run_peng(args, output_directory, run_scoring):
 
         # update information
         patterns = peng_data["patterns"]
-        for idx, p in enumerate(patterns):
-            if idx + 1 in zoops_scores:
-                p["zoops_score"] = zoops_scores[idx + 1]
+        for idx, p in enumerate(patterns, start=1):
+            if idx in zoops_scores:
+                p["zoops_score"] = zoops_scores[idx]
+                p["occur"] = occur[idx]
                 print("{} {}".format(p["iupac_motif"], p["zoops_score"]))
             else:
                 p["zoops_score"] = np.nan
@@ -231,6 +238,7 @@ def run_peng(args, output_directory, run_scoring):
         patterns = peng_data["patterns"]
         for p in patterns:
             p["zoops_score"] = float('nan')
+            p["occur"] = float('nan')
 
     if args.meme_output_file:
         write_meme(peng_data, args.meme_output_file)
@@ -265,11 +273,11 @@ def write_meme(peng_data, peng_output_file):
             print("MOTIF {}".format(p["iupac_motif"]), file=fh)
             print(
                 ("letter-probability matrix: alength= {} w= {} "
-                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {}")
+                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {} occur= {}")
                 .format(
                     alphabet_length, p["pattern_length"], p["sites"],
                     p["bg_prob"], p["opt_bg_order"], p["log(Pval)"],
-                    p["zoops_score"]
+                    p["zoops_score"], p['occur']
                 ), file=fh
             )
             pwm = p["pwm"]

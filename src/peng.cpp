@@ -338,6 +338,12 @@ void Peng::process(PengParameters& params, std::vector<IUPACPattern*>& best_iupa
     std::cout << std::endl;
 
     std::vector<IUPACPattern*> unoptimized_iupac_patterns;
+
+    // keep only the top n patterns
+    if (selected_base_patterns.size() > params.max_optimized_patterns) {
+      selected_base_patterns.resize(params.max_optimized_patterns);
+    }
+
     optimize_iupac_patterns(params.opt_score_type, base_pattern, selected_base_patterns,
     						unoptimized_iupac_patterns, params.enrich_pseudocount_factor);
     std::cout << std::endl;

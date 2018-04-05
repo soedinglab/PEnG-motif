@@ -42,7 +42,7 @@ int Global::pseudoCounts = 10;
 bool Global::useAdvPWM = true;
 
 float Global::zscoreThreshold = 10;
-size_t Global::countThreshold = 1;
+size_t Global::countThreshold = 3;
 float Global::mergeBitfactorThreshold = 0.4;
 
 // background model options
@@ -58,6 +58,7 @@ int Global::nr_threads = 1;
 
 bool Global::filter_neighbors = true;
 unsigned Global::minimum_processed_motifs = 0;
+int Global::maximum_optimized_patterns = 50;
 
 void Global::init(int nargs, char* args[]){
   readArguments(nargs, args);
@@ -284,6 +285,14 @@ void Global::readArguments(int nargs, char* args[]){
       }
       minimum_processed_motifs = std::stoi(args[i]);
     }
+    else if (!strcmp(args[i], "--max-optimized-patterns")) {
+      if (++i>=nargs) {
+        printHelp();
+        LOG(ERROR) << "No expression following --max-optimized-patterns" << std::endl;
+        exit(4);
+      }
+      maximum_optimized_patterns = std::stoi(args[i]);
+    }
     else if (!strcmp(args[i], "--version")) {
       std::cout << "peng_motif " << VERSION_NUMBER << std::endl;;
       exit(0);
@@ -355,8 +364,8 @@ void Global::printHelp(){
       "           print the version number\n");
   printf("\n      -h\n"
       "           print this help \n");
-
-
+  printf("\n      --max-optimized-patterns\n"
+      "           maximum number of iupac patterns that are selected for pattern optimization\n");
   printf("\n=================================================================\n");
 }
 

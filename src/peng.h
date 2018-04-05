@@ -30,6 +30,7 @@ public:
 	bool adv_pwm;
 	unsigned minimum_processed_motifs;
   bool filter_neighbors;
+  int max_optimized_patterns;
 };
 
 class Peng{
