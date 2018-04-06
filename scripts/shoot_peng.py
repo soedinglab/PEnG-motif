@@ -158,10 +158,12 @@ def build_fdr_command(args, protected_fasta_file, peng_output_file, output_direc
                "--PWMFile", os.path.abspath(peng_output_file)]
     if args.strand == 'PLUS':
         command += ["--ss"]
-    command += ["-m", str(10)]
-    command += ["-k", str(0)]
-    command += ["--cvFold", str(1)]
+    command += ["--maxPosN", 10000]
+    command += ["--negN", 10000]
+    command += ["-k", 0]
+    command += ["--cvFold", 1]
 
+    command = [str(s) for s in command]
     print(" ".join(command))
     return command
 
