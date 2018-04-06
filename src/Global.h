@@ -68,6 +68,7 @@ public:
 
 	static bool filter_neighbors;
 	static unsigned minimum_processed_motifs;
+  static int maximum_optimized_patterns;
 
 private:
 	static void readArguments( int nargs, char* args[] );
