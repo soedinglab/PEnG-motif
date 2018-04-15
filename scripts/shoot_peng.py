@@ -56,8 +56,7 @@ def main():
                         choices=['ENRICHMENT', 'LOGPVAL', 'MUTUAL_INFO'],
                         help='select iupac optimization score')
     parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005, metavar="FLOAT",
-                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts "
-                             "in the EXPCOUNTS optimization")
+                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts in the EXPCOUNTS optimization")
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
     parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
@@ -201,7 +200,7 @@ def run_peng(args, output_directory, run_scoring):
         fdr_command_line = build_fdr_command(args, args.fasta_file, peng_output_file, output_directory)
         subprocess.run(fdr_command_line, check=True, stdout=stdout)
 
-        r_output_file = os.path.join(output_directory, prefix + ".aucscore")
+        r_output_file = os.path.join(output_directory, prefix + ".bmscore")
         subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
 
         # run R script
@@ -287,14 +286,14 @@ def write_meme(peng_data, peng_output_file):
 
             for line in pwm:
                 print(" ".join(['{:.8f}'.format(x) for x in line]), file=fh)
-                print(file=fh)
+            print(file=fh)
 
 
-        def write_json(peng_data, json_output_file):
-            with open(json_output_file, 'w') as fh:
-                json.dump(peng_data, fh)
+def write_json(peng_data, json_output_file):
+    with open(json_output_file, 'w') as fh:
+        json.dump(peng_data, fh)
 
 
-        # if called as a script; calls the main method
-        if __name__ == '__main__':
-            main()
+# if called as a script; calls the main method
+if __name__ == '__main__':
+    main()
