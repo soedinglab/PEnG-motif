@@ -24,7 +24,7 @@ def check_executable_presence(executable_name):
     return True
 
 
-RSCRIPT = "evaluateBaMM.R"
+RSCRIPT = "plotPvalStats.R"
 PENG = "peng_motif"
 FDR = "FDR"
 
@@ -56,8 +56,7 @@ def main():
                         choices=['ENRICHMENT', 'LOGPVAL', 'MUTUAL_INFO'],
                         help='select iupac optimization score')
     parser.add_argument('--enrich_pseudocount_factor', type=float, default=0.005, metavar="FLOAT",
-                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts "
-                        "in the EXPCOUNTS optimization")
+                        help="add (enrich_pseudocount_factor x #seqs) pseudo counts in the EXPCOUNTS optimization")
     parser.add_argument('--no-em', dest='use_em', action='store_false', default=True,
                         help='shuts off the em optimization')
     parser.add_argument('-a', metavar='FLOAT', dest='em_saturation_threshold', type=float, default=1E4,
@@ -152,7 +151,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     return [str(c) for c in command]
 
 
-# FDR -m 10 -k 0 --cvFold 1
+# FDR -m 1 -k 0 --cvFold 1 --negN 10000 --maxPosN 10000
 def build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory):
     command = [FDR, output_directory, os.path.abspath(protected_fasta_file),
                "--PWMFile", os.path.abspath(peng_output_file)]
@@ -200,36 +199,37 @@ def run_peng(args, output_directory, run_scoring):
         # run FDR
         fdr_command_line = build_fdr_command(args, args.fasta_file, peng_output_file, output_directory)
         subprocess.run(fdr_command_line, check=True, stdout=stdout)
+
         r_output_file = os.path.join(output_directory, prefix + ".bmscore")
         subprocess.run([RSCRIPT, os.path.abspath(output_directory), prefix], check=True, stdout=stdout)
 
         # run R script
-        zoops_scores = {}
+        rank_scores = {}
         occur = {}
         with open(r_output_file) as fh:
             for line in fh:
                 if line.startswith("prefix"):
                     continue
                 try:
-                    prefix, motif_number, zoops_rank_score, auc5_score, auprc_score, q, *_ = line.split()
+                    prefix, motif_number, data_aurrc, data_occur, motif_aurrc, motif_occur, *_ = line.split()
                     motif_number = int(motif_number)
                 except ValueError:
                     # either header or weird line. skipping.
                     continue
 
-                occur[motif_number] = float(q)
+                occur[motif_number] = float(motif_occur)
 
                 try:
                     # note here ausfc score is used for reranking, instead of fract_occ
-                    zoops_scores[motif_number] = float(zoops_rank_score)
+                    rank_scores[motif_number] = float(data_aurrc)
                 except ValueError:
-                    zoops_scores[motif_number] = np.nan
+                    rank_scores[motif_number] = np.nan
 
         # update information
         patterns = peng_data["patterns"]
         for idx, p in enumerate(patterns, start=1):
-            if idx in zoops_scores:
-                p["zoops_score"] = zoops_scores[idx]
+            if idx in rank_scores:
+                p["zoops_score"] = rank_scores[idx]
                 p["occur"] = occur[idx]
                 print("{} {}".format(p["iupac_motif"], p["zoops_score"]))
             else:
@@ -275,8 +275,7 @@ def write_meme(peng_data, peng_output_file):
             print("MOTIF {}".format(p["iupac_motif"]), file=fh)
             print(
                 ("letter-probability matrix: alength= {} w= {} "
-                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {} occur= {}")
-                .format(
+                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {} occur= {}").format(
                     alphabet_length, p["pattern_length"], p["sites"],
                     p["bg_prob"], p["opt_bg_order"], p["log(Pval)"],
                     p["zoops_score"], p['occur']
