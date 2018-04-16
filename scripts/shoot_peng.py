@@ -275,8 +275,7 @@ def write_meme(peng_data, peng_output_file):
             print("MOTIF {}".format(p["iupac_motif"]), file=fh)
             print(
                 ("letter-probability matrix: alength= {} w= {} "
-                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {} occur= {}")
-                    .format(
+                 "nsites= {} bg_prob= {} opt_bg_order= {} log(Pval)= {} zoops_score= {} occur= {}").format(
                     alphabet_length, p["pattern_length"], p["sites"],
                     p["bg_prob"], p["opt_bg_order"], p["log(Pval)"],
                     p["zoops_score"], p['occur']
