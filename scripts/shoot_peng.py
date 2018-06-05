@@ -151,7 +151,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     return [str(c) for c in command]
 
 
-# FDR -m 1 -k 0 --cvFold 1 --negN 10000 --maxPosN 10000
+# FDR -m 1 -k 0 --cvFold 1 --negN 10000 --maxPosN 10000 --threads 4 --threads_motif 4
 def build_fdr_command(args, protected_fasta_file, peng_output_file, output_directory):
     command = [FDR, output_directory, os.path.abspath(protected_fasta_file),
                "--PWMFile", os.path.abspath(peng_output_file)]
@@ -161,6 +161,8 @@ def build_fdr_command(args, protected_fasta_file, peng_output_file, output_direc
     command += ["--negN", 10000]
     command += ["-k", 0]
     command += ["--cvFold", 1]
+    command += ["--threads", 4]
+    command += ["--threads_motif", 4]
 
     command = [str(s) for s in command]
     print(" ".join(command))
