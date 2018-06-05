@@ -147,7 +147,6 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
     if args.no_neighbor_filtering:
         command.append('--no-neighbor-filtering')
 
-    print(" ".join(str(c) for c in command))
     return [str(c) for c in command]
 
 
@@ -165,7 +164,6 @@ def build_fdr_command(args, protected_fasta_file, peng_output_file, output_direc
     command += ["--threads_motif", 4]
 
     command = [str(s) for s in command]
-    print(" ".join(command))
     return command
 
 
@@ -196,6 +194,11 @@ def run_peng(args, output_directory, run_scoring):
 
     with open(peng_json_file) as fh:
         peng_data = json.load(fh)
+
+    if not len(peng_data['patterns']):
+        print('|ERROR| no enriched patterns found. You can find very short or weak patterns '
+              'by reducing the z-score threshold or the pattern length')
+        sys.exit(4 + 0 + 4)
 
     if run_scoring:
         # run FDR
