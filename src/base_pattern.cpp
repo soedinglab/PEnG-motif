@@ -14,7 +14,8 @@
 #include <memory>
 #include "base_pattern.h"
 
-BasePattern::BasePattern(const size_t pattern_length, Strand s, const int k, const int max_k,
+BasePattern::BasePattern(const size_t pattern_length, Strand s,
+                         const int k, const int max_k,
                          SequenceSet* sequence_set, BackgroundModel* bg) {
   this->pattern_length = pattern_length;
   alphabet_size = Alphabet::getSize();
@@ -396,7 +397,7 @@ void BasePattern::count_patterns_single_strand(SequenceSet* sequence_set) {
   std::vector<Sequence*> sequences = sequence_set->getSequences();
   size_t* base_factors = BasePattern::getFactors();
   auto* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
-  unsigned int j = pattern_length; // current position of W-mer in concatenated input sequences (padded with W positions in front)
+  size_t j = pattern_length; // current position of W-mer in concatenated input sequences (padded with W positions in front)
 
   // Loop over sequences in input set
   for(size_t s = 0; s < sequences.size(); s++) {

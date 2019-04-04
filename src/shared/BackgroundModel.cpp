@@ -33,7 +33,7 @@ BackgroundModel::BackgroundModel( SequenceSet& sequenceSet,
 			folds.push_back( 0 );
 
 			foldIndices.push_back( std::vector<int>() );
-			for( int n = 0; n < sequenceSet.getN(); n++ ){
+			for( int n = 0; n < (int)sequenceSet.getN(); n++ ){
 				foldIndices[0].push_back( n );
 			}
 		} else{
@@ -46,7 +46,7 @@ BackgroundModel::BackgroundModel( SequenceSet& sequenceSet,
 		folds.push_back( 0 );
 
 		foldIndices.push_back( std::vector<int>() );
-		for( int n = 0; n < sequenceSet.getN(); n++ ){
+		for( int n = 0; n < (int)sequenceSet.getN(); n++ ){
 			foldIndices[0].push_back( n );
 		}
 	}
@@ -225,7 +225,7 @@ double BackgroundModel::calculateLogLikelihood( SequenceSet& sequenceSet,
 			folds.push_back( 0 );
 
 			foldIndices.push_back( std::vector<int>() );
-			for( int n = 0; n < sequenceSet.getN(); n++ ){
+			for( int n = 0; n < (int)sequenceSet.getN(); n++ ){
 				foldIndices[0].push_back( n );
 			}
 		} else{
@@ -238,7 +238,7 @@ double BackgroundModel::calculateLogLikelihood( SequenceSet& sequenceSet,
 		folds.push_back( 0 );
 
 		foldIndices.push_back( std::vector<int>() );
-		for( int n = 0; n < sequenceSet.getN(); n++ ){
+		for( int n = 0; n < (int)sequenceSet.getN(); n++ ){
 			foldIndices[0].push_back( n );
 		}
 	}
@@ -288,7 +288,7 @@ void BackgroundModel::calculatePosLikelihoods( SequenceSet& sequenceSet,
 			folds.push_back( 0 );
 
 			foldIndices.push_back( std::vector<int>() );
-			for( int n = 0; n < sequenceSet.getN(); n++ ){
+			for( int n = 0; n < (int)sequenceSet.getN(); n++ ){
 				foldIndices[0].push_back( n );
 			}
 		} else{
@@ -301,7 +301,7 @@ void BackgroundModel::calculatePosLikelihoods( SequenceSet& sequenceSet,
 		folds.push_back( 0 );
 
 		foldIndices.push_back( std::vector<int>() );
-		for( int n = 0; n < sequenceSet.getN(); n++ ){
+		for( int n = 0; n < (int)sequenceSet.getN(); n++ ){
 			foldIndices[0].push_back( n );
 		}
 	}
