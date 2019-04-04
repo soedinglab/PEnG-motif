@@ -5,60 +5,55 @@
  *      Author: wanwan
  */
 
-#include <sys/stat.h>   			// get file status
-
 #include "Global.h"
 #include "log.h"
-#include "shared/Alphabet.h"
-
-#include <string.h>
-#include <string>
 
 
-char*	Global::alphabetType = nullptr;			              // alphabet type is defaulted to standard which is ACGT
+char*   Global::alphabetType = nullptr;			        // alphabet type is defaulted to standard which is ACGT
 
-char* Global::outputFilename = nullptr;                  // filename for IUPAC pattern output in short meme format
-char* Global::jsonFilename = nullptr;                    // filename for IUPAC pattern output in json format
+char*   Global::outputFilename = nullptr;               // filename for IUPAC pattern output in short meme format
+char*   Global::jsonFilename = nullptr;                 // filename for IUPAC pattern output in json format
 
-char* Global::inputSequenceFilename = nullptr;		        // filename with input FASTA sequences
-char* Global::backgroundSequenceFilename = nullptr;      // filename with background FASTA sequences
-SequenceSet* Global::inputSequenceSet = nullptr;         // input sequence Set
-SequenceSet* Global::backgroundSequenceSet = nullptr;    // background sequence Set
+char*   Global::inputSequenceFilename = nullptr;		// filename with input FASTA sequences
+char*   Global::backgroundSequenceFilename = nullptr;   // filename with background FASTA sequences
+SequenceSet* Global::inputSequenceSet = nullptr;        // input sequence Set
+SequenceSet* Global::backgroundSequenceSet = nullptr;   // background sequence Set
 
 OPTIMIZATION_SCORE Global::optScoreType = OPTIMIZATION_SCORE::MutualInformation;
-float Global::enrich_pseudocount_factor = 0.005;
+float   Global::enrich_pseudocount_factor = 0.005;
 
-int Global::patternLength = 10;                        // length of patterns to be trained/searched
-Strand Global::strand = Strand::BOTH_STRANDS;
+int     Global::patternLength = 10;                     // length of patterns to be trained/searched
+Strand  Global::strand = Strand::BOTH_STRANDS;
 
-bool Global::useEm = true;
-float Global::emSaturationFactor = 1E4;
-float Global::emMinThreshold = 0.08;
-int Global::emMaxIterations = 10;
+bool    Global::useEm = true;
+float   Global::emSaturationFactor = 1E4;
+float   Global::emMinThreshold = 0.08;
+int     Global::emMaxIterations = 10;
 
-bool Global::useMerging = true;
+bool    Global::useMerging = true;
 
-int Global::pseudoCounts = 10;
-bool Global::useAdvPWM = true;
+int     Global::pseudoCounts = 10;
+bool    Global::useAdvPWM = true;
 
-float Global::zscoreThreshold = 10;
-size_t Global::countThreshold = 3;
-float Global::mergeBitfactorThreshold = 0.4;
+float   Global::zscoreThreshold = 10;
+size_t  Global::countThreshold = 3;
+float   Global::mergeBitfactorThreshold = 0.4;
+size_t  Global::max_merged_length = 14;
 
 // background model options
-bool Global::interpolateBG = true;                    // calculate prior probabilities from lower-order probabilities
-                                                      // instead of background frequencies of mononucleotides
+bool    Global::interpolateBG = true;                   // calculate prior probabilities from lower-order probabilities
+                                                        // instead of background frequencies of mononucleotides
 
-int Global::bgModelOrder = 2;                         // background model order, defaults to 2
-int Global::maxOptBgModelOrder = 2;
+int     Global::bgModelOrder = 2;                       // background model order, defaults to 2
+int     Global::maxOptBgModelOrder = 2;
 std::vector<float>  Global::bgModelAlpha( bgModelOrder+1, 1.0f );    // background model alpha
 
-int Global::verbosity = 2;            	              // verbosity
-int Global::nr_threads = 1;
+int     Global::verbosity = 2;            	            // verbosity
+int     Global::nr_threads = 1;
 
-bool Global::filter_neighbors = true;
+bool    Global::filter_neighbors = true;
 unsigned Global::minimum_processed_motifs = 0;
-int Global::maximum_optimized_patterns = 50;
+int     Global::maximum_optimized_patterns = 50;
 
 void Global::init(int nargs, char* args[]){
   readArguments(nargs, args);
@@ -247,6 +242,14 @@ void Global::readArguments(int nargs, char* args[]){
     else if (!strcmp(args[i], "--no-merging")) {
       useMerging = false;
     }
+    else if (!strcmp(args[i], "--max_merged_length")) {
+        if (++i>=nargs) {
+            printHelp();
+            LOG(ERROR) << "No expression following --max_merged_length" << std::endl;
+            exit(4);
+        }
+        max_merged_length = std::stoi(args[i]);
+    }
     else if (!strcmp(args[i], "--strand")) {
       if (++i>=nargs) {
         printHelp();
@@ -350,6 +353,8 @@ void Global::printHelp(){
       "           max number of em optimization iterations\n");
   printf("\n      --no-merging\n"
       "           shuts off the merging \n");
+  printf("\n      --max_merged_length\n"
+      "           define the maximum length of motifs after merging\n");
   printf("\n      --use-default-pwm\n"
       "           use the default calculation of the pwm\n");
   printf("\n      --pseudo-counts, <PSEUDO_COUNTS>\n"

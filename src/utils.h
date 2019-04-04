@@ -40,8 +40,8 @@ namespace Utils {
   inline void no_zero_pwm(float** raw_pwm, unsigned rows, unsigned cols, unsigned precision) {
     float delta = std::pow(10, -static_cast<int>(precision));
     float epsilon = delta / (1 - 4*delta);
-    for(int i = 0; i < rows; i++) {
-      for(int j = 0; j < cols; j++) {
+    for(size_t i = 0; i < rows; i++) {
+      for(size_t j = 0; j < cols; j++) {
         raw_pwm[i][j] += epsilon;
       }
     }
@@ -51,8 +51,8 @@ namespace Utils {
 
 inline float calculate_pwm_info(float** pwm, unsigned length, unsigned n_states) {
   float total_info = 0;
-  for(int pos = 0; pos < length; pos++) {
-    for(int state = 0; state < n_states; state++) {
+  for(size_t pos = 0; pos < length; pos++) {
+    for(size_t state = 0; state < n_states; state++) {
       float p = pwm[pos][state];
       if(p != 0) {
         total_info += p * log2(p);

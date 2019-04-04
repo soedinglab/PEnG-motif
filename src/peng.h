@@ -13,34 +13,42 @@
 
 class PengParameters {
 public:
-	int max_pattern_length;
-	float zscore_threshold;
-	size_t count_threshold;
-	int pseudo_counts;
+	size_t  max_pattern_length;
+	float   zscore_threshold;
+	size_t  count_threshold;
+	int     pseudo_counts;
 	OPTIMIZATION_SCORE opt_score_type;
-	float enrich_pseudocount_factor;
+	float   enrich_pseudocount_factor;
 
 	// EM Parameters
-	bool use_em;
-	float em_saturation_factor;
-	float em_min_threshold;
-	int em_max_iterations;
-	bool use_merging;
-	float bit_factor_merge_threshold;
-	bool adv_pwm;
-	unsigned minimum_processed_motifs;
-  bool filter_neighbors;
-  int max_optimized_patterns;
+	bool    use_em;
+	float   em_saturation_factor;
+	float   em_min_threshold;
+	int     em_max_iterations;
+	bool    use_merging;
+	float   bit_factor_merge_threshold;
+	bool    adv_pwm;
+	size_t  minimum_processed_motifs;
+    bool    filter_neighbors;
+    size_t  max_optimized_patterns;
+    size_t  max_merged_length;
 };
 
 class Peng{
  public:
-  Peng(Strand s, const int k, const int max_opt_k,
-                SequenceSet* sequence_set, BackgroundModel* bg);
-  ~Peng();
-  void process(PengParameters& params, std::vector<IUPACPattern*>& best_iupac_patterns);
+  Peng(Strand s,
+       const int k,
+       const int max_opt_k,
+       SequenceSet* sequence_set,
+       BackgroundModel* bg);
 
-  void filter_redundancy(const float merge_bit_factor_threshold, std::vector<IUPACPattern*>& iupac_patterns);
+  ~Peng();
+
+  void process(PengParameters& params,
+               std::vector<IUPACPattern*>& best_iupac_patterns);
+
+  void filter_redundancy(const float merge_bit_factor_threshold,
+                         std::vector<IUPACPattern*>& iupac_patterns);
 
   void printShortMeme(std::vector<IUPACPattern*>& best_iupac_patterns,
                       const std::string output_filename,
@@ -67,21 +75,29 @@ class Peng{
                                std::vector<IUPACPattern*>& best_iupac_patterns,
 							   float enrich_pseudocount_factor);
 
-  void filter_iupac_patterns(const size_t pattern_length, unsigned minimum_retained_motifs, std::vector<IUPACPattern*>& iupac_patterns);
+  void filter_iupac_patterns(size_t pattern_length,
+                             size_t minimum_retained_motifs,
+                             std::vector<IUPACPattern*>& iupac_patterns);
 
-  void merge_iupac_patterns(const size_t pattern_length, const float bit_factor_merge_threshold,
-                            BackgroundModel* bg, std::vector<IUPACPattern*>& iupac_patterns);
+  void merge_iupac_patterns(size_t pattern_length,
+                            float bit_factor_merge_threshold,
+                            BackgroundModel* bg,
+                            std::vector<IUPACPattern*>& iupac_patterns,
+                            size_t max_merged_length);
 
   void em_optimize_pwms(std::vector<IUPACPattern*>& iupac_patterns,
                         BasePattern* base_patterns,
-                                  const float saturation_factor,
-                                  const float min_em_threshold, const int max_iterations,
-                                  float* background_probabilities,
-                                  std::vector<IUPACPattern*>& optimized_iupac_patterns);
+                        float saturation_factor,
+                        float min_em_threshold,
+                        int max_iterations,
+                        float* background_probabilities,
+                        std::vector<IUPACPattern*>& optimized_iupac_patterns);
 
-  void calculate_prob_odds(const size_t pattern_length,
-                      size_t curr_pattern, float curr_prob, int curr_length,
-                      float** pwm, float* pattern_bg_probabilities, size_t* factors, float* prob_odds);
+  void calculate_prob_odds(size_t pattern_length,
+                           size_t curr_pattern,
+                           float curr_prob, size_t curr_length,
+                           float** pwm, float* pattern_bg_probabilities,
+                           size_t* factors, float* prob_odds);
 };
 
 #endif /* UTIL_H_ */

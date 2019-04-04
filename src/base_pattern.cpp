@@ -83,7 +83,7 @@ void BasePattern::init_half_reverse_complements() {
 
   for(unsigned pattern_id = 0; pattern_id < factor[half_pattern_length]; pattern_id++) {
     unsigned rev_pattern_id = 0;
-    for(int p = 0; p < half_pattern_length; p++) {
+    for(size_t p = 0; p < half_pattern_length; p++) {
       int c = BasePattern::getFastNucleotideAtPos(pattern_id, p);
       //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
       //-1; to get back to our encoding (without 'other')
@@ -119,7 +119,7 @@ size_t BasePattern::getRevCompId(const size_t pattern_id) {
   size_t rev_pattern_id = 0;
 
   //calculate id of pattern on the minus strand
-  for(int p = 0; p < pattern_length; p++) {
+  for(size_t p = 0; p < pattern_length; p++) {
     int c = BasePattern::getFastNucleotideAtPos(pattern_id, p);
 
     //+1; shifted encoding compared to Alphabet (Alphabet encodes 'other' on position 0)
@@ -169,7 +169,7 @@ float* BasePattern::getBackgroundProb() {
 size_t BasePattern::baseId2IUPACId(const size_t base_pattern) {
   //map pattern to basic pattern in iupac base
   size_t iupac_pattern = 0;
-  for (int p = 0; p < pattern_length; p++) {
+  for (size_t p = 0; p < pattern_length; p++) {
     int c = getFastNucleotideAtPos(base_pattern, p);
     iupac_pattern += c * IUPACPattern::iupac_factor[p];
   }
@@ -331,7 +331,7 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
   ltot = 0;
   std::vector<Sequence*> sequences = sequence_set->getSequences();
   size_t* base_factors = BasePattern::getFactors();
-  unsigned int* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
+  auto* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
   unsigned int j = pattern_length; // current position of W-mer in concatenated input sequences (padded with W positions in front)
 
   // Loop over sequences in input set
@@ -340,7 +340,7 @@ void BasePattern::count_patterns(SequenceSet* sequence_set) {
     std::unique_ptr<uint8_t[]> seq_rev = sequences[s]->createReverseComplement();
     int length = sequences[s]->getL();
     size_t id, idrev; // numerical id of the current pattern and of its reverse complement
-    int p, i, irev;
+    size_t p, i, irev;
 
     // Loop over kmer start positions in current sequence
     for (i = 0; i < length; i++, j++) {
@@ -395,7 +395,7 @@ void BasePattern::count_patterns_single_strand(SequenceSet* sequence_set) {
   ltot = 0;
   std::vector<Sequence*> sequences = sequence_set->getSequences();
   size_t* base_factors = BasePattern::getFactors();
-  unsigned int* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
+  auto* last_match_pos = new unsigned int[base_factors[pattern_length]]{};
   unsigned int j = pattern_length; // current position of W-mer in concatenated input sequences (padded with W positions in front)
 
   // Loop over sequences in input set
@@ -403,7 +403,7 @@ void BasePattern::count_patterns_single_strand(SequenceSet* sequence_set) {
     uint8_t* seq = sequences[s]->getSequence();
     int length = sequences[s]->getL();
     size_t id; // numerical id of the current pattern and of its reverse complement
-    int p, i;
+    size_t p, i;
 
     // Loop over kmer start positions in current sequence
     for (i = 0; i < length; i++, j++) {
@@ -445,12 +445,12 @@ std::vector<size_t> BasePattern::select_base_patterns(const float zscore_thresho
                                        bool filter_neighbors) {
 
   std::vector<size_t> selected_patterns;
-  bool* seen_array = new bool[number_patterns];
+  auto* seen_array = new bool[number_patterns];
   for(size_t i = 0; i < number_patterns; i++) {
     seen_array[i] = false;
   }
 
-  size_t* sorted_array = new size_t[number_patterns];
+  auto* sorted_array = new size_t[number_patterns];
   for(size_t i = 0; i < number_patterns; i++) {
     sorted_array[i] = i;
   }
@@ -562,8 +562,8 @@ auto BasePattern::generate_pattern_corrections(unsigned order, bool* already_cor
 }
 
 void BasePattern::correct_counts() {
-  bool* already_corrected_patterns = new bool[number_patterns]{false};
-  for(int order = 1; order <= pattern_length / 2; order++) {
+  auto* already_corrected_patterns = new bool[number_patterns]{false};
+  for(size_t order = 1; order <= pattern_length / 2; order++) {
     if(pattern_length % order == 0) {
       std::unique_ptr<float[]> bg_probs = generate_correction_bg_probs(order, background_model);
       auto result = generate_pattern_corrections(order, already_corrected_patterns, bg_probs.get());
