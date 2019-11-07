@@ -288,20 +288,25 @@ void Peng::merge_iupac_patterns(const size_t pattern_length,
                                                         bg_model->getV()[0], best_shift);
       }
 
-      std::cout << "merge: " << iupac_patterns[best_j]->get_pattern_string() <<
-          " + " << iupac_patterns[best_i]->get_pattern_string() <<
-          " -> " << merged_pattern->get_pattern_string() << std::endl;
+        if(merged_pattern->get_pattern_length() <= this->sequence_set->getMaxL()){
+            std::cout << "merge: " << iupac_patterns[best_j]->get_pattern_string() <<
+                      " + " << iupac_patterns[best_i]->get_pattern_string() <<
+                      " -> " << merged_pattern->get_pattern_string() << std::endl;
 
-      delete iupac_patterns[best_j];
-      delete iupac_patterns[best_i];
+            delete iupac_patterns[best_j];
+            delete iupac_patterns[best_i];
 
-      iupac_patterns.erase(iupac_patterns.begin() + best_j);
-      iupac_patterns.erase(iupac_patterns.begin() + best_i);
+            iupac_patterns.erase(iupac_patterns.begin() + best_j);
+            iupac_patterns.erase(iupac_patterns.begin() + best_i);
 
-      iupac_patterns.push_back(merged_pattern);
+            iupac_patterns.push_back(merged_pattern);
 
-      //continue searching for merges
-      found_better = true;
+            //continue searching for merges
+            found_better = true;
+        }
+        else{
+            continue;
+        }
     }
   }
 }
