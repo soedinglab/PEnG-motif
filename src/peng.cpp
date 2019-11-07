@@ -288,7 +288,8 @@ void Peng::merge_iupac_patterns(const size_t pattern_length,
                                                         bg_model->getV()[0], best_shift);
       }
 
-        if(merged_pattern->get_pattern_length() <= this->sequence_set->getMaxL()){
+        size_t merged_len = merged_pattern->get_pattern_length();
+        if(merged_len <= this->sequence_set->getMaxL() and merged_len <= max_merged_length){
             std::cout << "merge: " << iupac_patterns[best_j]->get_pattern_string() <<
                       " + " << iupac_patterns[best_i]->get_pattern_string() <<
                       " -> " << merged_pattern->get_pattern_string() << std::endl;
