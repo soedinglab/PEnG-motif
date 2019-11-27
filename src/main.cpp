@@ -21,41 +21,45 @@ int main(int nargs, char **args) {
   //calculate background model
   int bg_model_order = std::max(Global::bgModelOrder, Global::maxOptBgModelOrder);
   BackgroundModel* bgModel = new BackgroundModel(*Global::backgroundSequenceSet,
-                          bg_model_order,
-                          Global::bgModelAlpha,
-                          Global::interpolateBG);
+                                                 bg_model_order,
+                                                 Global::bgModelAlpha,
+                                                 Global::interpolateBG);
 
   #ifdef OPENMP
     omp_set_num_threads(Global::nr_threads);
   #endif
 
   //init peng with base patterns
-  Peng peng(Global::strand, Global::bgModelOrder, Global::maxOptBgModelOrder,
-                Global::inputSequenceSet, bgModel);
+  Peng peng(Global::strand,
+            Global::bgModelOrder,
+            Global::maxOptBgModelOrder,
+            Global::inputSequenceSet,
+            bgModel);
 
 
   //get merged degenerated iupac patterns from peng
   std::vector<IUPACPattern*> result;
 
   PengParameters params;
-  params.max_pattern_length = Global::patternLength;
-  params.zscore_threshold = Global::zscoreThreshold;
-  params.count_threshold = Global::countThreshold;
-  params.pseudo_counts = Global::pseudoCounts;
-  params.opt_score_type = Global::optScoreType;
+  params.max_pattern_length         = Global::patternLength;
+  params.zscore_threshold           = Global::zscoreThreshold;
+  params.count_threshold            = Global::countThreshold;
+  params.pseudo_counts              = Global::pseudoCounts;
+  params.opt_score_type             = Global::optScoreType;
   // em options
-  params.use_em = Global::useEm;
-  params.em_saturation_factor = Global::emSaturationFactor;
-  params.em_min_threshold = Global::emMinThreshold;
-  params.em_max_iterations = Global::emMaxIterations;
+  params.use_em                     = Global::useEm;
+  params.em_saturation_factor       = Global::emSaturationFactor;
+  params.em_min_threshold           = Global::emMinThreshold;
+  params.em_max_iterations          = Global::emMaxIterations;
 
-  params.use_merging = Global::useMerging;
+  params.use_merging                = Global::useMerging;
   params.bit_factor_merge_threshold = Global::mergeBitfactorThreshold;
-  params.adv_pwm = Global::useAdvPWM;
-  params.enrich_pseudocount_factor = Global::enrich_pseudocount_factor;
-  params.minimum_processed_motifs = Global::minimum_processed_motifs;
-  params.filter_neighbors = Global::filter_neighbors;
-  params.max_optimized_patterns = Global::maximum_optimized_patterns;
+  params.max_merged_length          = Global::max_merged_length;
+  params.adv_pwm                    = Global::useAdvPWM;
+  params.enrich_pseudocount_factor  = Global::enrich_pseudocount_factor;
+  params.minimum_processed_motifs   = Global::minimum_processed_motifs;
+  params.filter_neighbors           = Global::filter_neighbors;
+  params.max_optimized_patterns     = Global::maximum_optimized_patterns;
 
   peng.process(params, result);
 

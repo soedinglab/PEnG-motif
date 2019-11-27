@@ -24,51 +24,51 @@ const std::string VERSION_NUMBER("1.0.0");
 
 class Global{
 public:
-	static char* alphabetType;						       // provide alphabet type
-	static char* outputFilename;                 // filename for IUPAC pattern output in short meme format
-	static char* jsonFilename;                   // filename for IUPAC pattern output in json format
-	static char* inputSequenceFilename;				   // filename of positive sequence FASTA file
-	static char* backgroundSequenceFilename;     // filename of background sequence FASTA file
-	static SequenceSet*	inputSequenceSet;				 // positive Sequence Set
-	static SequenceSet* backgroundSequenceSet;   // background Sequence Set
-	static bool revcomp;                         // also search on reverse complement of sequences
+	static char*        alphabetType;				// provide alphabet type
+	static char*        outputFilename;             // filename for IUPAC pattern output in short meme format
+	static char*        jsonFilename;               // filename for IUPAC pattern output in json format
+	static char*        inputSequenceFilename;		// filename of positive sequence FASTA file
+	static char*        backgroundSequenceFilename; // filename of background sequence FASTA file
+	static SequenceSet*	inputSequenceSet;		    // positive Sequence Set
+	static SequenceSet* backgroundSequenceSet;      // background Sequence Set
+	static bool         revcomp;                    // also search on reverse complement of sequences
 
 	static OPTIMIZATION_SCORE optScoreType;
-	static float enrich_pseudocount_factor;
+	static float        enrich_pseudocount_factor;
 
-	static int patternLength;                    // length of pattern to be searched/trained
-	static float zscoreThreshold;
-	static size_t countThreshold;
-	static Strand strand;
+	static int          patternLength;              // length of pattern to be searched/trained
+	static float        zscoreThreshold;
+	static size_t       countThreshold;
+	static Strand       strand;
 
-	static bool useEm;
-	static float emSaturationFactor;
-	static float emMinThreshold;
-	static int emMaxIterations;
+	static bool         useEm;
+	static float        emSaturationFactor;
+	static float        emMinThreshold;
+	static int          emMaxIterations;
 
-	static bool useMerging;
+	static bool         useMerging;
+	static float        mergeBitfactorThreshold;
+    static size_t       max_merged_length;
 
-	static float mergeBitfactorThreshold;
+	static bool         useAdvPWM;
+	static int          pseudoCounts;
 
-	static bool useAdvPWM;
-	static int pseudoCounts;
+	static int          bgModelOrder;				// background model order, defaults to 2
+	static int          maxOptBgModelOrder;         // max background model order for optimization, defaults to 3
+	static bool         interpolateBG;              // calculate prior probabilities from lower-order probabilities
+	                                                // instead of background frequencies of mononucleotides
+	static std::vector<float> bgModelAlpha;         // background model alpha
 
-	static int bgModelOrder;						         // background model order, defaults to 2
-	static int maxOptBgModelOrder;               // max background model order for optimization, defaults to 3
-	static bool interpolateBG;                   // calculate prior probabilities from lower-order probabilities
-	                                             // instead of background frequencies of mononucleotides
-	static std::vector<float> bgModelAlpha;      // background model alpha
+	static int          nr_threads;
 
-	static int nr_threads;
+	static int          verbosity;					// verbose printouts, defaults to false
 
-	static int verbosity;							           // verbose printouts, defaults to false
+	static void         init( int nargs, char* args[] );
+	static void         destruct();
 
-	static void init( int nargs, char* args[] );
-	static void destruct();
-
-	static bool filter_neighbors;
-	static unsigned minimum_processed_motifs;
-  static int maximum_optimized_patterns;
+	static bool         filter_neighbors;
+	static unsigned     minimum_processed_motifs;
+  static int            maximum_optimized_patterns;
 
 private:
 	static void readArguments( int nargs, char* args[] );

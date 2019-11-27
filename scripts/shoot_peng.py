@@ -67,6 +67,8 @@ def main():
                         help='max number of em optimization iterations')
     parser.add_argument('--no-merging', dest='use_merging', action='store_false', default=True,
                         help='shuts off the merging of patterns')
+    parser.add_argument('--max_merged_length', metavar='INT', dest='max_merged_length', type=int, default=14,
+                        help='maximum length of motifs after merging')
     parser.add_argument('-b', metavar='FLOAT', dest='bit_factor_threshold', type=float, default=0.4,
                         help='bit factor threshold for merging IUPAC patterns')
     parser.add_argument('--use-default-pwm', action='store_true', dest='use_default_pwm', default=False,
@@ -139,6 +141,7 @@ def build_peng_command(args, protected_fasta_file, peng_output_file, peng_json_f
         command += ["--no-merging"]
     if args.use_default_pwm:
         command += ["--use-default-pwm"]
+    command += ["--max_merged_length", str(args.max_merged_length)]
     command += ["-b", str(args.bit_factor_threshold)]
     command += ["--pseudo-counts", str(args.pseudo_counts)]
     command += ["--threads", str(args.number_threads)]

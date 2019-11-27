@@ -53,7 +53,7 @@ class IUPACPattern {
 
   size_t get_pattern();
   std::string get_pattern_string();
-  int get_pattern_length();
+  size_t get_pattern_length();
 
   float getExpCountFraction(const size_t pseudo_expected_pattern_counts);
   float getLogPval();
